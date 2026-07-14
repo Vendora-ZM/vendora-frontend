@@ -60,7 +60,11 @@ function LoginForm() {
         setErrorMsg("Forgot password not implemented yet.");
       }
     } catch (err: any) {
-      setErrorMsg(err.data?.message || err.data?.error || "An error occurred");
+      let msg = err.data?.message || err.data?.error || err.message || "An error occurred";
+      if (typeof msg === "object") {
+        msg = msg.message || JSON.stringify(msg);
+      }
+      setErrorMsg(msg);
     }
   };
 

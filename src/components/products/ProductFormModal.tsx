@@ -8,6 +8,8 @@ import {
   useUpdateProductMutation,
   useGetCategoriesQuery,
 } from '@/lib/features/products/productsApi';
+import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { useAdjustStockMutation } from '@/lib/features/inventory/inventoryApi';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Textarea, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -26,6 +28,8 @@ interface FormState {
   is_taxable: boolean;
   tax_rate: string;
   is_active: boolean;
+  initial_stock?: string;
+  initial_location_id?: string;
 }
 
 const defaultForm: FormState = {
@@ -40,6 +44,8 @@ const defaultForm: FormState = {
   is_taxable: false,
   tax_rate: '',
   is_active: true,
+  initial_stock: '',
+  initial_location_id: '',
 };
 
 export const ProductFormModal: React.FC = () => {
@@ -49,12 +55,14 @@ export const ProductFormModal: React.FC = () => {
 
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [adjustStock, { isLoading: isAdjusting }] = useAdjustStockMutation();
+  const { data: locations = [] } = useGetLocationsQuery();
 
   const [form, setForm] = useState<FormState>(defaultForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const isLoading = isCreating || isUpdating;
+  const isLoading = isCreating || isUpdating || isAdjusting;
 
   // Populate form when editing
   useEffect(() => {
@@ -71,6 +79,8 @@ export const ProductFormModal: React.FC = () => {
         is_taxable: selectedProduct.is_taxable,
         tax_rate: selectedProduct.tax_rate,
         is_active: selectedProduct.is_active,
+        initial_stock: '',
+        initial_location_id: '',
       });
     } else {
       setForm(defaultForm);
@@ -121,7 +131,16 @@ export const ProductFormModal: React.FC = () => {
           is_taxable: form.is_taxable,
           tax_rate: form.is_taxable ? form.tax_rate : '0',
         };
-        await createProduct(payload).unwrap();
+        const newProduct = await createProduct(payload).unwrap();
+        
+        if (form.initial_stock && parseFloat(form.initial_stock) > 0 && form.initial_location_id) {
+          await adjustStock({
+            product_id: newProduct.id,
+            location_id: form.initial_location_id,
+            quantity_delta: form.initial_stock,
+            notes: 'Initial stock setup',
+          }).unwrap();
+        }
       } else if (selectedProduct) {
         const payload: UpdateProductPayload = {
           name: form.name.trim(),
@@ -278,6 +297,33 @@ export const ProductFormModal: React.FC = () => {
               </label>
             )}
           </div>
+
+          {/* Initial Stock (Only for Create) */}
+          {modalMode === 'create' && (
+            <>
+              <Input
+                id="product-initial-stock"
+                label="Initial Stock"
+                type="number"
+                step="1"
+                min="0"
+                placeholder="e.g. 50"
+                value={form.initial_stock || ''}
+                onChange={set('initial_stock')}
+              />
+              <Select
+                id="product-initial-location"
+                label="Stock Location"
+                value={form.initial_location_id || ''}
+                onChange={set('initial_location_id')}
+              >
+                <option value="">— Select Location —</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                ))}
+              </Select>
+            </>
+          )}
 
           {/* Tax Rate — conditional */}
           {form.is_taxable && (

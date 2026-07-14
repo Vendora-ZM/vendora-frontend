@@ -94,6 +94,18 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoadin
                     <div className={styles.actions}>
                       <button
                         className={styles.actionBtn}
+                        title="Add/Adjust Stock"
+                        aria-label={`Adjust Stock for ${product.name}`}
+                        onClick={() => {
+                          import('@/lib/features/inventory/inventorySlice').then(({ openAdjustModal }) => {
+                            dispatch(openAdjustModal(product.id));
+                          });
+                        }}
+                      >
+                        ➕
+                      </button>
+                      <button
+                        className={styles.actionBtn}
                         title="Edit product"
                         aria-label={`Edit ${product.name}`}
                         onClick={() => dispatch(openEditModal(product))}

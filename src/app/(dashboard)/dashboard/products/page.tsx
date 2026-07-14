@@ -7,6 +7,7 @@ import { ProductsToolbar } from '@/components/products/ProductsToolbar';
 import { ProductsTable } from '@/components/products/ProductsTable';
 import { ProductFormModal } from '@/components/products/ProductFormModal';
 import { DeleteProductModal } from '@/components/products/DeleteProductModal';
+import { AdjustStockModal } from '@/components/inventory/AdjustStockModal';
 import styles from './page.module.css';
 
 export default function ProductsPage() {
@@ -54,6 +55,7 @@ export default function ProductsPage() {
       {/* Modals */}
       <ProductFormModal />
       <DeleteProductModal />
+      <AdjustStockModal />
     </div>
   );
 }

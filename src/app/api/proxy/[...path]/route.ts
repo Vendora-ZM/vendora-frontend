@@ -14,6 +14,9 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
     headers.delete('host');
     headers.delete('origin');
     headers.delete('referer');
+    headers.delete('content-length');
+    headers.delete('connection');
+    headers.delete('accept-encoding');
     headers.set('accept', 'application/json');
 
     // Attach tokens from HttpOnly cookies
@@ -24,7 +27,7 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
     if (accessToken) {
       headers.set('Authorization', `Bearer ${accessToken}`);
     }
-    
+
     if (businessId) {
       // Depending on backend, maybe it expects X-Business-ID header, or we don't need it if JWT handles it.
       // We will attach it just in case.
@@ -33,15 +36,20 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
 
     // Only forward bodies for non-GET/HEAD
     const hasBody = !['GET', 'HEAD'].includes(req.method);
-    const body = hasBody ? await req.blob() : undefined;
 
-    const response = await fetch(url, {
+    const fetchOptions: RequestInit = {
       method: req.method,
       headers,
-      body,
-      // Pass along redirect logic if needed
       redirect: 'manual',
-    });
+    };
+
+    if (hasBody && req.body) {
+      fetchOptions.body = req.body;
+      // @ts-ignore - Required for passing ReadableStream to fetch in Node
+      fetchOptions.duplex = 'half';
+    }
+
+    const response = await fetch(url, fetchOptions);
 
     const responseHeaders = new Headers(response.headers);
     responseHeaders.delete('content-encoding'); // let NextJS handle encoding
