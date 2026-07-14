@@ -1,0 +1,170 @@
+.tableWrapper {
+  background: var(--color-white);
+  border-radius: 12px;
+  border: 1px solid rgba(140, 144, 152, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.table th {
+  padding: 16px 24px;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #FAFAFA;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.1);
+}
+
+.table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.08);
+  font-size: 0.9375rem;
+  color: var(--color-dark-grey);
+  vertical-align: middle;
+}
+
+.row:last-child td {
+  border-bottom: none;
+}
+
+.row:hover td {
+  background: #FAFBFF;
+}
+
+.customerCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.customerName {
+  font-weight: 600;
+  color: var(--color-primary-navy);
+}
+
+.contactCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.email {
+  color: var(--color-dark-grey);
+}
+
+.phone {
+  font-size: 0.85rem;
+  color: var(--color-grey);
+}
+
+.noData {
+  font-size: 0.85rem;
+  color: var(--color-grey);
+  font-style: italic;
+}
+
+.locationCell {
+  color: var(--color-grey);
+}
+
+.statusBadge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.inactive {
+  background: rgba(140, 144, 152, 0.1);
+  color: var(--color-grey);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtn:hover {
+  background: rgba(140, 144, 152, 0.1);
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Skeleton loader */
+.skeletonRow td {
+  padding: 24px;
+}
+
+.skeleton {
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  color: var(--color-grey);
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-primary-navy);
+  margin-bottom: 8px;
+}
+
+.emptySubtitle {
+  font-size: 0.9375rem;
+}

@@ -1,0 +1,112 @@
+'use client';
+
+import React from 'react';
+import { Sale } from '@/types/sale';
+import { useAppDispatch } from '@/lib/store';
+import { openDetailModal } from '@/lib/features/sales/salesSlice';
+import styles from './OrdersTable.module.css';
+
+interface OrdersTableProps {
+  orders: Sale[];
+  isLoading: boolean;
+}
+
+const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
+  completed: { label: 'Completed', cls: 'completed' },
+  draft:     { label: 'Draft',     cls: 'draft' },
+  refunded:  { label: 'Refunded',  cls: 'refunded' },
+  cancelled: { label: 'Cancelled', cls: 'cancelled' },
+};
+
+function formatCurrency(value: number | string) {
+  const n = typeof value === 'number' ? value / 100 : parseFloat(value);
+  return isNaN(n) ? '—' : `K${n.toFixed(2)}`;
+}
+
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function SkeletonRow() {
+  return (
+    <tr className={styles.skeletonRow}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <td key={i}><div className={styles.skeleton} /></td>
+      ))}
+    </tr>
+  );
+}
+
+function EmptyState() {
+  return (
+    <tr>
+      <td colSpan={6}>
+        <div className={styles.emptyState}>
+          <svg className={styles.emptyIcon} width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1" ry="1"></rect><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="13" y2="16"></line></svg>
+          <h3 className={styles.emptyTitle}>No orders found</h3>
+          <p className={styles.emptySubtitle}>Orders will appear here once sales are recorded.</p>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
+  const dispatch = useAppDispatch();
+
+  return (
+    <div className={styles.tableWrapper}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Order No.</th>
+            <th>Date</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+            : orders.length === 0
+            ? <EmptyState />
+            : orders.map((order) => {
+                const status = STATUS_CONFIG[order.status] ?? { label: order.status, cls: 'draft' };
+                return (
+                  <tr key={order.id} className={styles.row}>
+                    <td>
+                      <span className={styles.orderNumber}>{order.sale_number}</span>
+                    </td>
+                    <td className={styles.dateCell}>{formatDate(order.created_at)}</td>
+                    <td className={styles.itemsCell}>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</td>
+                    <td>
+                      <span className={styles.totalAmount}>{formatCurrency(order.total_amount)}</span>
+                    </td>
+                    <td>
+                      <span className={`${styles.statusBadge} ${styles[status.cls]}`}>
+                        {status.label}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.viewBtn}
+                        onClick={() => dispatch(openDetailModal(order))}
+                        title="View order details"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+        </tbody>
+      </table>
+    </div>
+  );
+};

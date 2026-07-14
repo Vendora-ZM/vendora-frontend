@@ -1,0 +1,102 @@
+.widget {
+  background: var(--color-white);
+  border-radius: 12px;
+  border: 1px solid rgba(140, 144, 152, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.widgetHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.1);
+}
+
+.widgetTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary-navy);
+  margin: 0;
+}
+
+.chartContainer {
+  padding: 24px 24px 16px 0;
+  height: 350px;
+  width: 100%;
+}
+
+.tableWrapper {
+  flex: 1;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 12px 24px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #FAFAFA;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.1);
+}
+
+.table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.08);
+  font-size: 0.9375rem;
+  color: var(--color-dark-grey);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.rightAlign {
+  text-align: right !important;
+}
+
+.productCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.productName {
+  font-weight: 600;
+  color: var(--color-primary-navy);
+}
+
+.productSku {
+  font-size: 0.75rem;
+  color: var(--color-grey);
+}
+
+.revenueVal {
+  font-weight: 600;
+  color: #10B981;
+}
+
+.turnoverVal {
+  font-weight: 600;
+  color: var(--color-accent-blue);
+}
+
+.loading, .empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-grey);
+  font-size: 0.9375rem;
+  padding: 40px;
+  text-align: center;
+}

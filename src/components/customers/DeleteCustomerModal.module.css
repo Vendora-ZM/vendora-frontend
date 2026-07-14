@@ -1,0 +1,48 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.warningIcon {
+  font-size: 2.5rem;
+}
+
+.message {
+  font-size: 1rem;
+  color: var(--color-dark-grey);
+  line-height: 1.6;
+}
+
+.customerName {
+  font-weight: 700;
+  color: var(--color-primary-navy);
+}
+
+.warning {
+  font-size: 0.875rem;
+  color: var(--color-grey);
+}
+
+.apiError {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #DC2626;
+  font-size: 0.875rem;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.actions > * {
+  flex: 1;
+}

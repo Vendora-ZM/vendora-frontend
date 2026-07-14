@@ -1,6 +1,25 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Vendora Color Palette */
+  --color-primary-navy: #06296B;
+  --color-primary-blue: #06296B;
+  --color-secondary-blue: #0A67BC;
+  --color-accent-blue: #1A84DD;
+  --color-primary-orange: #F57C00;
+  --color-accent-orange: #FF9800;
+  --color-grey: #8C9098;
+  --color-white: #FFFFFF;
+  --color-light-grey: #F4F4F4;
+  --color-dark-grey: #171717;
+
+  /* Gradients */
+  --gradient-blue: linear-gradient(135deg, #06296B, #0A67BC, #1A84DD);
+  --gradient-orange: linear-gradient(135deg, #E85A00, #F57C00, #FF9800);
+
+  /* Theme mappings */
+  --background: var(--color-light-grey);
+  --foreground: var(--color-dark-grey);
+  
+  --font-sans: var(--font-outfit), Arial, Helvetica, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,7 +45,7 @@ body {
   flex-direction: column;
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,8 +61,6 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+button {
+  font-family: inherit;
 }

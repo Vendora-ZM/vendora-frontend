@@ -1,0 +1,52 @@
+.posLayout {
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 120px);
+  width: 100%;
+}
+
+.leftPane {
+  flex: 7;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.rightPane {
+  flex: 3;
+  min-width: 300px;
+  max-width: 380px;
+  overflow: hidden;
+}
+
+/* ─── Tablet ────────────────────────────────── */
+@media (max-width: 1024px) {
+  .posLayout {
+    gap: 16px;
+  }
+
+  .rightPane {
+    min-width: 260px;
+  }
+}
+
+/* ─── Mobile ────────────────────────────────── */
+@media (max-width: 768px) {
+  .posLayout {
+    flex-direction: column;
+    height: auto;
+    gap: 12px;
+  }
+
+  .leftPane {
+    height: 55vh;
+    flex: none;
+  }
+
+  .rightPane {
+    flex: none;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+  }
+}
+

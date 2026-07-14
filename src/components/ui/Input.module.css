@@ -1,0 +1,67 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-navy);
+}
+
+.input,
+.textarea,
+.select {
+  padding: 10px 14px;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--color-dark-grey);
+  background: var(--color-white);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238C9098' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--color-accent-blue);
+  box-shadow: 0 0 0 3px rgba(26, 132, 221, 0.15);
+}
+
+.inputError {
+  border-color: #EF4444;
+}
+
+.inputError:focus {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.error {
+  font-size: 0.8125rem;
+  color: #EF4444;
+  font-weight: 500;
+}
+
+.helpText {
+  font-size: 0.8125rem;
+  color: var(--color-grey);
+}
