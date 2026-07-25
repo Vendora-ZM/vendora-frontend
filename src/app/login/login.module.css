@@ -8,6 +8,36 @@
   overflow: hidden;
 }
 
+.topNav {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.topNavLink {
+  color: var(--color-white);
+  font-weight: 800;
+  padding: 10px 12px;
+  border-radius: 12px;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.topNavLink:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
 .backgroundShapes {
   position: absolute;
   top: 0;
@@ -289,4 +319,19 @@
 }
 
 .errorAlert { background-color: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #F87171; }
+
+@media (max-width: 768px) {
+  .topNav {
+    top: 12px;
+    left: 16px;
+    right: 16px;
+    transform: none;
+    justify-content: center;
+  }
+
+  .glassCard {
+    margin-top: 84px;
+    padding: 32px 20px;
+  }
+}
 

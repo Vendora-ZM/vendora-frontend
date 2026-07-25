@@ -144,7 +144,8 @@ export default function DashboardOverview() {
             }
           : null;
       })
-      .filter((item): item is { product: Product; available: number } => Boolean(item) && item.available <= 5)
+      .filter((item): item is { product: Product; available: number } => item !== null)
+      .filter((item) => item.available <= 5)
       .sort((a, b) => a.available - b.available)
       .slice(0, 3);
   }, [balances, productsMap]);

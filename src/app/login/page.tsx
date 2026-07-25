@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAcceptInvitationMutation, useLoginMutation, useRegisterMutation } from "@/lib/features/auth/authApi";
 import { useAppDispatch } from "@/lib/store";
@@ -21,7 +22,7 @@ function LoginForm() {
   const [mode, setMode] = useState<AuthMode>(initialMode);
 
   // Form states
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(inviteEmail);
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,12 +35,6 @@ function LoginForm() {
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
   const [acceptInvitation, { isLoading: isAcceptingInvitation }] = useAcceptInvitationMutation();
-
-  useEffect(() => {
-    if (inviteEmail) {
-      setEmail(inviteEmail);
-    }
-  }, [inviteEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +99,13 @@ function LoginForm() {
         <div className={styles.shape1}></div>
         <div className={styles.shape2}></div>
         <div className={styles.shape3}></div>
+      </div>
+
+      <div className={styles.topNav} aria-label="Public navigation">
+        <Link href="/" className={styles.topNavLink}>Home</Link>
+        <Link href="/#features" className={styles.topNavLink}>Features</Link>
+        <Link href="/#pricing" className={styles.topNavLink}>Pricing</Link>
+        <Link href="/signup" className={styles.topNavLink}>Sign up</Link>
       </div>
 
       <div className={styles.glassCard}>
