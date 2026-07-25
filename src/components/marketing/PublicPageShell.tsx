@@ -31,42 +31,44 @@ export function PublicPageShell({ eyebrow, title, intro, actions = [], children 
           <div className={styles.shape3} />
         </div>
 
-        <nav className={styles.topNav} aria-label="Public navigation">
-          <Link href="/" className={styles.topNavLink}>
-            Home
-          </Link>
-          <Link href="/#features" className={styles.topNavLink}>
-            Features
-          </Link>
-          <Link href="/#pricing" className={styles.topNavLink}>
-            Pricing
-          </Link>
-          <Link href="/login" className={styles.topNavLink}>
-            Login
-          </Link>
-        </nav>
+        <div className={styles.content}>
+          <nav className={styles.topNav} aria-label="Public navigation">
+            <Link href="/" className={styles.topNavLink}>
+              Home
+            </Link>
+            <Link href="/#features" className={styles.topNavLink}>
+              Features
+            </Link>
+            <Link href="/#pricing" className={styles.topNavLink}>
+              Pricing
+            </Link>
+            <Link href="/login" className={styles.topNavLink}>
+              Login
+            </Link>
+          </nav>
 
-        <section className={styles.hero}>
-          <span className={styles.eyebrow}>{eyebrow}</span>
-          <h1 className={styles.title}>{title}</h1>
-          <p className={styles.intro}>{intro}</p>
+          <section className={styles.hero}>
+            <span className={styles.eyebrow}>{eyebrow}</span>
+            <h1 className={styles.title}>{title}</h1>
+            <p className={styles.intro}>{intro}</p>
 
-          {actions.length ? (
-            <div className={styles.actions}>
-              {actions.map((action) => (
-                <Link
-                  key={action.href}
-                  href={action.href}
-                  className={action.primary ? styles.primaryAction : styles.secondaryAction}
-                >
-                  {action.label}
-                </Link>
-              ))}
-            </div>
-          ) : null}
-        </section>
+            {actions.length ? (
+              <div className={styles.actions}>
+                {actions.map((action) => (
+                  <Link
+                    key={action.href}
+                    href={action.href}
+                    className={action.primary ? styles.primaryAction : styles.secondaryAction}
+                  >
+                    {action.label}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+          </section>
 
-        {children}
+          {children}
+        </div>
       </main>
       <Footer />
     </>
