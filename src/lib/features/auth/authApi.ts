@@ -22,6 +22,12 @@ interface RegisterRequest {
   phone?: string;
 }
 
+interface AcceptInvitationRequest {
+  email: string;
+  token: string;
+  password: string;
+}
+
 // All auth requests go through the Next.js local auth routes under /api/auth/...
 // The custom routes read the response from the backend, set HttpOnly cookies, and return success/business.
 export const authApi = createApi({
@@ -42,6 +48,13 @@ export const authApi = createApi({
         body: userData,
       }),
     }),
+    acceptInvitation: builder.mutation<{ message?: string }, AcceptInvitationRequest>({
+      query: (payload) => ({
+        url: '/invitations/accept',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
     logout: builder.mutation<void, object>({
       query: () => ({
         url: '/logout',
@@ -55,5 +68,6 @@ export const authApi = createApi({
 export const {
   useLoginMutation,
   useRegisterMutation,
+  useAcceptInvitationMutation,
   useLogoutMutation,
 } = authApi;

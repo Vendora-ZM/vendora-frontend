@@ -14,6 +14,8 @@ import authReducer from './features/auth/authSlice';
 import { locationsApi } from './features/locations/locationsApi';
 import { inventoryApi } from './features/inventory/inventoryApi';
 import inventoryReducer from './features/inventory/inventorySlice';
+import { profileApi } from './features/profile/profileApi';
+import { accountsApi } from './features/accounts/accountsApi';
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +30,8 @@ export const store = configureStore({
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
+    [profileApi.reducerPath]: profileApi.reducer,
+    [accountsApi.reducerPath]: accountsApi.reducer,
     [locationsApi.reducerPath]: locationsApi.reducer,
     inventory: inventoryReducer,
     [inventoryApi.reducerPath]: inventoryApi.reducer,
@@ -39,6 +43,8 @@ export const store = configureStore({
       .concat(customersApi.middleware)
       .concat(analyticsApi.middleware)
       .concat(authApi.middleware)
+      .concat(profileApi.middleware)
+      .concat(accountsApi.middleware)
       .concat(locationsApi.middleware)
       .concat(inventoryApi.middleware),
 });

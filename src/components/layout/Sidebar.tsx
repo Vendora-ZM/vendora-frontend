@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useLogoutMutation } from '@/lib/features/auth/authApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch } from '@/lib/store';
 import { logout } from '@/lib/features/auth/authSlice';
 import styles from './Sidebar.module.css';
@@ -19,6 +20,8 @@ const navLinks = [
   { href: '/dashboard/pos', label: 'POS (Point of Sale)', exact: false },
   { href: '/dashboard/products', label: 'Products', exact: false },
   { href: '/dashboard/inventory', label: 'Inventory', exact: false },
+  { href: '/dashboard/locations', label: 'Locations', exact: false },
+  { href: '/dashboard/accounts', label: 'Accounts', exact: false },
   { href: '/dashboard/orders', label: 'Orders', exact: false },
   { href: '/dashboard/sales', label: 'Sales', exact: false },
   { href: '/dashboard/customers', label: 'Customers', exact: false },
@@ -29,7 +32,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { data: me } = useGetMeQuery();
   const [logoutApi] = useLogoutMutation();
+  const canManageAccounts = Boolean(me?.permissions?.includes('users.manage'));
 
   const handleLogout = async () => {
     try {
@@ -74,6 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         <nav className={styles.nav}>
           {navLinks.map((link) => (
+            link.href === '/dashboard/accounts' && !canManageAccounts ? null : (
             <Link
               key={link.href}
               href={link.href}
@@ -82,10 +88,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             >
               {link.label}
             </Link>
+            )
           ))}
         </nav>
 
         <div className={styles.footer}>
+          {canManageAccounts ? (
+            <Link href="/dashboard/accounts" className={`${styles.link} ${styles.ctaLink}`} onClick={onClose}>
+              Invite member
+            </Link>
+          ) : null}
           <Link href="/settings" className={styles.link} onClick={onClose}>
             Settings
           </Link>

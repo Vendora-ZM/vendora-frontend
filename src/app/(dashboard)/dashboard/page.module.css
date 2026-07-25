@@ -4,6 +4,14 @@
   gap: 32px;
 }
 
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .title {
   font-size: 2rem;
   font-weight: 700;
@@ -13,6 +21,69 @@
 .subtitle {
   color: var(--color-grey);
   margin-top: 5px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.presetGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.presetBtn {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(140, 144, 152, 0.18);
+  background: var(--color-white);
+  color: var(--color-grey);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.presetBtn:hover {
+  color: var(--color-primary-navy);
+  border-color: rgba(26, 132, 221, 0.35);
+}
+
+.presetBtnActive {
+  background: var(--gradient-blue);
+  color: var(--color-white);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(26, 132, 221, 0.18);
+}
+
+.locationField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+  color: var(--color-grey);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.locationSelect {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(140, 144, 152, 0.18);
+  background: var(--color-white);
+  color: var(--color-primary-navy);
+  font: inherit;
+  outline: none;
+}
+
+.locationSelect:focus {
+  border-color: var(--color-accent-blue);
+  box-shadow: 0 0 0 3px rgba(26, 132, 221, 0.12);
 }
 
 .statsGrid {
@@ -101,6 +172,13 @@
   gap: 24px;
 }
 
+.leftColumn,
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 @media (min-width: 1200px) {
   .mainGrid {
     grid-template-columns: 2fr 1fr;
@@ -126,6 +204,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sectionHint {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-grey);
 }
 
 /* Revenue Graph Mockup */
@@ -165,6 +251,18 @@
   background: var(--gradient-blue);
   border-radius: 4px;
   transition: height 1s ease-out;
+}
+
+.barValue {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: var(--color-white);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+  white-space: nowrap;
 }
 
 .barLabel {
@@ -261,6 +359,21 @@
   color: var(--color-primary-orange);
 }
 
+.draft {
+  background-color: rgba(148, 163, 184, 0.15);
+  color: #64748b;
+}
+
+.refunded {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.cancelled {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
 /* Top Products List */
 .productList {
   padding: 0;
@@ -302,6 +415,37 @@
   color: var(--color-dark-grey);
 }
 
+.errorBanner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.emptyState {
+  min-height: 120px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-grey);
+  font-size: 0.9rem;
+  padding: 24px;
+}
+
+.tableLoading {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-grey);
+  padding: 24px;
+}
+
 /* --- Mobile -------------------------------------------- */
 @media (max-width: 768px) {
   .container {
@@ -315,6 +459,15 @@
   .statsGrid {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+  }
+
+  .controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .locationField {
+    min-width: 100%;
   }
 
   .statCard {

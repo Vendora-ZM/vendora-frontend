@@ -6,6 +6,11 @@
   overflow: hidden;
 }
 
+.footer {
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(140, 144, 152, 0.1);
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -110,6 +115,27 @@
 .actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.profileLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(26, 132, 221, 0.08);
+  color: var(--color-accent-blue);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.profileLink:hover {
+  background: rgba(26, 132, 221, 0.14);
+  transform: translateY(-1px);
 }
 
 .actionBtn {

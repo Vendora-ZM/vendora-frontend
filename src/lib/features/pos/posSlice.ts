@@ -10,14 +10,12 @@ interface PosState {
   cart: CartItem[];
   customerId: string | null;
   discountAmount: string;
-  isPaymentModalOpen: boolean;
 }
 
 const initialState: PosState = {
   cart: [],
   customerId: null,
   discountAmount: '0',
-  isPaymentModalOpen: false,
 };
 
 const posSlice = createSlice({
@@ -56,12 +54,6 @@ const posSlice = createSlice({
     setDiscount(state, action: PayloadAction<string>) {
       state.discountAmount = action.payload;
     },
-    openPaymentModal(state) {
-      state.isPaymentModalOpen = true;
-    },
-    closePaymentModal(state) {
-      state.isPaymentModalOpen = false;
-    },
   },
 });
 
@@ -72,8 +64,6 @@ export const {
   clearCart,
   setCustomer,
   setDiscount,
-  openPaymentModal,
-  closePaymentModal,
 } = posSlice.actions;
 
 export default posSlice.reducer;

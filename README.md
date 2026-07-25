@@ -18,6 +18,16 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Local Backend
+
+When developing locally, point the app at the local backend API by setting:
+
+```bash
+BACKEND_API_URL=http://localhost:8081/api/v1
+```
+
+The app's auth routes and proxy layer both read this value on the server, so the dashboard and session refresh flow stay on the local backend automatically.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { setAuthCookies } from '@/lib/auth/sessionCookies';
+import { getBackendApiUrl } from '@/lib/config/backend';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://13.63.19.154/api/v1';
+const API_URL = getBackendApiUrl();
+
+type AuthPayload = {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  business?: { id?: string };
+  message?: string;
+  data?: AuthPayload;
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,50 +24,32 @@ export async function POST(req: NextRequest) {
     });
 
     const text = await response.text();
-    let data;
-    try { data = JSON.parse(text); } catch (e) { data = { message: text }; }
+    let data: AuthPayload;
+    try {
+      data = JSON.parse(text) as AuthPayload;
+    } catch {
+      data = { message: text };
+    }
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
     }
 
     // Success! Extract tokens
-    const { access_token, refresh_token, business } = data.data || data;
+    const auth = data.data ?? data;
+    const { access_token, refresh_token, expires_in, business } = auth;
 
     const res = NextResponse.json({ success: true, business });
 
-    // Set secure HttpOnly cookies
-    res.cookies.set('vendora_access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 15,
+    return setAuthCookies(res, {
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      businessId: business?.id,
+      accessTtlSeconds: typeof expires_in === 'number' ? expires_in : undefined,
     });
-
-    if (refresh_token) {
-      res.cookies.set('vendora_refresh_token', refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
-
-    if (business && business.id) {
-      res.cookies.set('vendora_business_id', business.id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
-
-    return res;
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ message: 'Internal server error', error: message }, { status: 500 });
   }
 }
 

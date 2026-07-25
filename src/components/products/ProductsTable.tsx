@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useAppDispatch } from '@/lib/store';
 import { openEditModal, openDeleteModal } from '@/lib/features/products/productsSlice';
@@ -10,6 +11,7 @@ interface ProductsTableProps {
   products: Product[];
   isLoading: boolean;
   categoryMap: Record<string, string>;
+  footer?: React.ReactNode;
 }
 
 function PriceDisplay({ value }: { value: number }) {
@@ -43,7 +45,7 @@ function EmptyState() {
   );
 }
 
-export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoading, categoryMap }) => {
+export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoading, categoryMap, footer }) => {
   const dispatch = useAppDispatch();
 
   return (
@@ -92,6 +94,14 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoadin
                   </td>
                   <td>
                     <div className={styles.actions}>
+                      <Link
+                        className={styles.profileLink}
+                        href={`/dashboard/products/${product.id}`}
+                        title="Open product profile"
+                        aria-label={`Open product profile for ${product.name}`}
+                      >
+                        Profile
+                      </Link>
                       <button
                         className={styles.actionBtn}
                         title="Add/Adjust Stock"
@@ -127,6 +137,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoadin
           }
         </tbody>
       </table>
+      {footer ? <div className={styles.footer}>{footer}</div> : null}
     </div>
   );
 };

@@ -79,6 +79,18 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.ctaLink {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--color-white);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.ctaLink:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
+}
+
 /* ─── Mobile ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .backdrop {

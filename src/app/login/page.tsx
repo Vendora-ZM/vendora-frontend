@@ -1,26 +1,30 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useLoginMutation, useRegisterMutation } from "@/lib/features/auth/authApi";
+import { useAcceptInvitationMutation, useLoginMutation, useRegisterMutation } from "@/lib/features/auth/authApi";
 import { useAppDispatch } from "@/lib/store";
 import { setCredentials } from "@/lib/features/auth/authSlice";
 import styles from "./login.module.css";
 
-type AuthMode = "LOGIN" | "REGISTER" | "FORGOT_PASSWORD";
+type AuthMode = "LOGIN" | "REGISTER" | "FORGOT_PASSWORD" | "ACCEPT_INVITE";
 
 function LoginForm() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
-  const initialMode = searchParams.get('mode') === 'register' ? 'REGISTER' : 'LOGIN';
+  const inviteToken = searchParams.get('invite') ?? '';
+  const inviteEmail = searchParams.get('email') ?? '';
+  const initialMode = inviteToken ? 'ACCEPT_INVITE' : searchParams.get('mode') === 'register' ? 'REGISTER' : 'LOGIN';
 
   const [mode, setMode] = useState<AuthMode>(initialMode);
 
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -29,6 +33,13 @@ function LoginForm() {
 
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
+  const [acceptInvitation, { isLoading: isAcceptingInvitation }] = useAcceptInvitationMutation();
+
+  useEffect(() => {
+    if (inviteEmail) {
+      setEmail(inviteEmail);
+    }
+  }, [inviteEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +66,28 @@ function LoginForm() {
           dispatch(setCredentials({ businessId: response.business?.id ?? '' }));
           router.push("/dashboard");
         }
+      } else if (mode === "ACCEPT_INVITE") {
+        if (password !== passwordConfirm) {
+          setErrorMsg("Passwords do not match.");
+          return;
+        }
+
+        await acceptInvitation({ email, token: inviteToken, password }).unwrap();
+        const response = await login({ email, password }).unwrap();
+        if (response.success) {
+          dispatch(setCredentials({ businessId: response.business?.id ?? '' }));
+          router.push("/dashboard");
+        }
       } else {
         // Handle forgot password mock
         setErrorMsg("Forgot password not implemented yet.");
       }
-    } catch (err: any) {
-      let msg = err.data?.message || err.data?.error || err.message || "An error occurred";
+    } catch (err: unknown) {
+      const error = err as {
+        data?: { message?: string; error?: string };
+        message?: string;
+      };
+      let msg = error.data?.message || error.data?.error || error.message || "An error occurred";
       if (typeof msg === "object") {
         msg = msg.message || JSON.stringify(msg);
       }
@@ -68,7 +95,7 @@ function LoginForm() {
     }
   };
 
-  const isLoading = isLoginLoading || isRegisterLoading;
+  const isLoading = isLoginLoading || isRegisterLoading || isAcceptingInvitation;
 
   return (
     <div className={styles.container}>
@@ -184,23 +211,106 @@ function LoginForm() {
                     onChange={(e) => setPhone(e.target.value)}
                   />
                 </div>
-              </>
-            )}
+            </>
+          )}
+
+          {mode === "ACCEPT_INVITE" && (
+            <>
+              <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
+                <label htmlFor="inviteEmail">Email Address</label>
+                <input
+                  id="inviteEmail"
+                  type="email"
+                  className={styles.input}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
+                <label htmlFor="invitePassword">Create Password</label>
+                <div className={styles.passwordField}>
+                  <input
+                    id="invitePassword"
+                    type={showPassword ? "text" : "password"}
+                    className={styles.input}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M3.98 8.223 2.707 6.95 4.12 5.536l2.022 2.022A11.2 11.2 0 0 1 12 6c5.5 0 9.5 4.5 10.3 6-.42.79-1.5 2.33-3.16 3.79l1.88 1.88-1.414 1.414-2.03-2.03A11.2 11.2 0 0 1 12 18c-5.5 0-9.5-4.5-10.3-6 .47-.9 1.8-2.76 4.28-3.78ZM8.5 11.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Zm2 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+                        <path d="M20.707 3.293 3.293 20.707 1.879 19.293 19.293 1.879l1.414 1.414Z" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 6c5.5 0 9.5 4.5 10.3 6-.8 1.5-4.8 6-10.3 6S2.5 13.5 1.7 12C2.5 10.5 6.5 6 12 6Zm0 2C8.3 8 5.1 10.8 4 12c1.1 1.2 4.3 4 8 4s6.9-2.8 8-4c-1.1-1.2-4.3-4-8-4Zm0 1.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
+                <label htmlFor="invitePasswordConfirm">Confirm Password</label>
+                <input
+                  id="invitePasswordConfirm"
+                  type="password"
+                  className={styles.input}
+                  placeholder="••••••••"
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
 
             {/* Password field for Login & Register */}
             {(mode === "LOGIN" || mode === "REGISTER") && (
               <div className={styles.inputGroup} style={{ marginBottom: "8px" }}>
                 <label htmlFor="password">Password</label>
-                <input
-                  id="password"
-                  type="password"
-                  className={styles.input}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={mode === "REGISTER" ? 8 : undefined}
-                />
+                <div className={styles.passwordField}>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className={styles.input}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={mode === "REGISTER" ? 8 : undefined}
+                  />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M3.98 8.223 2.707 6.95 4.12 5.536l2.022 2.022A11.2 11.2 0 0 1 12 6c5.5 0 9.5 4.5 10.3 6-.42.79-1.5 2.33-3.16 3.79l1.88 1.88-1.414 1.414-2.03-2.03A11.2 11.2 0 0 1 12 18c-5.5 0-9.5-4.5-10.3-6 .47-.9 1.8-2.76 4.28-3.78ZM8.5 11.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Zm2 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+                        <path d="M20.707 3.293 3.293 20.707 1.879 19.293 19.293 1.879l1.414 1.414Z" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 6c5.5 0 9.5 4.5 10.3 6-.8 1.5-4.8 6-10.3 6S2.5 13.5 1.7 12C2.5 10.5 6.5 6 12 6Zm0 2C8.3 8 5.1 10.8 4 12c1.1 1.2 4.3 4 8 4s6.9-2.8 8-4c-1.1-1.2-4.3-4-8-4Zm0 1.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -235,15 +345,21 @@ function LoginForm() {
 
         <div className={styles.footer}>
           {mode === "LOGIN" && (
-            <p>
-              Don't have an account?{" "}
-              <span onClick={() => setMode("REGISTER")}>Register your business</span>
-            </p>
+              <p>
+                Don&apos;t have an account?{" "}
+                <span onClick={() => setMode("REGISTER")}>Register your business</span>
+              </p>
           )}
           {mode === "REGISTER" && (
             <p>
               Already have an account?{" "}
               <span onClick={() => setMode("LOGIN")}>Sign in instead</span>
+            </p>
+          )}
+          {mode === "ACCEPT_INVITE" && (
+            <p>
+              Want to use a different account?{" "}
+              <span onClick={() => setMode("LOGIN")}>Back to login</span>
             </p>
           )}
           {mode === "FORGOT_PASSWORD" && (

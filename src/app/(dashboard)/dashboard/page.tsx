@@ -1,97 +1,346 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/lib/store';
+import { setDateRangePreset, setLocationId, DateRangePreset } from '@/lib/features/analytics/analyticsSlice';
+import { useGetSalesTrendsQuery, useGetTopProductsQuery } from '@/lib/features/analytics/analyticsApi';
+import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
+import { useGetBalancesQuery } from '@/lib/features/inventory/inventoryApi';
+import { useGetProductsQuery } from '@/lib/features/products/productsApi';
+import { useGetCustomersQuery } from '@/lib/features/customers/customersApi';
+import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { logout } from '@/lib/features/auth/authSlice';
+import { getDateRange } from '@/lib/utils/dateRange';
+import { Product } from '@/types/product';
+import { Sale, SaleStatus } from '@/types/sale';
 import styles from './page.module.css';
 
+const DATE_PRESETS: { value: DateRangePreset; label: string }[] = [
+  { value: 'last_7_days', label: 'Last 7 Days' },
+  { value: 'last_30_days', label: 'Last 30 Days' },
+  { value: 'this_month', label: 'This Month' },
+  { value: 'last_month', label: 'Last Month' },
+];
+
+const STATUS_LABELS: Record<SaleStatus, string> = {
+  draft: 'Draft',
+  completed: 'Completed',
+  refunded: 'Refunded',
+  cancelled: 'Cancelled',
+};
+
+function formatCurrency(amount: number) {
+  return `K${(amount / 100).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function formatDateTime(iso: string) {
+  const value = new Date(iso);
+  return value.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  }) + ' ' + value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function getCustomerName(customer: { first_name: string; last_name: string } | undefined) {
+  if (!customer) return 'Walk-in customer';
+  return `${customer.first_name} ${customer.last_name}`.trim();
+}
+
+function isUnauthorizedError(error: unknown) {
+  return Boolean(
+    error &&
+    typeof error === 'object' &&
+    'status' in error &&
+    (error as { status?: number | string }).status === 401
+  );
+}
+
 export default function DashboardOverview() {
-  // Mock data for the graph
-  const graphData = [
-    { day: 'Mon', value: 40 },
-    { day: 'Tue', value: 65 },
-    { day: 'Wed', value: 45 },
-    { day: 'Thu', value: 80 },
-    { day: 'Fri', value: 95 },
-    { day: 'Sat', value: 100 },
-    { day: 'Sun', value: 75 },
-  ];
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { dateRangePreset, locationId } = useAppSelector((s) => s.analytics);
+  const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
+
+  const { data: locationsRaw = [] } = useGetLocationsQuery();
+  const { data: salesTrends = [], isLoading: trendsLoading, error: trendsError } = useGetSalesTrendsQuery({
+    from,
+    to,
+    location_id: locationId,
+  });
+  const { data: topProducts = [], isLoading: topProductsLoading, error: topProductsError } = useGetTopProductsQuery({
+    from,
+    to,
+    location_id: locationId,
+    limit: 5,
+  });
+  const { data: salesResponse, isLoading: salesLoading, error: salesError } = useGetSalesQuery({
+    start_date: from,
+    end_date: to,
+    location_id: locationId,
+    limit: 10,
+    offset: 0,
+  });
+  const { data: balances = [], isLoading: balancesLoading, error: balancesError } = useGetBalancesQuery({
+    location_id: locationId,
+  });
+  const { data: productsRaw = [], isLoading: productsLoading, error: productsError } = useGetProductsQuery({});
+  const { data: customersRaw = [], isLoading: customersLoading, error: customersError } = useGetCustomersQuery({});
+
+  const productsMap = useMemo(
+    () => Object.fromEntries(productsRaw.map((product: Product) => [product.id, product])),
+    [productsRaw]
+  );
+
+  const customersMap = useMemo(
+    () =>
+      Object.fromEntries(
+        customersRaw.map((customer) => [customer.id, customer])
+      ),
+    [customersRaw]
+  );
+
+  const selectedLocation = locationsRaw.find((location) => location.id === locationId);
+  const selectedPeriod = DATE_PRESETS.find((preset) => preset.value === dateRangePreset)?.label ?? 'Selected period';
+
+  const totalRevenue = salesTrends.reduce((sum, row) => sum + row.revenue, 0);
+  const totalCost = salesTrends.reduce((sum, row) => sum + row.cost, 0);
+  const totalRefunds = salesTrends.reduce((sum, row) => sum + row.refund_amount, 0);
+  const totalProfit = totalRevenue - totalCost - totalRefunds;
+  const totalSalesCount = salesTrends.reduce((sum, row) => sum + row.sale_count, 0);
+  const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+  const inventoryValue = useMemo(
+    () =>
+      balances.reduce((sum, balance) => {
+        const product = productsMap[balance.product_id];
+        const quantityOnHand = Number(balance.quantity_on_hand || 0);
+        const costPrice = product?.cost_price ?? 0;
+        return sum + quantityOnHand * costPrice;
+      }, 0),
+    [balances, productsMap]
+  );
+
+  const recentSales = useMemo(() => {
+    const rows = salesResponse?.data ?? [];
+    return [...rows]
+      .sort((a: Sale, b: Sale) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5);
+  }, [salesResponse]);
+
+  const lowStockAlerts = useMemo(() => {
+    return balances
+      .map((balance) => {
+        const product = productsMap[balance.product_id];
+        const available = Number(balance.quantity_available || 0);
+
+        return product
+          ? {
+              product,
+              available,
+            }
+          : null;
+      })
+      .filter((item): item is { product: Product; available: number } => Boolean(item) && item.available <= 5)
+      .sort((a, b) => a.available - b.available)
+      .slice(0, 3);
+  }, [balances, productsMap]);
+
+  const graphData = useMemo(() => {
+    return [...salesTrends]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-7)
+      .map((point) => ({
+        label: new Date(point.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        value: point.revenue / 100,
+        revenue: point.revenue,
+      }));
+  }, [salesTrends]);
+
+  const graphMax = Math.max(...graphData.map((point) => point.value), 1);
+  const hasError = Boolean(
+    trendsError || topProductsError || salesError || balancesError || productsError || customersError
+  );
+  const isLoading =
+    trendsLoading ||
+    topProductsLoading ||
+    salesLoading ||
+    balancesLoading ||
+    productsLoading ||
+    customersLoading;
+
+  useEffect(() => {
+    const unauthorized =
+      isUnauthorizedError(trendsError) ||
+      isUnauthorizedError(topProductsError) ||
+      isUnauthorizedError(salesError) ||
+      isUnauthorizedError(balancesError) ||
+      isUnauthorizedError(productsError) ||
+      isUnauthorizedError(customersError);
+
+    if (unauthorized) {
+      dispatch(logout());
+      router.replace('/login');
+    }
+  }, [
+    dispatch,
+    router,
+    trendsError,
+    topProductsError,
+    salesError,
+    balancesError,
+    productsError,
+    customersError,
+  ]);
 
   return (
     <div className={styles.container}>
-      <div>
-        <h1 className={styles.title}>Dashboard</h1>
-        <p className={styles.subtitle}>Welcome back! Here's what's happening today.</p>
+      <div className={styles.headerRow}>
+        <div>
+          <h1 className={styles.title}>Dashboard</h1>
+          <p className={styles.subtitle}>
+            Live overview for {selectedPeriod.toLowerCase()}
+            {selectedLocation ? ` at ${selectedLocation.name}` : ' across all locations'}.
+          </p>
+        </div>
+
+        <div className={styles.controls}>
+          <div className={styles.presetGroup} aria-label="Dashboard date range">
+            {DATE_PRESETS.map((preset) => (
+              <button
+                key={preset.value}
+                type="button"
+                className={`${styles.presetBtn} ${dateRangePreset === preset.value ? styles.presetBtnActive : ''}`}
+                onClick={() => dispatch(setDateRangePreset(preset.value))}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
+          <label className={styles.locationField} htmlFor="dashboard-location">
+            <span>Location</span>
+            <select
+              id="dashboard-location"
+              className={styles.locationSelect}
+              value={locationId ?? ''}
+              onChange={(e) => dispatch(setLocationId(e.target.value || undefined))}
+            >
+              <option value="">All locations</option>
+              {locationsRaw.map((location) => (
+                <option key={location.id} value={location.id}>
+                  {location.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
-      
-      {/* Top Metrics Row */}
+
+      {hasError && (
+        <div className={styles.errorBanner}>
+          Some dashboard data could not be loaded. The rest of the dashboard is still live.
+        </div>
+      )}
+
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statHeader}>
-            <h3 className={styles.statTitle}>Today's Sales</h3>
+            <h3 className={styles.statTitle}>Revenue</h3>
             <div className={`${styles.statIcon} ${styles.iconSales}`}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+              </svg>
             </div>
           </div>
-          <p className={styles.statValue}>K4,250</p>
-          <span className={`${styles.statTrend} ${styles.positive}`}>+12% from yesterday</span>
+          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrency(totalRevenue)}</p>
+          <span className={`${styles.statTrend} ${styles.positive}`}>
+            {totalSalesCount.toLocaleString()} sales in the selected period
+          </span>
         </div>
 
         <div className={styles.statCard}>
           <div className={styles.statHeader}>
-            <h3 className={styles.statTitle}>Today's Profit</h3>
+            <h3 className={styles.statTitle}>Profit</h3>
             <div className={`${styles.statIcon} ${styles.iconProfit}`}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="18" x2="12" y2="22"></line><line x1="12" y1="2" x2="12" y2="6"></line></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                <line x1="12" y1="18" x2="12" y2="22" />
+                <line x1="12" y1="2" x2="12" y2="6" />
+              </svg>
             </div>
           </div>
-          <p className={styles.statValue}>K1,120</p>
-          <span className={`${styles.statTrend} ${styles.positive}`}>+5% from yesterday</span>
+          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrency(totalProfit)}</p>
+          <span className={`${styles.statTrend} ${styles.positive}`}>Margin {profitMargin.toFixed(1)}%</span>
         </div>
 
         <div className={styles.statCard}>
           <div className={styles.statHeader}>
             <h3 className={styles.statTitle}>Inventory Value</h3>
             <div className={`${styles.statIcon} ${styles.iconInventory}`}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="16.5" y1="9.4" x2="7.5" y2="4.21" />
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                <line x1="12" y1="22.08" x2="12" y2="12" />
+              </svg>
             </div>
           </div>
-          <p className={styles.statValue}>K45,300</p>
-          <span className={styles.statTrend}>Cost of goods currently in stock</span>
+          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrency(inventoryValue)}</p>
+          <span className={styles.statTrend}>{balances.length.toLocaleString()} stock records</span>
         </div>
 
         <div className={styles.statCard}>
           <div className={styles.statHeader}>
-            <h3 className={styles.statTitle}>Active Customers</h3>
+            <h3 className={styles.statTitle}>Customers</h3>
             <div className={`${styles.statIcon} ${styles.iconCustomers}`}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
             </div>
           </div>
-          <p className={styles.statValue}>1,204</p>
-          <span className={`${styles.statTrend} ${styles.negative}`}>-2% from last month</span>
+          <p className={styles.statValue}>{isLoading ? 'Loading…' : customersRaw.length.toLocaleString()}</p>
+          <span className={`${styles.statTrend} ${styles.negative}`}>Live customer count</span>
         </div>
       </div>
-      
-      {/* Main Content Layout */}
+
       <div className={styles.mainGrid}>
-        
-        {/* Left Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          {/* Revenue Graph */}
+        <div className={styles.leftColumn}>
           <div className={styles.card}>
             <div className={styles.sectionTitle}>
-              Revenue (Past 7 Days)
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-grey)" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Revenue Trend
+              <span className={styles.sectionHint}>Last 7 days in the selected range</span>
             </div>
             <div className={styles.graphContainer}>
-              {graphData.map((d, i) => (
-                <div key={i} className={styles.barCol}>
-                  <div className={styles.barWrapper}>
-                    <div className={styles.barFill} style={{ height: `${d.value}%` }}></div>
-                  </div>
-                  <span className={styles.barLabel}>{d.day}</span>
+              {graphData.length === 0 ? (
+                <div className={styles.emptyState}>
+                  {isLoading ? 'Loading revenue data…' : 'No revenue data available for this period.'}
                 </div>
-              ))}
+              ) : (
+                graphData.map((point) => (
+                  <div key={`${point.label}-${point.revenue}`} className={styles.barCol}>
+                    <div className={styles.barWrapper}>
+                      <div
+                        className={styles.barFill}
+                        style={{ height: `${Math.max((point.value / graphMax) * 100, 4)}%` }}
+                      />
+                      <span className={styles.barValue}>{formatCurrency(point.revenue)}</span>
+                    </div>
+                    <span className={styles.barLabel}>{point.label}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Recent Activity */}
           <div className={styles.card}>
             <div className={styles.sectionTitle}>Recent Activity</div>
             <div className={styles.tableContainer}>
@@ -106,114 +355,109 @@ export default function DashboardOverview() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>#ORD-001</td>
-                    <td>John Doe</td>
-                    <td>10:45 AM</td>
-                    <td><span className={`${styles.badge} ${styles.completed}`}>Completed</span></td>
-                    <td>K150.00</td>
-                  </tr>
-                  <tr>
-                    <td>#ORD-002</td>
-                    <td>Jane Smith</td>
-                    <td>9:20 AM</td>
-                    <td><span className={`${styles.badge} ${styles.processing}`}>Processing</span></td>
-                    <td>K85.50</td>
-                  </tr>
-                  <tr>
-                    <td>#ORD-003</td>
-                    <td>Bob Johnson</td>
-                    <td>Yesterday</td>
-                    <td><span className={`${styles.badge} ${styles.completed}`}>Completed</span></td>
-                    <td>K320.00</td>
-                  </tr>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={5}>
+                        <div className={styles.tableLoading}>Loading recent sales…</div>
+                      </td>
+                    </tr>
+                  ) : recentSales.length === 0 ? (
+                    <tr>
+                      <td colSpan={5}>
+                        <div className={styles.emptyState}>No sales found for the selected filters.</div>
+                      </td>
+                    </tr>
+                  ) : (
+                    recentSales.map((sale) => {
+                      const statusClass = styles[sale.status as keyof typeof styles] ?? styles.processing;
+                      const customer = sale.customer_id ? customersMap[sale.customer_id] : undefined;
+
+                      return (
+                        <tr key={sale.id}>
+                          <td style={{ fontWeight: 600, color: 'var(--color-primary-navy)' }}>
+                            {sale.sale_number}
+                          </td>
+                          <td>{getCustomerName(customer)}</td>
+                          <td>{formatDateTime(sale.completed_at ?? sale.created_at)}</td>
+                          <td>
+                            <span className={`${styles.badge} ${statusClass}`}>
+                              {STATUS_LABELS[sale.status]}
+                            </span>
+                          </td>
+                          <td>{formatCurrency(sale.total_amount ?? 0)}</td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
-
         </div>
 
-        {/* Right Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          {/* Alerts & Insights */}
+        <div className={styles.rightColumn}>
           <div className={styles.card}>
-            <div className={styles.sectionTitle}>
-              Alerts
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-orange)" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            </div>
+            <div className={styles.sectionTitle}>Alerts</div>
             <div className={styles.alertsContainer}>
-              <div className={`${styles.alertItem} ${styles.critical}`}>
-                <div className={styles.alertIcon}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              {lowStockAlerts.length === 0 ? (
+                <div className={styles.emptyState}>
+                  {isLoading ? 'Loading stock alerts…' : 'No urgent stock alerts right now.'}
                 </div>
-                <div className={styles.alertContent}>
-                  <h4>Critical Low Stock</h4>
-                  <p>Coca-Cola 500ml is down to 2 units.</p>
-                </div>
-              </div>
-              <div className={styles.alertItem}>
-                <div className={styles.alertIcon}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                </div>
-                <div className={styles.alertContent}>
-                  <h4>Low Stock Alert</h4>
-                  <p>Cooking Oil 2L is running low (14 units remaining).</p>
-                </div>
-              </div>
-              <div className={styles.alertItem}>
-                <div className={styles.alertIcon}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                </div>
-                <div className={styles.alertContent}>
-                  <h4>Expiring Soon</h4>
-                  <p>10 units of Bread expiring tomorrow.</p>
-                </div>
-              </div>
+              ) : (
+                lowStockAlerts.map((item) => {
+                  const isCritical = item.available <= 2;
+                  return (
+                    <div
+                      key={item.product.id}
+                      className={`${styles.alertItem} ${isCritical ? styles.critical : ''}`}
+                    >
+                      <div className={styles.alertIcon}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isCritical ? '#EF4444' : '#F59E0B'} strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                      </div>
+                      <div className={styles.alertContent}>
+                        <h4>{isCritical ? 'Critical Low Stock' : 'Low Stock Alert'}</h4>
+                        <p>
+                          {item.product.name} is down to {item.available} unit{item.available === 1 ? '' : 's'} available.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
-          {/* Top Products */}
           <div className={styles.card}>
-            <div className={styles.sectionTitle}>
-              Top Products
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-grey)" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            </div>
+            <div className={styles.sectionTitle}>Top Products</div>
             <ul className={styles.productList}>
-              <li className={styles.productItem}>
-                <div className={styles.productInfo}>
-                  <span className={styles.productName}>Baking Flour 2kg</span>
-                  <span className={styles.productSales}>42 units sold</span>
-                </div>
-                <span className={styles.productRevenue}>K840</span>
-              </li>
-              <li className={styles.productItem}>
-                <div className={styles.productInfo}>
-                  <span className={styles.productName}>Sugar 1kg</span>
-                  <span className={styles.productSales}>38 units sold</span>
-                </div>
-                <span className={styles.productRevenue}>K380</span>
-              </li>
-              <li className={styles.productItem}>
-                <div className={styles.productInfo}>
-                  <span className={styles.productName}>Fresh Milk 1L</span>
-                  <span className={styles.productSales}>24 units sold</span>
-                </div>
-                <span className={styles.productRevenue}>K480</span>
-              </li>
-              <li className={styles.productItem}>
-                <div className={styles.productInfo}>
-                  <span className={styles.productName}>Eggs (Tray)</span>
-                  <span className={styles.productSales}>18 units sold</span>
-                </div>
-                <span className={styles.productRevenue}>K900</span>
-              </li>
+              {topProductsLoading ? (
+                <li className={styles.productItem}>
+                  <span className={styles.emptyState}>Loading top products…</span>
+                </li>
+              ) : topProducts.length === 0 ? (
+                <li className={styles.productItem}>
+                  <span className={styles.emptyState}>No product sales in this period.</span>
+                </li>
+              ) : (
+                topProducts.map((product) => (
+                  <li key={product.product_id} className={styles.productItem}>
+                    <div className={styles.productInfo}>
+                      <span className={styles.productName}>{product.product_name}</span>
+                      <span className={styles.productSales}>
+                        SKU {product.sku} · {product.quantity_sold} sold
+                      </span>
+                    </div>
+                    <span className={styles.productRevenue}>{formatCurrency(product.revenue)}</span>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
-
         </div>
-
       </div>
     </div>
   );

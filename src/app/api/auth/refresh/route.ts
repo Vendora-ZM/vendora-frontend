@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { setAuthCookies } from '@/lib/auth/sessionCookies';
+import { setAuthCookies, REFRESH_TOKEN_COOKIE } from '@/lib/auth/sessionCookies';
 import { getBackendApiUrl } from '@/lib/config/backend';
 
 const API_URL = getBackendApiUrl();
@@ -15,12 +15,16 @@ type AuthPayload = {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const refreshToken = req.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
 
-    const response = await fetch(`${API_URL}/auth/login`, {
+    if (!refreshToken) {
+      return NextResponse.json({ message: 'Refresh token missing' }, { status: 401 });
+    }
+
+    const response = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
     const text = await response.text();
@@ -35,10 +39,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
-    // Success! Extract tokens
     const auth = data.data ?? data;
     const { access_token, refresh_token, expires_in, business } = auth;
-
     const res = NextResponse.json({ success: true, business });
 
     return setAuthCookies(res, {
@@ -52,5 +54,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Internal server error', error: message }, { status: 500 });
   }
 }
-
-
