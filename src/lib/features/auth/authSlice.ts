@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface AuthState {
   isAuthenticated: boolean;
   businessId: string | null;
+  permissions: string[];
 }
 
 const initialState: AuthState = {
@@ -10,19 +11,22 @@ const initialState: AuthState = {
   // We'll keep it simple: assume false until logged in, or we can just rely on API errors to log us out.
   isAuthenticated: false,
   businessId: null,
+  permissions: [],
 };
 
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setCredentials: (state, action: PayloadAction<{ businessId: string }>) => {
+    setCredentials: (state, action: PayloadAction<{ businessId: string; permissions?: string[] }>) => {
       state.isAuthenticated = true;
       state.businessId = action.payload.businessId;
+      state.permissions = action.payload.permissions ?? [];
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.businessId = null;
+      state.permissions = [];
     },
   },
 });

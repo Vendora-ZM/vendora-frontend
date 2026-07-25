@@ -10,6 +10,7 @@ interface LoginResponse {
   business?: {
     id: string;
     name?: string;
+    permissions?: string[];
   };
 }
 

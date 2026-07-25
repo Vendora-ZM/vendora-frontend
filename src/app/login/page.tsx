@@ -44,7 +44,10 @@ function LoginForm() {
       if (mode === "LOGIN") {
         const response = await login({ email, password }).unwrap();
         if (response.success) {
-          dispatch(setCredentials({ businessId: response.business?.id ?? '' }));
+          dispatch(setCredentials({
+            businessId: response.business?.id ?? '',
+            permissions: response.business?.permissions ?? [],
+          }));
           router.push("/dashboard");
         }
       } else if (mode === "REGISTER") {
@@ -58,7 +61,10 @@ function LoginForm() {
         }).unwrap();
         
         if (response.success) {
-          dispatch(setCredentials({ businessId: response.business?.id ?? '' }));
+          dispatch(setCredentials({
+            businessId: response.business?.id ?? '',
+            permissions: response.business?.permissions ?? [],
+          }));
           router.push("/dashboard");
         }
       } else if (mode === "ACCEPT_INVITE") {
@@ -70,7 +76,10 @@ function LoginForm() {
         await acceptInvitation({ email, token: inviteToken, password }).unwrap();
         const response = await login({ email, password }).unwrap();
         if (response.success) {
-          dispatch(setCredentials({ businessId: response.business?.id ?? '' }));
+          dispatch(setCredentials({
+            businessId: response.business?.id ?? '',
+            permissions: response.business?.permissions ?? [],
+          }));
           router.push("/dashboard");
         }
       } else {

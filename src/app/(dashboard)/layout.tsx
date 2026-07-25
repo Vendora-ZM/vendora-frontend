@@ -36,13 +36,13 @@ export default function DashboardLayout({
             <input type="text" placeholder="Search..." className={styles.searchInput} />
           </div>
 
-          <div className={styles.headerActions}>
-            <DashboardNotificationsMenu />
-          </div>
+          <div className={styles.headerRight}>
+            <div className={styles.profile}>
+              <div className={styles.avatar}>M</div>
+              <span className={styles.merchantName}>Merchant Store</span>
+            </div>
 
-          <div className={styles.profile}>
-            <div className={styles.avatar}>M</div>
-            <span className={styles.merchantName}>Merchant Store</span>
+            <DashboardNotificationsMenu />
           </div>
         </header>
 

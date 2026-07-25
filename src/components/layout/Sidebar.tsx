@@ -8,6 +8,7 @@ import { useLogoutMutation } from '@/lib/features/auth/authApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch } from '@/lib/store';
 import { logout } from '@/lib/features/auth/authSlice';
+import { useAppSelector } from '@/lib/store';
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
@@ -33,8 +34,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { data: me } = useGetMeQuery();
+  const authPermissions = useAppSelector((state) => state.auth.permissions);
   const [logoutApi] = useLogoutMutation();
-  const canManageAccounts = Boolean(me?.permissions?.includes('users.manage'));
+  const canManageAccounts = Boolean(
+    me?.permissions?.includes('users.manage') || authPermissions.includes('users.manage')
+  );
 
   const handleLogout = async () => {
     try {
@@ -80,14 +84,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <nav className={styles.nav}>
           {navLinks.map((link) => (
             link.href === '/dashboard/accounts' && !canManageAccounts ? null : (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`${styles.link} ${isActive(link.href, link.exact) ? styles.active : ''}`}
-              onClick={onClose}
-            >
-              {link.label}
-            </Link>
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`${styles.link} ${isActive(link.href, link.exact) ? styles.active : ''}`}
+                onClick={onClose}
+              >
+                {link.label}
+              </Link>
             )
           ))}
         </nav>
