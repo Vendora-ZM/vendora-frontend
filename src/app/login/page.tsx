@@ -82,10 +82,11 @@ function LoginForm() {
         data?: { message?: string; error?: string };
         message?: string;
       };
-      let msg = error.data?.message || error.data?.error || error.message || "An error occurred";
-      if (typeof msg === "object") {
-        msg = msg.message || JSON.stringify(msg);
-      }
+      const msg =
+        error.data?.message ||
+        error.data?.error ||
+        error.message ||
+        "An error occurred";
       setErrorMsg(msg);
     }
   };

@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setAuthCookies } from '@/lib/auth/sessionCookies';
 import { getBackendApiUrl } from '@/lib/config/backend';
+import { resolveAuthPayload, type AuthPayload } from '@/lib/auth/authPayload';
 
 const API_URL = getBackendApiUrl();
-
-type AuthPayload = {
-  access_token?: string;
-  refresh_token?: string;
-  expires_in?: number;
-  business?: { id?: string };
-  message?: string;
-  data?: AuthPayload;
-};
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,16 +28,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Success! Extract tokens
-    const auth = data.data ?? data;
-    const { access_token, refresh_token, expires_in, business } = auth;
+    const auth = resolveAuthPayload(data);
 
-    const res = NextResponse.json({ success: true, business });
+    const res = NextResponse.json({ success: true, business: auth.business });
 
     return setAuthCookies(res, {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      businessId: business?.id,
-      accessTtlSeconds: typeof expires_in === 'number' ? expires_in : undefined,
+      accessToken: auth.access_token,
+      refreshToken: auth.refresh_token,
+      businessId: auth.business?.id,
+      accessTtlSeconds: auth.expires_in,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';

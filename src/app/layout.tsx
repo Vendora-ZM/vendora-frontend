@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
 import { ReduxProvider } from "@/providers/ReduxProvider";
 import "./globals.css";
-
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Vendora | Sell faster. Stock smarter. Scale with confidence.",
@@ -19,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable}`}>
+    <html lang="en">
       <body>
         <ReduxProvider>{children}</ReduxProvider>
       </body>

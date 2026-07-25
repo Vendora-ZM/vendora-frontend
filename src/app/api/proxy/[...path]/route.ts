@@ -2,17 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { clearAuthCookies, setAuthCookies, REFRESH_TOKEN_COOKIE } from '@/lib/auth/sessionCookies';
 import { getBackendApiUrl } from '@/lib/config/backend';
+import { resolveAuthPayload, type AuthPayload } from '@/lib/auth/authPayload';
 
 const API_URL = getBackendApiUrl();
-
-type AuthPayload = {
-  access_token?: string;
-  refresh_token?: string;
-  expires_in?: number;
-  business?: { id?: string };
-  message?: string;
-  data?: AuthPayload;
-};
 
 async function handleProxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
@@ -83,12 +75,11 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
           refreshData = { message: refreshText };
         }
 
-        const auth = refreshData.data ?? refreshData;
-        const { access_token, refresh_token, expires_in, business } = auth;
+        const auth = resolveAuthPayload(refreshData);
         const retryHeaders = new Headers(headers);
-        retryHeaders.set('Authorization', `Bearer ${access_token}`);
-        if (business?.id) {
-          retryHeaders.set('X-Business-ID', business.id);
+        retryHeaders.set('Authorization', `Bearer ${auth.access_token}`);
+        if (auth.business?.id) {
+          retryHeaders.set('X-Business-ID', auth.business.id);
         }
 
         const retryOptions: RequestInit = {
@@ -119,10 +110,10 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
         });
 
         return setAuthCookies(proxiedResponse, {
-          accessToken: access_token,
-          refreshToken: refresh_token,
-          businessId: business?.id,
-          accessTtlSeconds: typeof expires_in === 'number' ? expires_in : undefined,
+          accessToken: auth.access_token,
+          refreshToken: auth.refresh_token,
+          businessId: auth.business?.id,
+          accessTtlSeconds: auth.expires_in,
         });
       }
 
