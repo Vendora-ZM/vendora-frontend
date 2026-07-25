@@ -11,6 +11,7 @@ import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetCustomersQuery } from '@/lib/features/customers/customersApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { logout } from '@/lib/features/auth/authSlice';
+import { setNotifications, type NotificationItem } from '@/lib/features/notifications/notificationsSlice';
 import { getDateRange } from '@/lib/utils/dateRange';
 import { Product } from '@/types/product';
 import { Sale, SaleStatus } from '@/types/sale';
@@ -196,6 +197,32 @@ export default function DashboardOverview() {
     productsError,
     customersError,
   ]);
+
+  useEffect(() => {
+    const nextNotifications: NotificationItem[] = [
+      ...lowStockAlerts.map((item) => ({
+        id: `low-stock-${item.product.id}`,
+        title: item.available <= 2 ? 'Critical low stock' : 'Low stock alert',
+        message: `${item.product.name} is down to ${item.available} unit${item.available === 1 ? '' : 's'} available.`,
+        severity: item.available <= 2 ? 'critical' : 'warning',
+        timestamp: new Date().toISOString(),
+        read: false,
+      } satisfies NotificationItem)),
+    ];
+
+    if (hasError) {
+      nextNotifications.unshift({
+        id: 'dashboard-data-warning',
+        title: 'Dashboard data issue',
+        message: 'Some dashboard data could not load. The rest of the dashboard is still live.',
+        severity: 'info',
+        timestamp: new Date().toISOString(),
+        read: false,
+      } satisfies NotificationItem);
+    }
+
+    dispatch(setNotifications(nextNotifications));
+  }, [dispatch, hasError, lowStockAlerts]);
 
   return (
     <div className={styles.container}>

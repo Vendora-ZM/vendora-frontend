@@ -49,6 +49,12 @@
   max-width: 400px;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .searchInput {
   width: 100%;
   padding: 9px 16px;

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { DashboardNotificationsMenu } from '@/components/layout/DashboardNotificationsMenu';
+import { NetworkStatusBanner } from '@/components/layout/NetworkStatusBanner';
 import styles from './layout.module.css';
 
 export default function DashboardLayout({
@@ -34,6 +36,10 @@ export default function DashboardLayout({
             <input type="text" placeholder="Search..." className={styles.searchInput} />
           </div>
 
+          <div className={styles.headerActions}>
+            <DashboardNotificationsMenu />
+          </div>
+
           <div className={styles.profile}>
             <div className={styles.avatar}>M</div>
             <span className={styles.merchantName}>Merchant Store</span>
@@ -43,6 +49,8 @@ export default function DashboardLayout({
         <main className={styles.content}>
           {children}
         </main>
+
+        <NetworkStatusBanner />
       </div>
     </div>
   );

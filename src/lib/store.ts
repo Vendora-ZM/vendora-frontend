@@ -16,6 +16,7 @@ import { inventoryApi } from './features/inventory/inventoryApi';
 import inventoryReducer from './features/inventory/inventorySlice';
 import { profileApi } from './features/profile/profileApi';
 import { accountsApi } from './features/accounts/accountsApi';
+import notificationsReducer from './features/notifications/notificationsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -34,6 +35,7 @@ export const store = configureStore({
     [accountsApi.reducerPath]: accountsApi.reducer,
     [locationsApi.reducerPath]: locationsApi.reducer,
     inventory: inventoryReducer,
+    notifications: notificationsReducer,
     [inventoryApi.reducerPath]: inventoryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
