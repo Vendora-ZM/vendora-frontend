@@ -19,7 +19,7 @@
   --background: var(--color-light-grey);
   --foreground: var(--color-dark-grey);
   
-  --font-sans: var(--font-outfit), Arial, Helvetica, sans-serif;
+  --font-sans: "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
