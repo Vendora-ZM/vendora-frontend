@@ -29,9 +29,9 @@ export const Header = () => {
         
         {/* Desktop Navigation */}
         <nav className={styles.navDesktop}>
-          <Link href="#features" className={styles.link}>Features</Link>
-          <Link href="#pricing" className={styles.link}>Pricing</Link>
-          <Link href="#contact" className={styles.link}>Contact</Link>
+          <Link href="/#features" className={styles.link}>Features</Link>
+          <Link href="/#pricing" className={styles.link}>Pricing</Link>
+          <Link href="/#contact" className={styles.link}>Contact</Link>
         </nav>
         
         {/* Desktop Actions */}
@@ -69,9 +69,9 @@ export const Header = () => {
       {isMobileMenuOpen && (
         <div className={styles.mobileMenu}>
           <nav className={styles.navMobile}>
-            <Link href="#features" className={styles.mobileLink} onClick={toggleMobileMenu}>Features</Link>
-            <Link href="#pricing" className={styles.mobileLink} onClick={toggleMobileMenu}>Pricing</Link>
-            <Link href="#contact" className={styles.mobileLink} onClick={toggleMobileMenu}>Contact</Link>
+            <Link href="/#features" className={styles.mobileLink} onClick={toggleMobileMenu}>Features</Link>
+            <Link href="/#pricing" className={styles.mobileLink} onClick={toggleMobileMenu}>Pricing</Link>
+            <Link href="/#contact" className={styles.mobileLink} onClick={toggleMobileMenu}>Contact</Link>
           </nav>
           <div className={styles.actionsMobile}>
             <Link href="/login" onClick={toggleMobileMenu} style={{ width: '100%' }}>

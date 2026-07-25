@@ -9,8 +9,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vendora | Stay in control. Grow your business.",
-  description: "Vendora Technologies - E-commerce platform and merchant dashboard.",
+  title: "Vendora | Sell faster. Stock smarter. Scale with confidence.",
+  description: "Vendora is a retail operations platform for sales, inventory, locations, customers, and role-based access.",
 };
 
 export default function RootLayout({

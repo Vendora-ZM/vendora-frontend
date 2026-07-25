@@ -26,27 +26,27 @@ export const Footer = () => {
           <div className={styles.column}>
             <h3 className={styles.columnTitle}>Product</h3>
             <div className={styles.linkList}>
-              <Link href="#features" className={styles.link}>Features</Link>
-              <Link href="#pricing" className={styles.link}>Pricing</Link>
-              <Link href="#integrations" className={styles.link}>Integrations</Link>
+              <Link href="/#features" className={styles.link}>Features</Link>
+              <Link href="/#pricing" className={styles.link}>Pricing</Link>
+              <Link href="/signup" className={styles.link}>Start trial</Link>
             </div>
           </div>
           
           <div className={styles.column}>
             <h3 className={styles.columnTitle}>Company</h3>
             <div className={styles.linkList}>
-              <Link href="#about" className={styles.link}>About Us</Link>
-              <Link href="#careers" className={styles.link}>Careers</Link>
-              <Link href="#contact" className={styles.link}>Contact</Link>
+              <Link href="/about" className={styles.link}>About Us</Link>
+              <Link href="/#contact" className={styles.link}>Contact</Link>
+              <Link href="/login" className={styles.link}>Login</Link>
             </div>
           </div>
           
           <div className={styles.column}>
-            <h3 className={styles.columnTitle}>Resources</h3>
+            <h3 className={styles.columnTitle}>Legal</h3>
             <div className={styles.linkList}>
-              <Link href="#blog" className={styles.link}>Blog</Link>
-              <Link href="#help" className={styles.link}>Help Center</Link>
-              <Link href="#community" className={styles.link}>Community</Link>
+              <Link href="/privacy" className={styles.link}>Privacy Policy</Link>
+              <Link href="/terms" className={styles.link}>Terms of Service</Link>
+              <Link href="/signup" className={styles.link}>Get started</Link>
             </div>
           </div>
         </div>
@@ -54,8 +54,8 @@ export const Footer = () => {
         <div className={styles.bottomSection}>
           <p>&copy; {new Date().getFullYear()} Vendora Technologies. All rights reserved.</p>
           <div className={styles.legalLinks}>
-            <Link href="#privacy" className={styles.legalLink}>Privacy Policy</Link>
-            <Link href="#terms" className={styles.legalLink}>Terms of Service</Link>
+            <Link href="/privacy" className={styles.legalLink}>Privacy Policy</Link>
+            <Link href="/terms" className={styles.legalLink}>Terms of Service</Link>
           </div>
         </div>
       </div>
