@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/Input';
 import { useGetAccountsQuery, useGetInvitationsQuery, useGetRolesQuery, useUpdateAccountMutation } from '@/lib/features/accounts/accountsApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { useAppSelector } from '@/lib/store';
 import styles from './page.module.css';
 
 function formatDate(value?: string | null) {
@@ -166,7 +167,10 @@ export function AccountWorkspace() {
   const accountId = params.id;
 
   const { data: me, isLoading: meLoading } = useGetMeQuery();
-  const canManageAccounts = Boolean(me?.permissions?.includes('users.manage'));
+  const authPermissions = useAppSelector((state) => state.auth.permissions);
+  const canManageAccounts = Boolean(
+    me?.permissions?.includes('users.manage') || authPermissions.includes('users.manage')
+  );
 
   const { data: accounts = [], isLoading: accountsLoading } = useGetAccountsQuery(undefined, {
     skip: !canManageAccounts,

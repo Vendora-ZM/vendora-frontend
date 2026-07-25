@@ -6,6 +6,7 @@ import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { useAppSelector } from '@/lib/store';
 import {
   useCreateInvitationMutation,
   useCreateRoleMutation,
@@ -92,7 +93,10 @@ export default function AccountsPage() {
   const [statusMessage, setStatusMessage] = useState('');
 
   const { data: me, isLoading: meLoading } = useGetMeQuery();
-  const canManageAccounts = Boolean(me?.permissions?.includes('users.manage'));
+  const authPermissions = useAppSelector((state) => state.auth.permissions);
+  const canManageAccounts = Boolean(
+    me?.permissions?.includes('users.manage') || authPermissions.includes('users.manage')
+  );
 
   const { data: accounts = [], isLoading: accountsLoading } = useGetAccountsQuery(undefined, {
     skip: !canManageAccounts,
@@ -462,8 +466,8 @@ export default function AccountsPage() {
                         </td>
                         <td>
                           <div className={styles.locationPills}>
-                              {account.location_names.length > 0 ? (
-                                account.location_names.map((locationName) => (
+                              {(account.location_names ?? []).length > 0 ? (
+                                (account.location_names ?? []).map((locationName) => (
                                   <span key={locationName} className={styles.pill}>{locationName}</span>
                                 ))
                             ) : (

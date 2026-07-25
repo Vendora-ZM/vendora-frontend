@@ -25,7 +25,10 @@ export const profileApi = createApi({
   endpoints: (builder) => ({
     getMe: builder.query<MeResponse, void>({
       query: () => '/me',
-      transformResponse: (response: MeResponse) => response,
+      transformResponse: (response: MeResponse) => ({
+        ...response,
+        permissions: Array.isArray(response.permissions) ? response.permissions : [],
+      }),
       providesTags: ['Me'],
     }),
   }),

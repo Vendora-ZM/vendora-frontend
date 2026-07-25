@@ -73,6 +73,10 @@ const baseQuery = fetchBaseQuery({
   baseUrl: '/api/proxy',
 });
 
+function arrayOrEmpty<T>(value: T[] | null | undefined): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
 export const accountsApi = createApi({
   reducerPath: 'accountsApi',
   baseQuery,
@@ -80,7 +84,12 @@ export const accountsApi = createApi({
   endpoints: (builder) => ({
     getAccounts: builder.query<Account[], void>({
       query: () => '/accounts',
-      transformResponse: (response: { data: Account[] }) => response.data,
+      transformResponse: (response: { data: Account[] }) =>
+        arrayOrEmpty(response.data).map((account) => ({
+          ...account,
+          location_ids: arrayOrEmpty(account.location_ids),
+          location_names: arrayOrEmpty(account.location_names),
+        })),
       providesTags: (result) =>
         result
           ? [...result.map(({ membership_id }) => ({ type: 'Account' as const, id: membership_id })), { type: 'Account', id: 'LIST' }]
@@ -88,7 +97,11 @@ export const accountsApi = createApi({
     }),
     getRoles: builder.query<Role[], void>({
       query: () => '/accounts/roles',
-      transformResponse: (response: { data: Role[] }) => response.data,
+      transformResponse: (response: { data: Role[] }) =>
+        arrayOrEmpty(response.data).map((role) => ({
+          ...role,
+          permissions: arrayOrEmpty(role.permissions),
+        })),
       providesTags: (result) =>
         result
           ? [...result.map(({ id }) => ({ type: 'Role' as const, id })), { type: 'Role', id: 'LIST' }]
@@ -96,12 +109,16 @@ export const accountsApi = createApi({
     }),
     getPermissions: builder.query<Permission[], void>({
       query: () => '/accounts/permissions',
-      transformResponse: (response: { data: Permission[] }) => response.data,
+      transformResponse: (response: { data: Permission[] }) => arrayOrEmpty(response.data),
       providesTags: [{ type: 'Permission', id: 'LIST' }],
     }),
     getInvitations: builder.query<Invitation[], void>({
       query: () => '/accounts/invitations',
-      transformResponse: (response: { data: Invitation[] }) => response.data,
+      transformResponse: (response: { data: Invitation[] }) =>
+        arrayOrEmpty(response.data).map((invitation) => ({
+          ...invitation,
+          location_ids: arrayOrEmpty(invitation.location_ids),
+        })),
       providesTags: (result) =>
         result
           ? [...result.map(({ id }) => ({ type: 'Invitation' as const, id })), { type: 'Invitation', id: 'LIST' }]
@@ -113,7 +130,10 @@ export const accountsApi = createApi({
         method: 'POST',
         body,
       }),
-      transformResponse: (response: Role) => response,
+      transformResponse: (response: Role) => ({
+        ...response,
+        permissions: arrayOrEmpty(response.permissions),
+      }),
       invalidatesTags: [{ type: 'Role', id: 'LIST' }],
     }),
     updateRole: builder.mutation<Role, { id: string; body: UpdateRolePayload }>({
@@ -122,7 +142,10 @@ export const accountsApi = createApi({
         method: 'PATCH',
         body,
       }),
-      transformResponse: (response: Role) => response,
+      transformResponse: (response: Role) => ({
+        ...response,
+        permissions: arrayOrEmpty(response.permissions),
+      }),
       invalidatesTags: [{ type: 'Role', id: 'LIST' }],
     }),
     createInvitation: builder.mutation<Invitation, CreateInvitationPayload>({
@@ -131,7 +154,10 @@ export const accountsApi = createApi({
         method: 'POST',
         body,
       }),
-      transformResponse: (response: Invitation) => response,
+      transformResponse: (response: Invitation) => ({
+        ...response,
+        location_ids: arrayOrEmpty(response.location_ids),
+      }),
       invalidatesTags: [{ type: 'Invitation', id: 'LIST' }],
     }),
     updateAccount: builder.mutation<Account, { id: string; body: UpdateAccountPayload }>({
@@ -140,7 +166,11 @@ export const accountsApi = createApi({
         method: 'PATCH',
         body,
       }),
-      transformResponse: (response: Account) => response,
+      transformResponse: (response: Account) => ({
+        ...response,
+        location_ids: arrayOrEmpty(response.location_ids),
+        location_names: arrayOrEmpty(response.location_names),
+      }),
       invalidatesTags: [{ type: 'Account', id: 'LIST' }],
     }),
   }),
