@@ -160,6 +160,17 @@ export const accountsApi = createApi({
       }),
       invalidatesTags: [{ type: 'Invitation', id: 'LIST' }],
     }),
+    resendInvitation: builder.mutation<Invitation, { id: string }>({
+      query: ({ id }) => ({
+        url: `/accounts/invitations/${id}/resend`,
+        method: 'POST',
+      }),
+      transformResponse: (response: Invitation) => ({
+        ...response,
+        location_ids: arrayOrEmpty(response.location_ids),
+      }),
+      invalidatesTags: [{ type: 'Invitation', id: 'LIST' }],
+    }),
     updateAccount: builder.mutation<Account, { id: string; body: UpdateAccountPayload }>({
       query: ({ id, body }) => ({
         url: `/accounts/${id}`,
@@ -184,5 +195,6 @@ export const {
   useCreateRoleMutation,
   useUpdateRoleMutation,
   useCreateInvitationMutation,
+  useResendInvitationMutation,
   useUpdateAccountMutation,
 } = accountsApi;

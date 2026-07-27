@@ -14,6 +14,7 @@ import {
   useGetInvitationsQuery,
   useGetPermissionsQuery,
   useGetRolesQuery,
+  useResendInvitationMutation,
   useUpdateRoleMutation,
   type Role,
 } from '@/lib/features/accounts/accountsApi';
@@ -117,6 +118,7 @@ export default function AccountsPage() {
   const [createRole, { isLoading: creatingRole }] = useCreateRoleMutation();
   const [updateRole, { isLoading: updatingRole }] = useUpdateRoleMutation();
   const [createInvitation, { isLoading: creatingInvitation }] = useCreateInvitationMutation();
+  const [resendInvitation, { isLoading: resendingInvitation }] = useResendInvitationMutation();
 
   const selectedRole = useMemo(
     () => roles.find((role) => role.id === selectedRoleId) ?? null,
@@ -766,16 +768,17 @@ export default function AccountsPage() {
                     <th>Locations</th>
                     <th>Status</th>
                     <th>Expires</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {invitationsLoading ? (
                     <tr>
-                      <td className={styles.emptyCell} colSpan={5}>Loading invitations…</td>
+                      <td className={styles.emptyCell} colSpan={6}>Loading invitations…</td>
                     </tr>
                   ) : invitations.length === 0 ? (
                     <tr>
-                      <td className={styles.emptyCell} colSpan={5}>
+                      <td className={styles.emptyCell} colSpan={6}>
                         No invitations yet. Use the invite form to add a new account.
                       </td>
                     </tr>
@@ -784,8 +787,9 @@ export default function AccountsPage() {
                       const status = invitation.revoked_at
                         ? 'Revoked'
                         : invitation.accepted_at
-                          ? 'Accepted'
+                        ? 'Accepted'
                           : 'Pending';
+                      const canResend = status === 'Pending';
 
                       return (
                         <tr key={invitation.id}>
@@ -815,6 +819,29 @@ export default function AccountsPage() {
                             </span>
                           </td>
                           <td>{formatDateTime(invitation.expires_at)}</td>
+                          <td className={styles.actionCell}>
+                            {canResend ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await resendInvitation({ id: invitation.id }).unwrap();
+                                    setStatusMessage(`Invitation resent to ${invitation.email}.`);
+                                  } catch (error) {
+                                    const message = error instanceof Error ? error.message : 'Unable to resend invitation.';
+                                    setStatusMessage(message);
+                                  }
+                                }}
+                                disabled={resendingInvitation}
+                              >
+                                {resendingInvitation ? 'Resending…' : 'Resend email'}
+                              </Button>
+                            ) : (
+                              <span className={styles.muted}>No action</span>
+                            )}
+                          </td>
                         </tr>
                       );
                     })
