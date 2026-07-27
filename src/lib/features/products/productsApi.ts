@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
   Product,
   Category,
+  CreateCategoryPayload,
   CreateProductPayload,
   UpdateProductPayload,
   ListProductsParams,
@@ -75,6 +76,16 @@ export const productsApi = createApi({
       transformResponse: (response: { data: Category[] }) => response.data,
       providesTags: [{ type: 'Category', id: 'LIST' }],
     }),
+
+    createCategory: builder.mutation<Category, CreateCategoryPayload>({
+      query: (body) => ({
+        url: '/categories',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: Category) => response,
+      invalidatesTags: [{ type: 'Category', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -85,5 +96,6 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useGetCategoriesQuery,
+  useCreateCategoryMutation,
 } = productsApi;
 

@@ -26,6 +26,11 @@ export interface Category {
   updated_at: string;
 }
 
+export interface CreateCategoryPayload {
+  name: string;
+  description?: string | null;
+}
+
 export interface CreateProductPayload {
   category_id?: string | null;
   sku: string;

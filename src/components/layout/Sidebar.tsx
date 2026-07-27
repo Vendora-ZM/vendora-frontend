@@ -20,6 +20,7 @@ const navLinks = [
   { href: '/dashboard', label: 'Overview', exact: true },
   { href: '/dashboard/pos', label: 'POS (Point of Sale)', exact: false },
   { href: '/dashboard/products', label: 'Products', exact: false },
+  { href: '/dashboard/categories', label: 'Categories', exact: false },
   { href: '/dashboard/inventory', label: 'Inventory', exact: false },
   { href: '/dashboard/locations', label: 'Locations', exact: false },
   { href: '/dashboard/accounts', label: 'Accounts', exact: false },
