@@ -32,6 +32,44 @@
   display: none;
 }
 
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.outlineAction {
+  background: transparent;
+  color: var(--color-primary-navy);
+  border: 2px solid var(--color-primary-navy);
+}
+
+.outlineAction:hover {
+  background: var(--color-primary-navy);
+  color: var(--color-white);
+}
+
+.primaryAction {
+  background: var(--gradient-orange);
+  color: var(--color-white);
+  box-shadow: 0 4px 14px rgba(245, 124, 0, 0.3);
+}
+
+.primaryAction:hover {
+  box-shadow: 0 6px 20px rgba(245, 124, 0, 0.4);
+  filter: brightness(1.1);
+}
+
+.mobileAction {
+  width: 100%;
+}
+
 .link {
   color: var(--color-grey);
   font-weight: 500;

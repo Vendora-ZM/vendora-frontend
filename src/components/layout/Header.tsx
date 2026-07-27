@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '../ui/Button';
 import styles from './Header.module.css';
 
 export const Header = () => {
@@ -36,11 +35,11 @@ export const Header = () => {
         
         {/* Desktop Actions */}
         <div className={styles.actionsDesktop}>
-          <Link href="/login">
-            <Button variant="outline" size="sm">Login</Button>
+          <Link href="/login" className={`${styles.actionLink} ${styles.outlineAction}`}>
+            Login
           </Link>
-          <Link href="/signup">
-            <Button variant="primary" size="sm">Get Started</Button>
+          <Link href="/signup" className={`${styles.actionLink} ${styles.primaryAction}`}>
+            Get Started
           </Link>
         </div>
 
@@ -74,11 +73,11 @@ export const Header = () => {
             <Link href="/#contact" className={styles.mobileLink} onClick={toggleMobileMenu}>Contact</Link>
           </nav>
           <div className={styles.actionsMobile}>
-            <Link href="/login" onClick={toggleMobileMenu} style={{ width: '100%' }}>
-              <Button variant="outline" style={{ width: '100%' }}>Login</Button>
+            <Link href="/login" className={`${styles.actionLink} ${styles.outlineAction} ${styles.mobileAction}`} onClick={toggleMobileMenu}>
+              Login
             </Link>
-            <Link href="/signup" onClick={toggleMobileMenu} style={{ width: '100%' }}>
-              <Button variant="primary" style={{ width: '100%' }}>Get Started</Button>
+            <Link href="/signup" className={`${styles.actionLink} ${styles.primaryAction} ${styles.mobileAction}`} onClick={toggleMobileMenu}>
+              Get Started
             </Link>
           </div>
         </div>
