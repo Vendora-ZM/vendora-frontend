@@ -322,6 +322,94 @@
   line-height: 1.6;
 }
 
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.productCard {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.productTitle {
+  margin: 0;
+  color: var(--color-white);
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.productText {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.65;
+}
+
+.productDetail {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.analyticsBanner {
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(6, 41, 107, 0.92), rgba(10, 103, 188, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.16);
+}
+
+.analyticsCopy {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+}
+
+.analyticsColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.analyticsCard {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.analyticsCardTitle {
+  margin: 0;
+  color: var(--color-white);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.analyticsList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.55;
+}
+
+.analyticsItem {
+  margin: 0;
+}
+
 /* Analytics Section Special styling */
 .analyticsSection {
   background: rgba(0, 0, 0, 0.2);
@@ -753,6 +841,11 @@
     grid-template-columns: 1fr;
   }
 
+  .productGrid,
+  .analyticsColumns {
+    grid-template-columns: 1fr;
+  }
+
   .contactStrip {
     flex-direction: column;
     align-items: flex-start;
@@ -774,5 +867,9 @@
 
   .mockupCard {
     min-width: 100%;
+  }
+
+  .productGrid {
+    grid-template-columns: 1fr;
   }
 }

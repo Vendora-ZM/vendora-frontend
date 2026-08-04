@@ -238,6 +238,41 @@
   flex: 1;
 }
 
+.consentRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+}
+
+.consentInput {
+  margin-top: 4px;
+  accent-color: var(--color-primary-orange);
+  flex-shrink: 0;
+}
+
+.consentText {
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.legalLink {
+  color: var(--color-white);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+  text-underline-offset: 4px;
+}
+
+.legalLink:hover {
+  text-decoration-color: var(--color-white);
+}
+
 .options {
   display: flex;
   justify-content: space-between;
@@ -304,6 +339,10 @@
   text-decoration: underline;
 }
 
+.footer p {
+  line-height: 1.6;
+}
+
 /* Animations for modes */
 .fadeEnter {
   opacity: 0;
@@ -332,6 +371,14 @@
   .glassCard {
     margin-top: 84px;
     padding: 32px 20px;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .consentRow {
+    padding: 12px 14px;
   }
 }
 

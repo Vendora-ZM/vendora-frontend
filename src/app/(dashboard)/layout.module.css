@@ -94,15 +94,31 @@
   font-size: 1.125rem;
 }
 
-.merchantName {
-  font-weight: 500;
-  color: var(--color-dark-grey);
+.profileCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.companyName {
+  font-weight: 700;
+  color: var(--color-primary-navy);
+  line-height: 1.1;
+}
+
+.userLine {
+  font-size: 0.8125rem;
+  color: var(--color-grey);
+  line-height: 1.2;
 }
 
 .content {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
+  display: grid;
+  gap: 18px;
 }
 
 /* ─── Tablet ────────────────────────────────────────────────────── */
@@ -129,11 +145,147 @@
     display: none;
   }
 
-  .merchantName {
+  .profileCopy {
     display: none;
   }
 
   .content {
     padding: 16px;
+  }
+}
+
+.trialBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  background:
+    linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(255, 255, 255, 0.96)),
+    #ffffff;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.07);
+}
+
+.trialBannerExpired {
+  border-color: rgba(220, 38, 38, 0.2);
+  background:
+    linear-gradient(135deg, rgba(239, 68, 68, 0.14), rgba(255, 255, 255, 0.96)),
+    #ffffff;
+}
+
+.trialBannerCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.trialBannerKicker {
+  color: #b45309;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trialBannerCopy strong {
+  color: var(--color-primary-navy);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.trialBannerCopy p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.trialBannerLink,
+.gatePrimaryLink,
+.gateSecondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.trialBannerLink,
+.gatePrimaryLink {
+  background: var(--color-accent-blue);
+  color: var(--color-white);
+}
+
+.gateSecondaryLink {
+  border: 1px solid rgba(6, 41, 107, 0.14);
+  color: var(--color-primary-navy);
+  background: #fff;
+}
+
+.billingGate {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 220px);
+}
+
+.gateCard {
+  width: min(100%, 760px);
+  padding: 28px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 34%),
+    linear-gradient(180deg, #ffffff, #fbfcff);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.1);
+}
+
+.gateKicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gateTitle {
+  margin: 14px 0 0;
+  color: var(--color-primary-navy);
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.gateText {
+  margin: 12px 0 0;
+  max-width: 620px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.gateActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+@media (max-width: 720px) {
+  .trialBanner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gateCard {
+    padding: 22px;
   }
 }

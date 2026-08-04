@@ -200,6 +200,127 @@
   max-width: 760px;
 }
 
+.selectorGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  gap: 16px;
+}
+
+.selectorPanel,
+.selectorSummary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+}
+
+.selectorFields {
+  display: grid;
+  gap: 16px;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.fieldLabel {
+  color: var(--color-white);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.selectField {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  font: inherit;
+  outline: none;
+}
+
+.selectField:focus {
+  border-color: rgba(255, 255, 255, 0.38);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+.selectField option {
+  color: #0f172a;
+}
+
+.fieldHint {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.selectorNotes {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.noteBadge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.selectorText {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.6;
+}
+
+.selectorSummary {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.selectorSummaryTitle {
+  margin: 0;
+  color: var(--color-white);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.selectorSummaryType {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.selectorPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.selectorPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
 .cardGrid {
   display: grid;
   gap: 16px;
@@ -266,6 +387,12 @@
   }
 }
 
+@media (min-width: 960px) {
+  .selectorGrid {
+    align-items: stretch;
+  }
+}
+
 @media (max-width: 768px) {
   .page {
     padding: 20px 0 64px;
@@ -281,5 +408,9 @@
 
   .topNav {
     width: 100%;
+  }
+
+  .selectorGrid {
+    grid-template-columns: 1fr;
   }
 }

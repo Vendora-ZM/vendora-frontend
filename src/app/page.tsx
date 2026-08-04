@@ -8,20 +8,76 @@ import styles from './page.module.css';
 
 const benefits = [
   {
-    title: 'Sell without friction',
-    text: 'Give staff a clear checkout flow that keeps the line moving and reduces mistakes at the counter.',
+    title: 'POS built for speed',
+    text: 'Sell from a smartphone, tablet, or computer with a checkout flow that keeps the line moving.',
     icon: '01',
   },
   {
-    title: 'Stay stocked with confidence',
-    text: 'Watch inventory move across products and locations so you can reorder before you run out.',
+    title: 'Inventory that stays clear',
+    text: 'Track stock across products, locations, and transfers so you can reorder before you run out.',
     icon: '02',
   },
   {
-    title: 'Control access by role',
-    text: 'Keep owners, managers, and cashiers focused on the tools and permissions they actually need.',
+    title: 'AI that explains the business',
+    text: 'See why sales changed, what may run out next, and what action to take before the week ends.',
     icon: '03',
   },
+];
+
+const productSections = [
+  {
+    title: 'Point of Sale',
+    text: 'Sell from a smartphone, tablet, or computer with a clean checkout flow that works for busy counters.',
+    detail: 'Fast orders, quick discounts, receipts, and easy staff handoff.',
+  },
+  {
+    title: 'Inventory management',
+    text: 'Keep tabs on what is in stock, what moved, and what needs to be reordered next.',
+    detail: 'Simple stock counts, low stock alerts, and branch-aware stock visibility.',
+  },
+  {
+    title: 'AI Business Advisor',
+    text: 'Ask questions in plain language and get useful explanations instead of just numbers.',
+    detail: 'Sales explanations, demand forecasts, cash flow signals, and smart recommendations.',
+  },
+  {
+    title: 'Sales analytics',
+    text: 'Understand performance by day, item, category, employee, and payment method.',
+    detail: 'Clear reports that help owners see what is happening at a glance.',
+  },
+  {
+    title: 'Employee management',
+    text: 'Assign roles, permissions, and PIN access so each team member sees the right tools.',
+    detail: 'Better control for cashiers, supervisors, and managers.',
+  },
+  {
+    title: 'CRM and loyalty',
+    text: 'Keep customers coming back with saved profiles, loyalty, and discount-aware workflows.',
+    detail: 'Customer history, repeat visits, and promotions in one place.',
+  },
+  {
+    title: 'Multi-store management',
+    text: 'Run several branches from one account while still keeping each location distinct.',
+    detail: 'Location-level access, reporting, and operational control.',
+  },
+];
+
+const aiInsights = [
+  'Sales increased 23% because beverages sold well.',
+  'You may run out of Coca-Cola in 4 days.',
+  'Friday sales are usually higher.',
+  'Profit margin is falling this month.',
+  'John gives more discounts than the rest of the team.',
+  'Consider increasing the price of Paracetamol by K2.',
+];
+
+const aiPrompts = [
+  'How can I increase profits?',
+  'Why are sales dropping?',
+  'Which products should I discontinue?',
+  'Predict next month’s sales.',
+  'Suggest reorder quantities.',
+  'Generate a monthly business review.',
 ];
 
 const steps = [
@@ -161,7 +217,8 @@ export default function Home() {
             <span className={styles.sectionEyebrow}>Why teams switch</span>
             <h2 className={styles.sectionTitle}>Less noise. More control. Better decisions.</h2>
             <p className={styles.sectionSubtitle}>
-              The site should explain the product quickly, so we focus on the outcomes merchants care about most.
+              Vendora brings the selling tools, analytics, and AI guidance into one system so the platform feels
+              useful from day one.
             </p>
           </div>
 
@@ -173,6 +230,60 @@ export default function Home() {
                 <p className={styles.cardDescription}>{benefit.text}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Products</span>
+            <h2 className={styles.sectionTitle}>What Vendora helps merchants do.</h2>
+            <p className={styles.sectionSubtitle}>
+              This is the breakdown buyers should see before sign-up: simple words, clear outcomes, and enough detail
+              to understand how the product fits their business.
+            </p>
+          </div>
+
+          <div className={styles.productGrid}>
+            {productSections.map((item) => (
+              <article key={item.title} className={styles.productCard}>
+                <h3 className={styles.productTitle}>{item.title}</h3>
+                <p className={styles.productText}>{item.text}</p>
+                <p className={styles.productDetail}>{item.detail}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.analyticsBanner}>
+            <div className={styles.analyticsCopy}>
+              <span className={styles.sectionEyebrow}>AI Dashboard</span>
+              <h2 className={styles.sectionTitle}>ChatGPT-style advice inside your POS.</h2>
+              <p className={styles.sectionSubtitle}>
+                Vendora should not just show charts. It should explain what happened, what may happen next, and what
+                the owner should do about it.
+              </p>
+            </div>
+
+            <div className={styles.analyticsColumns}>
+              <article className={styles.analyticsCard}>
+                <h3 className={styles.analyticsCardTitle}>Insights</h3>
+                <ul className={styles.analyticsList}>
+                  {aiInsights.map((insight) => (
+                    <li key={insight} className={styles.analyticsItem}>{insight}</li>
+                  ))}
+                </ul>
+              </article>
+
+              <article className={styles.analyticsCard}>
+                <h3 className={styles.analyticsCardTitle}>Questions owners can ask</h3>
+                <ul className={styles.analyticsList}>
+                  {aiPrompts.map((prompt) => (
+                    <li key={prompt} className={styles.analyticsItem}>{prompt}</li>
+                  ))}
+                </ul>
+              </article>
+            </div>
           </div>
         </section>
 

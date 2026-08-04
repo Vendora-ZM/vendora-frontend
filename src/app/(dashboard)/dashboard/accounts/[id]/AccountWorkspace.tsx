@@ -88,7 +88,7 @@ function AccessEditor({ account, roles, locations }: AccessEditorProps) {
       <div className={styles.cardHeader}>
         <div>
           <h2>Manage access</h2>
-          <p>Change the account role and the locations this user can access.</p>
+          <p>Change the employee role and the locations this user can access.</p>
         </div>
       </div>
 
@@ -209,12 +209,12 @@ export function AccountWorkspace() {
     return (
       <div className={styles.page}>
         <section className={styles.card}>
-          <h1 className={styles.title}>Account profile</h1>
+          <h1 className={styles.title}>Employee profile</h1>
           <p className={styles.subtitle}>
-            You do not have permission to view account details. Ask a system administrator for `users.manage` access.
+            You do not have permission to view employee details. Ask a system administrator for `users.manage` access.
           </p>
           <Link className={styles.inlineLink} href="/dashboard/accounts">
-            Back to accounts
+            Back to employees
           </Link>
         </section>
       </div>
@@ -225,10 +225,10 @@ export function AccountWorkspace() {
     return (
       <div className={styles.page}>
         <section className={styles.card}>
-          <h1 className={styles.title}>Account not found</h1>
-          <p className={styles.subtitle}>The selected account could not be found in this business.</p>
+          <h1 className={styles.title}>Employee not found</h1>
+          <p className={styles.subtitle}>The selected employee could not be found in this business.</p>
           <Link className={styles.inlineLink} href="/dashboard/accounts">
-            Back to accounts
+            Back to employees
           </Link>
         </section>
       </div>
@@ -255,7 +255,7 @@ export function AccountWorkspace() {
       <div className={styles.header}>
         <div>
           <div className={styles.breadcrumbs}>
-            <Link href="/dashboard/accounts">Accounts</Link>
+            <Link href="/dashboard/accounts">Employees</Link>
             <span>/</span>
             <span>{fullName}</span>
           </div>
@@ -283,8 +283,8 @@ export function AccountWorkspace() {
         <section className={styles.card}>
           <div className={styles.cardHeader}>
             <div>
-              <h2>Personal details</h2>
-              <p>Core account information for this team member.</p>
+              <h2>Employee details</h2>
+              <p>Core employee information for this team member.</p>
             </div>
           </div>
 

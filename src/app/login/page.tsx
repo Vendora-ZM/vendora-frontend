@@ -30,6 +30,7 @@ function LoginForm() {
   const [lastName, setLastName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [phone, setPhone] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
@@ -51,6 +52,16 @@ function LoginForm() {
           router.push("/dashboard");
         }
       } else if (mode === "REGISTER") {
+        if (password !== passwordConfirm) {
+          setErrorMsg("Passwords do not match.");
+          return;
+        }
+
+        if (!acceptTerms) {
+          setErrorMsg("Please accept the Terms and Conditions to continue.");
+          return;
+        }
+
         const response = await register({
           email,
           password,
@@ -64,6 +75,9 @@ function LoginForm() {
           dispatch(setCredentials({
             businessId: response.business?.id ?? '',
             permissions: response.business?.permissions ?? [],
+            businessName,
+            userName: `${firstName} ${lastName}`.trim(),
+            email,
           }));
           router.push("/dashboard");
         }
@@ -79,6 +93,7 @@ function LoginForm() {
           dispatch(setCredentials({
             businessId: response.business?.id ?? '',
             permissions: response.business?.permissions ?? [],
+            email,
           }));
           router.push("/dashboard");
         }
@@ -212,6 +227,76 @@ function LoginForm() {
                   />
                 </div>
 
+                <div className={styles.row} style={{ marginBottom: "20px" }}>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="registerPassword">Password</label>
+                    <div className={styles.passwordField}>
+                      <input
+                        id="registerPassword"
+                        type={showPassword ? "text" : "password"}
+                        className={styles.input}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        onClick={() => setShowPassword((current) => !current)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
+                      >
+                        {showPassword ? (
+                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M3.98 8.223 2.707 6.95 4.12 5.536l2.022 2.022A11.2 11.2 0 0 1 12 6c5.5 0 9.5 4.5 10.3 6-.42.79-1.5 2.33-3.16 3.79l1.88 1.88-1.414 1.414-2.03-2.03A11.2 11.2 0 0 1 12 18c-5.5 0-9.5-4.5-10.3-6 .47-.9 1.8-2.76 4.28-3.78ZM8.5 11.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Zm2 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+                            <path d="M20.707 3.293 3.293 20.707 1.879 19.293 19.293 1.879l1.414 1.414Z" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 6c5.5 0 9.5 4.5 10.3 6-.8 1.5-4.8 6-10.3 6S2.5 13.5 1.7 12C2.5 10.5 6.5 6 12 6Zm0 2C8.3 8 5.1 10.8 4 12c1.1 1.2 4.3 4 8 4s6.9-2.8 8-4c-1.1-1.2-4.3-4-8-4Zm0 1.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="confirmRegisterPassword">Confirm Password</label>
+                    <input
+                      id="confirmRegisterPassword"
+                      type="password"
+                      className={styles.input}
+                      placeholder="Re-enter password"
+                      value={passwordConfirm}
+                      onChange={(e) => setPasswordConfirm(e.target.value)}
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                </div>
+
+                <label className={styles.consentRow} htmlFor="acceptTerms">
+                  <input
+                    id="acceptTerms"
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className={styles.consentInput}
+                  />
+                  <span className={styles.consentText}>
+                    I have read and agree to the{' '}
+                    <Link href="/terms" className={styles.legalLink}>
+                      Terms and Conditions
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/privacy" className={styles.legalLink}>
+                      Privacy Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
+
                 <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
                   <label htmlFor="phone">Phone Number (Optional)</label>
                   <input
@@ -225,7 +310,7 @@ function LoginForm() {
                 </div>
             </>
           )}
-
+          
           {mode === "ACCEPT_INVITE" && (
             <>
               <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
@@ -289,8 +374,8 @@ function LoginForm() {
             </>
           )}
 
-            {/* Password field for Login & Register */}
-            {(mode === "LOGIN" || mode === "REGISTER") && (
+            {/* Password field for Login */}
+            {mode === "LOGIN" && (
               <div className={styles.inputGroup} style={{ marginBottom: "8px" }}>
                 <label htmlFor="password">Password</label>
                 <div className={styles.passwordField}>

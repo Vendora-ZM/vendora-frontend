@@ -19,8 +19,8 @@ export const Header = () => {
           <Image
             src="/logos/vendora_logo_white_background.png"
             alt="Vendora"
-            width={140}
-            height={40}
+            width={180}
+            height={52}
             style={{ objectFit: 'contain' }}
             priority
           />

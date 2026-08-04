@@ -1,0 +1,476 @@
+.page {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.page::before,
+.page::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.page::before {
+  width: 280px;
+  height: 280px;
+  right: -120px;
+  top: -80px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.22), transparent 68%);
+}
+
+.page::after {
+  width: 240px;
+  height: 240px;
+  left: -140px;
+  bottom: -100px;
+  background: radial-gradient(circle, rgba(6, 41, 107, 0.14), transparent 68%);
+}
+
+.hero,
+.grid {
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(6, 41, 107, 0.08);
+  color: var(--color-primary-navy);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 12px 0 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+  color: var(--color-primary-navy);
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  max-width: 720px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+  width: min(100%, 560px);
+}
+
+.statusCard {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(6, 41, 107, 0.1);
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.06);
+}
+
+.statusLabel {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 0.84rem;
+}
+
+.statusValue {
+  display: block;
+  color: var(--color-primary-navy);
+  line-height: 1.35;
+}
+
+.notice {
+  position: relative;
+  z-index: 1;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(6, 41, 107, 0.05));
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  color: #166534;
+  font-weight: 700;
+}
+
+.expiredBanner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  background:
+    linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(255, 255, 255, 0.94)),
+    #fff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+}
+
+.expiredBanner h2 {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 1.25rem;
+}
+
+.expiredBanner p {
+  margin: 8px 0 0;
+  max-width: 640px;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.expiredLink,
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.expiredLink {
+  background: var(--color-accent-blue);
+  color: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.sidebar {
+  display: grid;
+  gap: 22px;
+}
+
+.card {
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.1), transparent 36%),
+    linear-gradient(180deg, #ffffff, #fbfcff);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 22px 22px 16px;
+}
+
+.cardKicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(6, 41, 107, 0.08);
+  color: var(--color-primary-navy);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cardTitle {
+  margin: 12px 0 0;
+  font-size: 1.2rem;
+  color: var(--color-primary-navy);
+}
+
+.planGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 22px 22px;
+}
+
+.planCard,
+.methodCard {
+  appearance: none;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  display: grid;
+  gap: 10px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.planCard:hover,
+.methodCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+}
+
+.planCardActive,
+.methodCardActive {
+  border-color: rgba(6, 41, 107, 0.28);
+  background: linear-gradient(180deg, rgba(6, 41, 107, 0.06), #fff);
+  box-shadow: 0 16px 34px rgba(6, 41, 107, 0.08);
+}
+
+.planTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.planTop strong {
+  color: var(--color-primary-navy);
+}
+
+.planTop span {
+  color: #0f172a;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.planCard p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.planList {
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.methodList {
+  display: grid;
+  gap: 12px;
+  padding: 0 22px 22px;
+}
+
+.methodCard strong {
+  color: var(--color-primary-navy);
+}
+
+.methodCard span {
+  color: #475569;
+  line-height: 1.5;
+}
+
+.methodCard small {
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.checkboxRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 0 22px 18px;
+  color: #334155;
+  font-weight: 700;
+}
+
+.checkboxRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent-blue);
+}
+
+.methodSummary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  padding: 0 22px 22px;
+  color: #334155;
+}
+
+.methodSummary span {
+  color: #64748b;
+}
+
+.methodSummary strong {
+  color: var(--color-primary-navy);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0 22px 22px;
+}
+
+.secondaryLink {
+  border: 1px solid rgba(6, 41, 107, 0.16);
+  color: var(--color-primary-navy);
+  background: #fff;
+}
+
+.quickLinks {
+  display: grid;
+  gap: 12px;
+  padding: 0 22px 22px;
+}
+
+.quickLink {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: var(--color-primary-navy);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.quickLink span {
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.historyList {
+  display: grid;
+  gap: 12px;
+  padding: 0 22px 22px;
+}
+
+.historyItem {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 8px;
+}
+
+.historyTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.historyTop strong {
+  color: var(--color-primary-navy);
+}
+
+.historyTop span {
+  color: #64748b;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.historyItem p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.historyEmpty {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.historyEmpty strong {
+  color: var(--color-primary-navy);
+}
+
+.historyEmpty span {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.disabledLink {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statusGrid {
+    width: 100%;
+  }
+}
+
+@media (max-width: 820px) {
+  .page {
+    padding: 18px;
+  }
+
+  .statusGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .expiredBanner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 16px;
+  }
+
+  .cardHeader,
+  .planGrid,
+  .methodList,
+  .checkboxRow,
+  .methodSummary,
+  .actions,
+  .quickLinks,
+  .historyList {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .cardHeader {
+    padding-top: 18px;
+  }
+}

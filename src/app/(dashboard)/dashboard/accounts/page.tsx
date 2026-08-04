@@ -274,7 +274,7 @@ export default function AccountsPage() {
         <section className={styles.accessDeniedCard}>
           <div className={styles.accessDeniedHeader}>
             <span className={styles.accessDeniedEyebrow}>Access required</span>
-            <h1 className={styles.title}>Accounts</h1>
+            <h1 className={styles.title}>Employees</h1>
             <p className={styles.subtitle}>
               Your current role does not include <code>users.manage</code>. That permission is assigned through roles,
               so a system administrator can add it to your role or move you to a role that already has it.
@@ -309,16 +309,16 @@ export default function AccountsPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Accounts</h1>
+          <h1 className={styles.title}>Employees</h1>
           <p className={styles.subtitle}>
-            Manage user accounts, roles, permissions, and location access from one focused workspace.
+            Manage employees, roles, permissions, and location access from one focused workspace.
           </p>
         </div>
 
         <div className={styles.headerStats}>
           <div className={styles.statCard}>
             <span className={styles.statValue}>{accounts.length}</span>
-            <span className={styles.statLabel}>Accounts</span>
+            <span className={styles.statLabel}>Employees</span>
           </div>
           <div className={styles.statCard}>
             <span className={styles.statValue}>{roles.length}</span>
@@ -333,7 +333,7 @@ export default function AccountsPage() {
 
       {statusMessage ? <div className={styles.alert}>{statusMessage}</div> : null}
 
-      <div className={styles.tabs} role="tablist" aria-label="Accounts sections">
+      <div className={styles.tabs} role="tablist" aria-label="Employees sections">
         <button
           type="button"
           role="tab"
@@ -341,7 +341,7 @@ export default function AccountsPage() {
           className={`${styles.tab} ${activeTab === 'accounts' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('accounts')}
         >
-          Accounts
+          Employees
         </button>
         <button
           type="button"
@@ -368,11 +368,11 @@ export default function AccountsPage() {
           <section className={styles.card}>
             <div className={styles.cardHeader}>
               <div>
-                <h2>Account List</h2>
+                <h2>Employee List</h2>
                 <p>
                   {isBusy
-                    ? 'Loading accounts…'
-                    : `${filteredAccounts.length} matching account${filteredAccounts.length === 1 ? '' : 's'} of ${accounts.length} total`}
+                    ? 'Loading employees…'
+                    : `${filteredAccounts.length} matching employee${filteredAccounts.length === 1 ? '' : 's'} of ${accounts.length} total`}
                 </p>
               </div>
               <span className={styles.cardMeta}>Page {safeCurrentPage} of {totalPages}</span>
@@ -398,7 +398,7 @@ export default function AccountsPage() {
                   setCurrentPage(1);
                 }}
               >
-                <option value="all">All accounts</option>
+                <option value="all">All employees</option>
                 <option value="active">Active only</option>
                 <option value="inactive">Inactive only</option>
               </Select>
@@ -440,13 +440,13 @@ export default function AccountsPage() {
                   ) : accounts.length === 0 ? (
                     <tr>
                       <td className={styles.emptyCell} colSpan={6}>
-                        No accounts yet. Create an invitation on the right to add a new team member.
+                        No employees yet. Create an invitation on the right to add a new team member.
                       </td>
                     </tr>
                   ) : filteredAccounts.length === 0 ? (
                     <tr>
                       <td className={styles.emptyCell} colSpan={6}>
-                        No accounts match the current filters.
+                        No employees match the current filters.
                       </td>
                     </tr>
                   ) : (
@@ -540,7 +540,7 @@ export default function AccountsPage() {
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h2>Invite team member</h2>
+                  <h2>Invite to Vendora</h2>
                   <p>Send a branded invitation email and assign roles plus location access.</p>
                 </div>
               </div>
@@ -626,7 +626,7 @@ export default function AccountsPage() {
                 </div>
 
                 <Button type="submit" disabled={creatingInvitation || !inviteForm.locationIds.length}>
-                  {creatingInvitation ? 'Sending invite…' : 'Send invitation'}
+                      {creatingInvitation ? 'Sending invite…' : 'Send invitation'}
                 </Button>
               </form>
             </section>
@@ -754,10 +754,10 @@ export default function AccountsPage() {
           <section className={styles.card}>
             <div className={styles.cardHeader}>
               <div>
-                <h2>Invitations</h2>
-                <p>Track who has been invited, when it expires, and whether it has been accepted.</p>
+                  <h2>Invitations</h2>
+                  <p>Track who has been invited, when it expires, and whether it has been accepted.</p>
+                </div>
               </div>
-            </div>
 
             <div className={styles.tableWrapper}>
               <table className={styles.table}>

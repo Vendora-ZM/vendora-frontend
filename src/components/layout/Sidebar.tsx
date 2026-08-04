@@ -23,9 +23,10 @@ const navLinks = [
   { href: '/dashboard/categories', label: 'Categories', exact: false },
   { href: '/dashboard/inventory', label: 'Inventory', exact: false },
   { href: '/dashboard/locations', label: 'Locations', exact: false },
-  { href: '/dashboard/accounts', label: 'Accounts', exact: false },
+  { href: '/dashboard/accounts', label: 'Employees', exact: false },
   { href: '/dashboard/orders', label: 'Orders', exact: false },
   { href: '/dashboard/sales', label: 'Sales', exact: false },
+  { href: '/dashboard/billing', label: 'Billing', exact: false },
   { href: '/dashboard/customers', label: 'Customers', exact: false },
   { href: '/dashboard/analytics', label: 'Analytics', exact: false },
 ];
@@ -100,10 +101,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className={styles.footer}>
           {canManageAccounts ? (
             <Link href="/dashboard/accounts" className={`${styles.link} ${styles.ctaLink}`} onClick={onClose}>
-              Invite member
+              Invite to Vendora
             </Link>
           ) : null}
-          <Link href="/settings" className={styles.link} onClick={onClose}>
+          <Link href="/dashboard/settings" className={styles.link} onClick={onClose}>
             Settings
           </Link>
           <button className={`${styles.link} ${styles.logoutBtn}`} onClick={handleLogout}>
