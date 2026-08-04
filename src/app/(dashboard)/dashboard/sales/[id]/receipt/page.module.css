@@ -1,0 +1,364 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 0 32px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-grey);
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 1.9rem;
+  color: var(--color-primary-navy);
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: var(--color-grey);
+  max-width: 58ch;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: var(--color-primary-navy);
+  color: var(--color-white);
+}
+
+.secondaryButton {
+  background: var(--color-white);
+  color: var(--color-primary-navy);
+  border-color: rgba(140, 144, 152, 0.2);
+}
+
+.errorState {
+  padding: 24px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.receiptShell {
+  display: flex;
+  justify-content: center;
+}
+
+.receiptCard {
+  width: min(100%, 900px);
+  background: var(--color-white);
+  border-radius: 20px;
+  border: 1px solid rgba(140, 144, 152, 0.12);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.receiptHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 28px;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.12);
+  background: linear-gradient(180deg, rgba(0, 112, 243, 0.04), rgba(255, 255, 255, 1));
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 112, 243, 0.08);
+  color: var(--color-primary-navy);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.receiptHeader h2 {
+  font-size: 1.65rem;
+  color: var(--color-primary-navy);
+}
+
+.receiptHeader p {
+  color: var(--color-grey);
+  margin-top: 6px;
+}
+
+.statusBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.statusPill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 6px;
+}
+
+.completed {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.draft {
+  background: rgba(245, 124, 0, 0.12);
+  color: #d97706;
+}
+
+.refunded {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+}
+
+.cancelled {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.statusBlock strong {
+  font-size: 1.5rem;
+  color: var(--color-primary-navy);
+}
+
+.statusBlock small {
+  color: var(--color-grey);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 28px 28px;
+}
+
+.summaryTile {
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(140, 144, 152, 0.06);
+  border: 1px solid rgba(140, 144, 152, 0.1);
+}
+
+.summaryTile span {
+  display: block;
+  color: var(--color-grey);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.summaryTile strong {
+  color: var(--color-primary-navy);
+  font-size: 1.15rem;
+}
+
+.section {
+  border-top: 1px solid rgba(140, 144, 152, 0.12);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 24px 28px 14px;
+}
+
+.sectionHeader h3 {
+  font-size: 1.05rem;
+  color: var(--color-primary-navy);
+}
+
+.sectionHeader span {
+  color: var(--color-grey);
+  font-size: 0.85rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 14px 28px;
+  text-align: left;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.1);
+}
+
+.table th {
+  background: #fafafa;
+  color: var(--color-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.table td {
+  color: var(--color-dark-grey);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.itemCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.itemCell strong {
+  color: var(--color-primary-navy);
+}
+
+.itemCell span {
+  color: var(--color-grey);
+  font-size: 0.8rem;
+}
+
+.emptyCell {
+  text-align: center;
+  color: var(--color-grey);
+  padding: 24px 28px;
+}
+
+.footerNote {
+  padding: 0 28px 28px;
+  color: var(--color-grey);
+}
+
+.footerNote p {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(140, 144, 152, 0.05);
+  border: 1px solid rgba(140, 144, 152, 0.08);
+}
+
+@media print {
+  .page {
+    padding: 0;
+    gap: 0;
+  }
+
+  .topbar {
+    display: none;
+  }
+
+  .receiptCard {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  .summaryGrid {
+    gap: 8px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .receiptHeader,
+  .summaryGrid,
+  .sectionHeader,
+  .table th,
+  .table td,
+  .footerNote {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .receiptHeader {
+    flex-direction: column;
+  }
+
+  .statusBlock {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}

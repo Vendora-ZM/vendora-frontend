@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
 import pageStyles from '../page.module.css';
 import styles from './sales.module.css';
 import { useGetAccountsQuery } from '@/lib/features/accounts/accountsApi';
@@ -100,49 +101,6 @@ function saleLabel(sale: Sale) {
   return label;
 }
 
-function downloadReceipt(
-  sale: Sale,
-  productNames: Map<string, string>,
-  employeeNames: Map<string, string>,
-  categoryNames: Map<string, string>,
-) {
-  const employee = sale.created_by ? employeeNames.get(sale.created_by) ?? sale.created_by : 'Unknown user';
-  const lines = [
-    'Vendora Receipt',
-    `Sale: ${sale.sale_number}`,
-    `Date: ${formatDate(sale.created_at)}`,
-    `Status: ${sale.status}`,
-    `Employee: ${employee}`,
-    '',
-    'Items',
-  ];
-
-  sale.items.forEach((item) => {
-    const productName = productNames.get(item.product_id) ?? item.product_id;
-    const categoryName = categoryNames.get(item.product_id) ?? 'Uncategorized';
-    lines.push(
-      `- ${productName} (${categoryName}) x${formatDecimal(parseQuantity(item.quantity))} | ${formatAmount(item.line_total)}`,
-    );
-  });
-
-  lines.push('', 'Payments');
-  sale.payments.forEach((payment) => {
-    lines.push(`- ${payment.method}: ${formatAmount(payment.amount)}${payment.reference ? ` (${payment.reference})` : ''}`);
-  });
-  lines.push('', `Subtotal: ${formatAmount(sale.subtotal)}`);
-  lines.push(`Tax: ${formatAmount(sale.tax_amount)}`);
-  lines.push(`Discount: ${formatAmount(sale.discount_amount)}`);
-  lines.push(`Total: ${formatAmount(sale.total_amount)}`);
-
-  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `${sale.sale_number}.txt`;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-
 export default function SalesPage() {
   const [activeStatus, setActiveStatus] = useState<SaleStatus | ''>('');
   const [datePreset, setDatePreset] = useState('all');
@@ -185,20 +143,6 @@ export default function SalesPage() {
       ),
     [accounts],
   );
-
-  const productNameMap = useMemo(
-    () => new Map(products.map((product) => [product.id, product.name])),
-    [products],
-  );
-
-  const categoryNameByProductId = useMemo(() => {
-    const map = new Map<string, string>();
-    products.forEach((product) => {
-      const categoryName = product.category_id ? categoryMap.get(product.category_id)?.name : null;
-      map.set(product.id, categoryName ?? 'Uncategorized');
-    });
-    return map;
-  }, [products, categoryMap]);
 
   const summary = useMemo(() => {
     const completedSales = reportSales.filter((sale) => sale.status === 'completed');
@@ -556,13 +500,14 @@ export default function SalesPage() {
                             {formatDate(sale.created_at)} · {employee}
                           </span>
                         </div>
-                        <button
-                          type="button"
+                        <Link
                           className={styles.receiptButton}
-                          onClick={() => downloadReceipt(sale, productNameMap, employeeMap, categoryNameByProductId)}
+                          href={`/dashboard/sales/${sale.id}/receipt`}
+                          target="_blank"
+                          rel="noreferrer"
                         >
-                          Download receipt
-                        </button>
+                          Open receipt
+                        </Link>
                       </div>
                     );
                   })
