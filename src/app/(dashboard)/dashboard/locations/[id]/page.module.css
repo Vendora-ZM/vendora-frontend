@@ -244,6 +244,13 @@
   padding: 0 20px 8px;
 }
 
+.sectionNote {
+  margin: 0;
+  padding: 0 20px 18px;
+  color: var(--color-grey);
+  line-height: 1.5;
+}
+
 .metricChip {
   display: flex;
   flex-direction: column;

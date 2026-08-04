@@ -300,6 +300,34 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
             </div>
           </section>
 
+          <section className={styles.sectionCard}>
+            <div className={styles.panelHeader}>
+              <div>
+                <h3>Branch Access</h3>
+                <span>POS devices and login readiness</span>
+              </div>
+            </div>
+
+            <div className={styles.metricsRow}>
+              <div className={styles.metricChip}>
+                <span>POS terminals</span>
+                <strong>{selectedLocation?.pos_terminal_limit ?? 1}</strong>
+              </div>
+              <div className={styles.metricChip}>
+                <span>Branch PIN</span>
+                <strong>{selectedLocation?.access_pin ? 'Configured' : 'Not set'}</strong>
+              </div>
+              <div className={styles.metricChip}>
+                <span>Mobile login</span>
+                <strong>Ready</strong>
+              </div>
+            </div>
+
+            <p className={styles.sectionNote}>
+              Set how many devices can log in for this branch and keep a 4-digit PIN ready for POS and mobile access.
+            </p>
+          </section>
+
           <section className={styles.chartCard}>
             <div className={styles.panelHeader}>
               <h3>Revenue Trend</h3>

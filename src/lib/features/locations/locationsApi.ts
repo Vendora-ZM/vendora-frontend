@@ -12,6 +12,8 @@ export interface CreateLocationPayload {
   state?: string | null;
   postal_code?: string | null;
   country_code: string;
+  pos_terminal_limit: number;
+  access_pin?: string | null;
   is_default?: boolean;
 }
 
@@ -24,6 +26,8 @@ export interface UpdateLocationPayload {
   state?: string | null;
   postal_code?: string | null;
   country_code?: string | null;
+  pos_terminal_limit?: number | null;
+  access_pin?: string | null;
   is_default?: boolean | null;
 }
 

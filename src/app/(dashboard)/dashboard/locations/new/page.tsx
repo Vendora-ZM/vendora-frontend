@@ -18,6 +18,8 @@ interface FormState {
   state: string;
   postal_code: string;
   country_code: string;
+  pos_terminal_limit: string;
+  access_pin: string;
   is_default: boolean;
 }
 
@@ -30,6 +32,8 @@ const defaultForm: FormState = {
   state: '',
   postal_code: '',
   country_code: 'ZM',
+  pos_terminal_limit: '1',
+  access_pin: '',
   is_default: false,
 };
 
@@ -54,6 +58,14 @@ export default function NewLocationPage() {
     if (form.country_code.trim().length !== 2) {
       nextErrors.country_code = 'Use a 2-letter country code, like ZM.';
     }
+    const terminalLimit = Number.parseInt(form.pos_terminal_limit, 10);
+    if (!Number.isInteger(terminalLimit) || terminalLimit < 1) {
+      nextErrors.pos_terminal_limit = 'Enter at least 1 POS terminal.';
+    }
+    const pin = form.access_pin.trim();
+    if (pin.length > 0 && (!/^\d{4}$/.test(pin))) {
+      nextErrors.access_pin = 'Use a 4-digit PIN.';
+    }
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -73,6 +85,8 @@ export default function NewLocationPage() {
         state: form.state.trim() || null,
         postal_code: form.postal_code.trim() || null,
         country_code: form.country_code.trim().toUpperCase(),
+        pos_terminal_limit: Number.parseInt(form.pos_terminal_limit, 10) || 1,
+        access_pin: form.access_pin.trim() || null,
         is_default: form.is_default,
       };
 
@@ -216,6 +230,33 @@ export default function NewLocationPage() {
                     <span className={styles.toggleThumb} />
                   </div>
                 </label>
+              </div>
+
+              <div className={styles.formGrid} style={{ marginTop: '16px' }}>
+                <Input
+                  id="location-pos-terminals"
+                  label="POS Terminals"
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="1"
+                  value={form.pos_terminal_limit}
+                  onChange={set('pos_terminal_limit')}
+                  error={errors.pos_terminal_limit}
+                  helpText="How many POS devices can log in for this branch."
+                />
+                <Input
+                  id="location-access-pin"
+                  label="Branch PIN"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="1234"
+                  value={form.access_pin}
+                  onChange={set('access_pin')}
+                  error={errors.access_pin}
+                  helpText="Optional 4-digit PIN for branch login."
+                />
               </div>
             </div>
           </div>
