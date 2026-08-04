@@ -285,7 +285,7 @@ function LoginForm() {
                     className={styles.consentInput}
                   />
                   <span className={styles.consentText}>
-                    I have read and agree to the{' '}
+                    By creating an account, I agree to the{' '}
                     <Link href="/terms" className={styles.legalLink}>
                       Terms and Conditions
                     </Link>{' '}

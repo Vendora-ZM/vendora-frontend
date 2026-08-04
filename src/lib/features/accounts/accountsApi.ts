@@ -40,6 +40,7 @@ export interface Invitation {
   phone?: string | null;
   role_id: string;
   role_name: string;
+  promo_code?: string | null;
   location_ids: string[];
   expires_at: string;
   accepted_at?: string | null;
@@ -61,6 +62,7 @@ export interface CreateInvitationPayload {
   last_name: string;
   phone?: string | null;
   role_id: string;
+  promo_code?: string | null;
   location_ids: string[];
 }
 

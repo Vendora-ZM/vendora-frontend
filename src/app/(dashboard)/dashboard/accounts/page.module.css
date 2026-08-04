@@ -397,10 +397,49 @@
   padding: 0 22px 22px;
 }
 
+.inviteRewardCard {
+  border: 1px solid rgba(6, 41, 107, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(6, 41, 107, 0.04), rgba(245, 158, 11, 0.06));
+  display: grid;
+  gap: 12px;
+}
+
+.promoSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.promoBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(6, 41, 107, 0.12);
+  color: var(--color-primary-navy);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.promoHint {
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+.detailLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-primary-navy);
+  font-weight: 700;
 }
 
 .label {

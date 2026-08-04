@@ -36,6 +36,7 @@ type InviteFormState = {
   lastName: string;
   phone: string;
   roleId: string;
+  promoCode: string;
   locationIds: string[];
 };
 
@@ -89,6 +90,7 @@ export default function AccountsPage() {
     lastName: '',
     phone: '',
     roleId: '',
+    promoCode: '',
     locationIds: [],
   });
   const [statusMessage, setStatusMessage] = useState('');
@@ -247,6 +249,7 @@ export default function AccountsPage() {
         last_name: inviteForm.lastName,
         phone: inviteForm.phone || null,
         role_id: inviteForm.roleId,
+        promo_code: inviteForm.promoCode || null,
         location_ids: inviteForm.locationIds,
       }).unwrap();
 
@@ -256,6 +259,7 @@ export default function AccountsPage() {
         lastName: '',
         phone: '',
         roleId: '',
+        promoCode: '',
         locationIds: [],
       });
       setStatusMessage('Invitation sent successfully.');
@@ -541,11 +545,25 @@ export default function AccountsPage() {
               <div className={styles.cardHeader}>
                 <div>
                   <h2>Invite to Vendora</h2>
-                  <p>Send a branded invitation email and assign roles plus location access.</p>
+                  <p>Send a branded invitation email, attach an optional promo code, and assign role access.</p>
                 </div>
               </div>
 
               <form className={styles.form} onSubmit={handleInviteSubmit}>
+                <div className={styles.inviteRewardCard}>
+                  <div>
+                    <span className={styles.detailLabel}>Invite reward</span>
+                    <p className={styles.helperText}>
+                      Every accepted invite can earn a free extra month. Promo codes are optional and can be shared
+                      with the new signup.
+                    </p>
+                  </div>
+                  <div className={styles.promoSummary}>
+                    <span className={styles.promoBadge}>Optional promo code</span>
+                    <span className={styles.promoHint}>Use it only if you want to track an invite campaign.</span>
+                  </div>
+                </div>
+
                 <div className={styles.formGrid}>
                   <Input
                     id="invite-first-name"
@@ -579,6 +597,14 @@ export default function AccountsPage() {
                   value={inviteForm.phone}
                   onChange={(event) => setInviteForm((current) => ({ ...current, phone: event.target.value }))}
                   helpText="Optional."
+                />
+
+                <Input
+                  id="invite-promo-code"
+                  label="Promo code"
+                  value={inviteForm.promoCode}
+                  onChange={(event) => setInviteForm((current) => ({ ...current, promoCode: event.target.value }))}
+                  helpText="Optional. The invited person can use this when they sign up."
                 />
 
                 <Select
@@ -799,6 +825,9 @@ export default function AccountsPage() {
                                 {invitation.first_name} {invitation.last_name}
                               </span>
                               <span className={styles.accountHint}>{invitation.email}</span>
+                              {invitation.promo_code ? (
+                                <span className={styles.accountHint}>Promo code: {invitation.promo_code}</span>
+                              ) : null}
                             </div>
                           </td>
                           <td>{invitation.role_name}</td>
