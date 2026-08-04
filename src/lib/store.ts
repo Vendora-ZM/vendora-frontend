@@ -18,6 +18,7 @@ import { profileApi } from './features/profile/profileApi';
 import { accountsApi } from './features/accounts/accountsApi';
 import { businessApi } from './features/business/businessApi';
 import notificationsReducer from './features/notifications/notificationsSlice';
+import { clearPersistedAuthState, persistAuthState } from './features/auth/authSlice';
 
 export const store = configureStore({
   reducer: {
@@ -53,6 +54,27 @@ export const store = configureStore({
       .concat(locationsApi.middleware)
       .concat(inventoryApi.middleware),
 });
+
+if (typeof window !== 'undefined') {
+  let lastPersistedAuthSnapshot = '';
+
+  store.subscribe(() => {
+    const authState = store.getState().auth;
+    const snapshot = JSON.stringify(authState);
+
+    if (snapshot === lastPersistedAuthSnapshot) {
+      return;
+    }
+
+    lastPersistedAuthSnapshot = snapshot;
+
+    if (authState.isAuthenticated) {
+      persistAuthState(authState);
+    } else {
+      clearPersistedAuthState();
+    }
+  });
+}
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

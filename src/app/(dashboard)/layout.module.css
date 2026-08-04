@@ -101,6 +101,15 @@
   min-width: 0;
 }
 
+.identityLabel {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7c8797;
+  line-height: 1;
+}
+
 .companyName {
   font-weight: 700;
   color: var(--color-primary-navy);
@@ -111,6 +120,15 @@
   font-size: 0.8125rem;
   color: var(--color-grey);
   line-height: 1.2;
+}
+
+.emailLine {
+  font-size: 0.75rem;
+  color: #8b95a5;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .content {
