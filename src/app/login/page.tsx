@@ -387,7 +387,7 @@ function LoginForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={mode === "REGISTER" ? 8 : undefined}
+                    minLength={8}
                   />
                   <button
                     type="button"
