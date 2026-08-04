@@ -36,6 +36,7 @@ export interface Sale {
   amount_paid: number;
   notes: string | null;
   completed_at: string | null;
+  created_by: string | null;
   items: SaleItem[];
   payments: SalePayment[];
   created_at: string;
