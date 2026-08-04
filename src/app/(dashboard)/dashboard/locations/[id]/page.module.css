@@ -48,6 +48,13 @@
   align-items: flex-end;
 }
 
+.actionLinks {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .viewTabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -136,6 +143,19 @@
   border: 1px solid rgba(140, 144, 152, 0.2);
   background: var(--color-white);
   color: var(--color-primary-navy);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.secondaryActionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(26, 132, 221, 0.18);
+  background: rgba(26, 132, 221, 0.05);
+  color: var(--color-accent-blue);
   font-weight: 600;
   text-decoration: none;
 }
@@ -393,6 +413,10 @@
 
   .headerActions {
     align-items: flex-start;
+  }
+
+  .actionLinks {
+    justify-content: flex-start;
   }
 
   .periodPicker {

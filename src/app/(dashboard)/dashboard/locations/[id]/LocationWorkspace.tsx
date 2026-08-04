@@ -19,6 +19,7 @@ import { useGetBalancesQuery } from '@/lib/features/inventory/inventoryApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
 import { useGetCustomersQuery } from '@/lib/features/customers/customersApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { DateRangePreset } from '@/lib/features/analytics/analyticsSlice';
 import { getDateRange } from '@/lib/utils/dateRange';
 import { Product } from '@/types/product';
@@ -74,11 +75,13 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('last_30_days');
 
   const { data: locations = [], isLoading: isLocationsLoading } = useGetLocationsQuery();
+  const { data: me } = useGetMeQuery();
   const { data: customersRaw = [] } = useGetCustomersQuery({});
   const selectedLocation = useMemo(
     () => locations.find((location) => location.id === locationId) ?? null,
     [locations, locationId]
   );
+  const canManageLocations = Boolean(me?.permissions?.includes('locations.manage'));
   const canLoadAnalytics = !isLocationsLoading && Boolean(selectedLocation);
   const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
 
@@ -215,12 +218,19 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
               >
                 {preset.label}
               </button>
-            ))}
+              ))}
           </div>
 
-          <Link className={styles.backLink} href="/dashboard/locations">
-            Back to locations
-          </Link>
+          <div className={styles.actionLinks}>
+            {canManageLocations ? (
+              <Link className={styles.secondaryActionLink} href={`/dashboard/locations/${locationId}/edit`}>
+                Edit location
+              </Link>
+            ) : null}
+            <Link className={styles.backLink} href="/dashboard/locations">
+              Back to locations
+            </Link>
+          </div>
         </div>
       </div>
 

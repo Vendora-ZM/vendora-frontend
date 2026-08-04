@@ -15,6 +15,18 @@ export interface CreateLocationPayload {
   is_default?: boolean;
 }
 
+export interface UpdateLocationPayload {
+  name?: string | null;
+  code?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  country_code?: string | null;
+  is_default?: boolean | null;
+}
+
 export const locationsApi = createApi({
   reducerPath: 'locationsApi',
   baseQuery: fetchBaseQuery({
@@ -39,7 +51,34 @@ export const locationsApi = createApi({
       transformResponse: (response: Location) => response,
       invalidatesTags: [{ type: 'Location', id: 'LIST' }],
     }),
+    updateLocation: builder.mutation<Location, { locationId: string; body: UpdateLocationPayload }>({
+      query: ({ locationId, body }) => ({
+        url: `/locations/${locationId}`,
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: (response: Location) => response,
+      invalidatesTags: (_result, _error, { locationId }) => [
+        { type: 'Location', id: locationId },
+        { type: 'Location', id: 'LIST' },
+      ],
+    }),
+    deleteLocation: builder.mutation<void, string>({
+      query: (locationId) => ({
+        url: `/locations/${locationId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, locationId) => [
+        { type: 'Location', id: locationId },
+        { type: 'Location', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
-export const { useGetLocationsQuery, useCreateLocationMutation } = locationsApi;
+export const {
+  useGetLocationsQuery,
+  useCreateLocationMutation,
+  useUpdateLocationMutation,
+  useDeleteLocationMutation,
+} = locationsApi;

@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import styles from './page.module.css';
 
 const PAGE_SIZE = 8;
@@ -17,7 +18,9 @@ function formatDate(iso: string) {
 
 export default function LocationsPage() {
   const { data: locations = [], isLoading } = useGetLocationsQuery();
+  const { data: me } = useGetMeQuery();
   const [currentPage, setCurrentPage] = useState(1);
+  const canManageLocations = Boolean(me?.permissions?.includes('locations.manage'));
 
   const totalPages = Math.max(1, Math.ceil(locations.length / PAGE_SIZE));
 
@@ -92,9 +95,16 @@ export default function LocationsPage() {
                     <td>{formatDate(location.created_at)}</td>
                     <td>{formatDate(location.updated_at)}</td>
                     <td className={styles.actionCell}>
-                      <Link className={styles.viewLink} href={`/dashboard/locations/${location.id}`}>
-                        View profile
-                      </Link>
+                      <div className={styles.actionGroup}>
+                        <Link className={styles.viewLink} href={`/dashboard/locations/${location.id}`}>
+                          View
+                        </Link>
+                        {canManageLocations ? (
+                          <Link className={styles.secondaryViewLink} href={`/dashboard/locations/${location.id}/edit`}>
+                            Edit
+                          </Link>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))
