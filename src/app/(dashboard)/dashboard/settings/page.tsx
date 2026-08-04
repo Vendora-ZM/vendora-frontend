@@ -8,6 +8,12 @@ import { Input, Select } from '@/components/ui/Input';
 import { useLogoutMutation } from '@/lib/features/auth/authApi';
 import { logout } from '@/lib/features/auth/authSlice';
 import { useGetBusinessQuery, useUpdateBusinessMutation } from '@/lib/features/business/businessApi';
+import {
+  BILLING_PAYMENT_METHODS,
+  BILLING_PLANS,
+  type BillingPaymentMethodId,
+  type BillingPlanId,
+} from '@/lib/billing/billingStorage';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import styles from './page.module.css';
@@ -39,10 +45,18 @@ function WorkspaceProfileCard({
   initialName,
   initialCurrencyCode,
   initialTimezone,
+  initialPlanId,
+  initialMethodId,
+  initialApplyToAllLocations,
+  initialBillingIsActive,
+  trialDaysRemaining,
+  trialExpiresAt,
+  trialIsExpired,
   fullName,
   email,
   roleName,
   businessName,
+  businessSlug,
   initial,
   onSignOut,
 }: {
@@ -50,18 +64,38 @@ function WorkspaceProfileCard({
   initialName: string;
   initialCurrencyCode: string;
   initialTimezone: string;
+  initialPlanId: BillingPlanId;
+  initialMethodId: BillingPaymentMethodId;
+  initialApplyToAllLocations: boolean;
+  initialBillingIsActive: boolean;
+  trialDaysRemaining: number;
+  trialExpiresAt: string;
+  trialIsExpired: boolean;
   fullName: string;
   email: string;
   roleName: string;
   businessName: string;
+  businessSlug: string;
   initial: string;
   onSignOut: () => void;
 }) {
   const [name, setName] = useState(initialName);
   const [currencyCode, setCurrencyCode] = useState(initialCurrencyCode);
   const [timezone, setTimezone] = useState(initialTimezone);
+  const [planId, setPlanId] = useState<BillingPlanId>(initialPlanId);
+  const [paymentMethodId, setPaymentMethodId] = useState<BillingPaymentMethodId>(initialMethodId);
+  const [applyToAllLocations, setApplyToAllLocations] = useState(initialApplyToAllLocations);
+  const [billingIsActive, setBillingIsActive] = useState(initialBillingIsActive);
   const [statusMessage, setStatusMessage] = useState('');
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const selectedPlan = BILLING_PLANS.find((plan) => plan.id === planId) ?? BILLING_PLANS[1];
+  const selectedMethod =
+    BILLING_PAYMENT_METHODS.find((method) => method.id === paymentMethodId) ?? BILLING_PAYMENT_METHODS[0];
+  const expiresText = new Date(trialExpiresAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -74,12 +108,16 @@ function WorkspaceProfileCard({
           name: name.trim() || null,
           currency_code: currencyCode.trim().toUpperCase() || null,
           timezone: timezone.trim() || null,
+          billing_plan_id: planId,
+          billing_payment_method_id: paymentMethodId,
+          billing_apply_to_all_locations: applyToAllLocations,
         },
       }).unwrap();
 
       setName(updated.name);
       setCurrencyCode(updated.currency_code);
       setTimezone(updated.timezone);
+      setBillingIsActive(updated.billing_is_active);
       setStatusMessage('Workspace settings saved successfully.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to save workspace settings.';
@@ -88,7 +126,28 @@ function WorkspaceProfileCard({
   };
 
   return (
-    <div className={styles.grid}>
+    <div className={styles.pageBody}>
+      <section className={styles.statusStrip}>
+        <div className={styles.statusCard}>
+          <span className={styles.statusLabel}>Business</span>
+          <strong className={styles.statusValue}>{businessName}</strong>
+          <small>{businessSlug}</small>
+        </div>
+        <div className={styles.statusCard}>
+          <span className={styles.statusLabel}>Trial</span>
+          <strong className={styles.statusValue}>
+            {trialIsExpired ? 'Expired' : `${trialDaysRemaining} day${trialDaysRemaining === 1 ? '' : 's'} left`}
+          </strong>
+          <small>{expiresText}</small>
+        </div>
+        <div className={styles.statusCard}>
+          <span className={styles.statusLabel}>Access</span>
+          <strong className={styles.statusValue}>{billingIsActive ? 'Unlocked' : 'Locked'}</strong>
+          <small>{billingIsActive ? 'POS is available' : 'Billing needs attention'}</small>
+        </div>
+      </section>
+
+      <div className={styles.grid}>
       <section className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
@@ -139,14 +198,67 @@ function WorkspaceProfileCard({
                 </option>
               ))}
             </Select>
+
+            <Select
+              id="billing-plan"
+              label="Billing plan"
+              value={planId}
+              onChange={(event) => setPlanId(event.target.value as BillingPlanId)}
+              helpText="Choose the plan that matches the size of the business."
+            >
+              {BILLING_PLANS.map((plan) => (
+                <option key={plan.id} value={plan.id}>
+                  {plan.name} - {plan.priceLabel}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              id="billing-method"
+              label="Payment method"
+              value={paymentMethodId}
+              onChange={(event) => setPaymentMethodId(event.target.value as BillingPaymentMethodId)}
+              helpText="How the business prefers to pay for Vendora."
+            >
+              {BILLING_PAYMENT_METHODS.map((method) => (
+                <option key={method.id} value={method.id}>
+                  {method.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <label className={styles.checkboxRow} htmlFor="billing-apply-all">
+            <input
+              id="billing-apply-all"
+              type="checkbox"
+              checked={applyToAllLocations}
+              onChange={(event) => setApplyToAllLocations(event.target.checked)}
+            />
+            <span>Apply billing method to all locations</span>
+          </label>
+
+          <div className={styles.preferenceSummary}>
+            <div>
+              <span>Selected plan</span>
+              <strong>{selectedPlan.name}</strong>
+            </div>
+            <div>
+              <span>Selected payment method</span>
+              <strong>{selectedMethod.name}</strong>
+            </div>
+            <div>
+              <span>Plan scope</span>
+              <strong>{applyToAllLocations ? 'All locations' : 'Selected locations'}</strong>
+            </div>
           </div>
 
           <div className={styles.actions}>
             <Button type="submit" disabled={isSaving}>
               {isSaving ? 'Saving…' : 'Save workspace settings'}
             </Button>
-            <Link href="/terms" className={styles.linkButton}>
-              View Terms
+            <Link href="/dashboard/billing" className={styles.linkButton}>
+              Open billing
             </Link>
           </div>
         </form>
@@ -178,6 +290,9 @@ function WorkspaceProfileCard({
             <Button type="button" variant="outline" onClick={onSignOut}>
               Sign out
             </Button>
+            <Link href="/terms" className={styles.linkButton}>
+              View Terms
+            </Link>
           </div>
         </section>
 
@@ -213,6 +328,7 @@ function WorkspaceProfileCard({
           </div>
         </section>
       </aside>
+      </div>
     </div>
   );
 }
@@ -243,6 +359,7 @@ export default function SettingsPage() {
 
   const roleName = me?.role_name ?? authState.roleName ?? 'Team member';
   const businessName = business?.name ?? authState.businessName ?? 'Merchant Store';
+  const businessSlug = business?.slug ?? business?.name?.toLowerCase().replace(/\s+/g, '-') ?? 'merchant-store';
   const email = me?.email ?? authState.email ?? 'No email loaded';
   const initial = fullName ? fullName[0].toUpperCase() : 'M';
 
@@ -305,10 +422,18 @@ export default function SettingsPage() {
         initialName={business.name}
         initialCurrencyCode={business.currency_code}
         initialTimezone={business.timezone}
+        initialPlanId={business.billing_plan_id}
+        initialMethodId={business.billing_payment_method_id}
+        initialApplyToAllLocations={business.billing_apply_to_all_locations}
+        initialBillingIsActive={business.billing_is_active}
+        trialDaysRemaining={business.trial_days_remaining}
+        trialExpiresAt={business.trial_expires_at}
+        trialIsExpired={business.trial_is_expired}
         fullName={fullName}
         email={email}
         roleName={roleName}
         businessName={businessName}
+        businessSlug={businessSlug}
         initial={initial}
         onSignOut={handleSignOut}
       />
