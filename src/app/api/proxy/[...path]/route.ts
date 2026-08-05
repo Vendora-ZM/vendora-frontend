@@ -114,6 +114,7 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
           refreshToken: auth.refresh_token,
           businessId: auth.business?.id,
           accessTtlSeconds: auth.expires_in,
+          refreshTtlSeconds: auth.refresh_ttl_seconds,
         });
       }
 

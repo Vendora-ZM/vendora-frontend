@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
       refreshToken: auth.refresh_token,
       businessId: auth.business?.id,
       accessTtlSeconds: auth.expires_in,
+      refreshTtlSeconds: auth.refresh_ttl_seconds,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
