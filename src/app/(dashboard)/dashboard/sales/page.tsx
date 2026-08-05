@@ -5,8 +5,11 @@ import Link from 'next/link';
 import pageStyles from '../page.module.css';
 import styles from './sales.module.css';
 import { useGetAccountsQuery } from '@/lib/features/accounts/accountsApi';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetCategoriesQuery, useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { getPaymentTypeLabel } from '@/lib/business/paymentTypes';
 import { Sale, SaleStatus } from '@/types/sale';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -125,6 +128,10 @@ export default function SalesPage() {
   const { data: products = [], isLoading: isProductsLoading } = useGetProductsQuery({});
   const { data: categories = [], isLoading: isCategoriesLoading } = useGetCategoriesQuery();
   const { data: accounts = [], isLoading: isAccountsLoading } = useGetAccountsQuery();
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
 
   const sales = pageQuery.data?.data ?? [];
   const total = pageQuery.data?.meta?.total ?? 0;
@@ -237,9 +244,10 @@ export default function SalesPage() {
     const map = new Map<string, AggregateRow>();
     reportSales.forEach((sale) => {
       sale.payments.forEach((payment) => {
+        const label = getPaymentTypeLabel(payment.method, business?.payment_types);
         const existing = map.get(payment.method) ?? {
           id: payment.method,
-          label: payment.method.replace('_', ' '),
+          label,
           units: 0,
           count: 0,
           amount: 0,
@@ -250,7 +258,7 @@ export default function SalesPage() {
       });
     });
     return [...map.values()].sort((a, b) => b.amount - a.amount);
-  }, [reportSales]);
+  }, [business?.payment_types, reportSales]);
 
   const receiptRows = useMemo(() => reportSales.slice(0, 8), [reportSales]);
 

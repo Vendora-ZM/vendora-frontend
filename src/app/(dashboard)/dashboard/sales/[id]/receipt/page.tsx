@@ -9,7 +9,8 @@ import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetSaleByIdQuery } from '@/lib/features/sales/salesApi';
-import { SalePayment, SaleStatus } from '@/types/sale';
+import { getPaymentTypeLabel } from '@/lib/business/paymentTypes';
+import { SaleStatus } from '@/types/sale';
 import styles from './page.module.css';
 
 function formatAmount(amount: number) {
@@ -31,10 +32,6 @@ function formatDateTime(iso: string) {
 function parseQuantity(quantity: string) {
   const value = Number.parseFloat(quantity);
   return Number.isFinite(value) ? value : 1;
-}
-
-function formatPaymentMethod(method: SalePayment['method']) {
-  return method.replace(/_/g, ' ');
 }
 
 function formatEmployeeName(firstName?: string, lastName?: string, fallback?: string) {
@@ -78,6 +75,7 @@ export default function SaleReceiptPage() {
   const cashierName = employee
     ? formatEmployeeName(employee.first_name, employee.last_name, employee.email)
     : sale?.created_by ?? 'Unknown user';
+  const paymentTypes = business?.payment_types;
 
   useEffect(() => {
     if (sale) {
@@ -223,7 +221,7 @@ export default function SaleReceiptPage() {
                     ) : sale?.payments.length ? (
                       sale.payments.map((payment) => (
                         <tr key={payment.id}>
-                          <td>{formatPaymentMethod(payment.method)}</td>
+                          <td>{getPaymentTypeLabel(payment.method, paymentTypes)}</td>
                           <td>{payment.reference ?? '—'}</td>
                           <td>{formatAmount(payment.amount)}</td>
                         </tr>

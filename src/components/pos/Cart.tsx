@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { clearCart, removeFromCart, updateQuantity } from '@/lib/features/pos/posSlice';
 import { useCreateSaleMutation, useCompleteSaleMutation } from '@/lib/features/sales/salesApi';
@@ -8,6 +8,7 @@ import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { PaymentMethod, Sale } from '@/types/sale';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
+import { buildPaymentTypeOptions, getPaymentTypeLabel } from '@/lib/business/paymentTypes';
 import styles from './Cart.module.css';
 
 type CheckoutStage = 2 | 3 | 4;
@@ -17,11 +18,13 @@ type SaleSummary = {
   total: number;
   change: number;
   paymentMethod: PaymentMethod;
+  paymentTypeLabel: string;
   completedAt: string;
 };
 
 interface CartProps {
   initialStage?: CheckoutStage;
+  paymentTypes?: string[];
   onBackToSelection?: () => void;
   onStartNewSale?: () => void;
 }
@@ -30,23 +33,9 @@ function formatAmount(amount: number) {
   return `K${amount.toFixed(2)}`;
 }
 
-function getPaymentMethodLabel(method: PaymentMethod) {
-  switch (method) {
-    case 'cash':
-      return 'Cash';
-    case 'card':
-      return 'Card (POS)';
-    case 'mobile_money':
-      return 'Mobile Money';
-    case 'bank_transfer':
-      return 'Bank Transfer';
-    default:
-      return 'Other';
-  }
-}
-
 export const Cart: React.FC<CartProps> = ({
   initialStage = 2,
+  paymentTypes,
   onBackToSelection,
   onStartNewSale,
 }) => {
@@ -54,7 +43,8 @@ export const Cart: React.FC<CartProps> = ({
   const { cart, discountAmount } = useAppSelector((s) => s.pos);
 
   const [stage, setStage] = useState<CheckoutStage>(initialStage);
-  const [method, setMethod] = useState<PaymentMethod>('cash');
+  const paymentTypeOptions = useMemo(() => buildPaymentTypeOptions(paymentTypes), [paymentTypes]);
+  const [paymentTypeLabel, setPaymentTypeLabel] = useState(paymentTypeOptions[0]?.label ?? '');
   const [amountTendered, setAmountTendered] = useState<string>('');
   const [reference, setReference] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -76,8 +66,22 @@ export const Cart: React.FC<CartProps> = ({
   const total = subtotal + tax - discount;
   const tendered = parseFloat(amountTendered) || 0;
   const change = Math.max(0, tendered - total);
+  const selectedPaymentType =
+    paymentTypeOptions.find((option) => option.label === paymentTypeLabel) ?? paymentTypeOptions[0];
+  const method: PaymentMethod = selectedPaymentType?.method ?? 'cash';
+  const methodLabel = selectedPaymentType?.label ?? getPaymentTypeLabel(method, paymentTypes);
 
   const locationName = useMemo(() => locations[0]?.name ?? 'Primary location', [locations]);
+
+  useEffect(() => {
+    if (!paymentTypeOptions.length) {
+      return;
+    }
+
+    if (!paymentTypeOptions.some((option) => option.label === paymentTypeLabel)) {
+      setPaymentTypeLabel(paymentTypeOptions[0].label);
+    }
+  }, [paymentTypeLabel, paymentTypeOptions]);
 
   const handleGoToPayment = () => {
     if (cart.length === 0) return;
@@ -92,7 +96,7 @@ export const Cart: React.FC<CartProps> = ({
     dispatch(clearCart());
     setCompletion(null);
     setStage(2);
-    setMethod('cash');
+    setPaymentTypeLabel(paymentTypeOptions[0]?.label ?? '');
     setAmountTendered('');
     setReference('');
     setError(null);
@@ -157,12 +161,13 @@ export const Cart: React.FC<CartProps> = ({
         total,
         change: completedChange,
         paymentMethod: method,
+        paymentTypeLabel: methodLabel,
         completedAt: completedSale.completed_at || new Date().toISOString(),
       });
 
       dispatch(clearCart());
       setStage(4);
-      setMethod('cash');
+      setPaymentTypeLabel(paymentTypeOptions[0]?.label ?? '');
       setAmountTendered('');
       setReference('');
     } catch (err: unknown) {
@@ -208,7 +213,7 @@ export const Cart: React.FC<CartProps> = ({
             </div>
             <div>
               <span className={styles.summaryLabel}>Payment</span>
-              <strong>{getPaymentMethodLabel(completion.paymentMethod)}</strong>
+              <strong>{completion.paymentTypeLabel}</strong>
             </div>
             <div>
               <span className={styles.summaryLabel}>Change</span>
@@ -338,19 +343,22 @@ export const Cart: React.FC<CartProps> = ({
           <div className={styles.paymentSection}>
             <Select
               label="Payment Method"
-              value={method}
+              value={paymentTypeLabel}
               onChange={(e) => {
-                const nextMethod = e.target.value as PaymentMethod;
-                setMethod(nextMethod);
+                const nextLabel = e.target.value;
+                setPaymentTypeLabel(nextLabel);
+                const nextMethod = paymentTypeOptions.find((option) => option.label === nextLabel)?.method ?? 'other';
                 if (nextMethod === 'cash' && !amountTendered) {
                   setAmountTendered(total.toFixed(2));
                 }
               }}
               disabled={isProcessing}
             >
-              <option value="cash">Cash</option>
-              <option value="card">Card (POS)</option>
-              <option value="mobile_money">Mobile Money (Airtel/MTN)</option>
+              {paymentTypeOptions.map((option) => (
+                <option key={option.label} value={option.label}>
+                  {option.label}
+                </option>
+              ))}
             </Select>
 
             {method === 'cash' ? (
