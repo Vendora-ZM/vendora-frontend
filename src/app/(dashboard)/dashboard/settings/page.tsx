@@ -45,6 +45,7 @@ function WorkspaceProfileCard({
   initialName,
   initialCurrencyCode,
   initialTimezone,
+  initialPaymentTypes,
   initialPlanId,
   initialMethodId,
   initialApplyToAllLocations,
@@ -64,6 +65,7 @@ function WorkspaceProfileCard({
   initialName: string;
   initialCurrencyCode: string;
   initialTimezone: string;
+  initialPaymentTypes: string[];
   initialPlanId: BillingPlanId;
   initialMethodId: BillingPaymentMethodId;
   initialApplyToAllLocations: boolean;
@@ -82,6 +84,8 @@ function WorkspaceProfileCard({
   const [name, setName] = useState(initialName);
   const [currencyCode, setCurrencyCode] = useState(initialCurrencyCode);
   const [timezone, setTimezone] = useState(initialTimezone);
+  const [paymentTypes, setPaymentTypes] = useState(initialPaymentTypes);
+  const [paymentTypeDraft, setPaymentTypeDraft] = useState('');
   const [planId, setPlanId] = useState<BillingPlanId>(initialPlanId);
   const [paymentMethodId, setPaymentMethodId] = useState<BillingPaymentMethodId>(initialMethodId);
   const [applyToAllLocations, setApplyToAllLocations] = useState(initialApplyToAllLocations);
@@ -97,6 +101,26 @@ function WorkspaceProfileCard({
     year: 'numeric',
   });
 
+  const addPaymentType = () => {
+    const label = paymentTypeDraft.trim();
+    if (!label) {
+      return;
+    }
+
+    const exists = paymentTypes.some((entry) => entry.toLowerCase() === label.toLowerCase());
+    if (exists) {
+      setPaymentTypeDraft('');
+      return;
+    }
+
+    setPaymentTypes((current) => [...current, label]);
+    setPaymentTypeDraft('');
+  };
+
+  const removePaymentType = (label: string) => {
+    setPaymentTypes((current) => current.filter((entry) => entry !== label));
+  };
+
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
     setStatusMessage('');
@@ -108,6 +132,7 @@ function WorkspaceProfileCard({
           name: name.trim() || null,
           currency_code: currencyCode.trim().toUpperCase() || null,
           timezone: timezone.trim() || null,
+          payment_types: paymentTypes,
           billing_plan_id: planId,
           billing_payment_method_id: paymentMethodId,
           billing_apply_to_all_locations: applyToAllLocations,
@@ -117,6 +142,7 @@ function WorkspaceProfileCard({
       setName(updated.name);
       setCurrencyCode(updated.currency_code);
       setTimezone(updated.timezone);
+      setPaymentTypes(updated.payment_types ?? []);
       setBillingIsActive(updated.billing_is_active);
       setStatusMessage('Workspace settings saved successfully.');
     } catch (error) {
@@ -226,6 +252,58 @@ function WorkspaceProfileCard({
                 </option>
               ))}
             </Select>
+          </div>
+
+          <div className={styles.paymentTypesCard}>
+            <div className={styles.paymentTypesHeader}>
+              <div>
+                <span className={styles.cardKicker}>Sales payment types</span>
+                <h3 className={styles.paymentTypesTitle}>What payment labels should the POS show?</h3>
+                <p className={styles.cardText}>
+                  Add the tender names your team actually uses. These are saved on the business profile and can later
+                  power the POS payment options and reporting.
+                </p>
+              </div>
+              <span className={styles.paymentTypesCount}>
+                {paymentTypes.length} type{paymentTypes.length === 1 ? '' : 's'}
+              </span>
+            </div>
+
+            <div className={styles.paymentTypesInputRow}>
+              <Input
+                id="payment-type-draft"
+                label="Add payment type"
+                value={paymentTypeDraft}
+                onChange={(event) => setPaymentTypeDraft(event.target.value)}
+                placeholder="Cash, Card, Airtel Money"
+                helpText="Use plain labels your staff will recognize."
+              />
+              <Button type="button" variant="outline" onClick={addPaymentType}>
+                Add
+              </Button>
+            </div>
+
+            <div className={styles.paymentTypesList}>
+              {paymentTypes.length > 0 ? (
+                paymentTypes.map((paymentType) => (
+                  <span key={paymentType} className={styles.paymentTypeChip}>
+                    {paymentType}
+                    <button
+                      type="button"
+                      className={styles.paymentTypeRemove}
+                      onClick={() => removePaymentType(paymentType)}
+                      aria-label={`Remove ${paymentType}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <p className={styles.paymentTypesEmpty}>
+                  No payment types yet. Add at least one so the POS has clear choices.
+                </p>
+              )}
+            </div>
           </div>
 
           <label className={styles.checkboxRow} htmlFor="billing-apply-all">
@@ -362,6 +440,7 @@ export default function SettingsPage() {
   const businessSlug = business?.slug ?? business?.name?.toLowerCase().replace(/\s+/g, '-') ?? 'merchant-store';
   const email = me?.email ?? authState.email ?? 'No email loaded';
   const initial = fullName ? fullName[0].toUpperCase() : 'M';
+  const paymentTypes = business?.payment_types?.length ? business.payment_types : ['Cash', 'Card', 'Mobile Money'];
 
   const handleSignOut = async () => {
     try {
@@ -422,6 +501,7 @@ export default function SettingsPage() {
         initialName={business.name}
         initialCurrencyCode={business.currency_code}
         initialTimezone={business.timezone}
+        initialPaymentTypes={paymentTypes}
         initialPlanId={business.billing_plan_id}
         initialMethodId={business.billing_payment_method_id}
         initialApplyToAllLocations={business.billing_apply_to_all_locations}
