@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppSelector } from '@/lib/store';
@@ -96,6 +97,9 @@ export default function AccountsPage() {
   const [statusMessage, setStatusMessage] = useState('');
 
   const { data: me, isLoading: meLoading } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
   const authPermissions = useAppSelector((state) => state.auth.permissions);
   const canManageAccounts = Boolean(
     me?.permissions?.includes('users.manage') || authPermissions.includes('users.manage')
@@ -126,6 +130,14 @@ export default function AccountsPage() {
     () => roles.find((role) => role.id === selectedRoleId) ?? null,
     [roles, selectedRoleId]
   );
+  const companyName = business?.name ?? me?.business_id ?? 'Merchant Store';
+  const signedInName = useMemo(
+    () => `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || 'Signed-in user',
+    [me]
+  );
+  const signedInEmail = me?.email ?? 'No email loaded';
+  const signedInRole = me?.role_name ?? 'Team member';
+  const signedInInitial = signedInName ? signedInName[0].toUpperCase() : 'M';
 
   const pendingInvitations = invitations.filter((invitation) => !invitation.accepted_at && !invitation.revoked_at).length;
   const locationNameMap = useMemo(
@@ -335,6 +347,25 @@ export default function AccountsPage() {
         </div>
       </div>
 
+      <section className={styles.contextStrip} aria-label="Workspace context">
+        <div className={styles.contextCard}>
+          <span className={styles.contextLabel}>Business</span>
+          <strong className={styles.contextValue}>{companyName}</strong>
+          <span className={styles.contextHint}>The company this dashboard is managing.</span>
+        </div>
+        <div className={styles.contextCard}>
+          <span className={styles.contextLabel}>Signed in as</span>
+          <div className={styles.contextPerson}>
+            <div className={styles.contextAvatar}>{signedInInitial}</div>
+            <div>
+              <strong className={styles.contextValue}>{signedInName}</strong>
+              <span className={styles.contextHint}>{signedInRole}</span>
+              <span className={styles.contextHint}>{signedInEmail}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {statusMessage ? <div className={styles.alert}>{statusMessage}</div> : null}
 
       <div className={styles.tabs} role="tablist" aria-label="Employees sections">
@@ -380,6 +411,10 @@ export default function AccountsPage() {
                 </p>
               </div>
               <span className={styles.cardMeta}>Page {safeCurrentPage} of {totalPages}</span>
+            </div>
+
+            <div className={styles.sectionNote}>
+              This table is for the people attached to the business. The business profile itself lives in Settings.
             </div>
 
             <div className={styles.filters}>
@@ -455,12 +490,15 @@ export default function AccountsPage() {
                     </tr>
                   ) : (
                     pagedAccounts.map((account) => (
-                      <tr key={account.membership_id}>
+                      <tr key={account.membership_id} className={account.user_id === me?.id ? styles.currentRow : ''}>
                         <td>
                           <div className={styles.accountCopy}>
                             <Link className={styles.accountName} href={`/dashboard/accounts/${account.membership_id}`}>
                               {account.first_name} {account.last_name}
                             </Link>
+                            {account.user_id === me?.id ? (
+                              <span className={styles.youBadge}>This is you</span>
+                            ) : null}
                             <span className={styles.accountHint}>{account.email}</span>
                           </div>
                         </td>
@@ -554,14 +592,19 @@ export default function AccountsPage() {
                   <div>
                     <span className={styles.detailLabel}>Invite reward</span>
                     <p className={styles.helperText}>
-                      Every accepted invite can earn a free extra month. Promo codes are optional and can be shared
-                      with the new signup.
-                    </p>
-                  </div>
-                  <div className={styles.promoSummary}>
+                    Every accepted invite can earn a free extra month. Promo codes are optional and can be shared
+                    with the new signup.
+                  </p>
+                </div>
+                <div className={styles.promoSummary}>
                     <span className={styles.promoBadge}>Optional promo code</span>
                     <span className={styles.promoHint}>Use it only if you want to track an invite campaign.</span>
                   </div>
+                </div>
+
+                <div className={styles.sectionNote}>
+                  Invite to Vendora creates an employee account for the business. It does not change the company
+                  profile above.
                 </div>
 
                 <div className={styles.formGrid}>
@@ -668,6 +711,11 @@ export default function AccountsPage() {
                 <h2>Role directory</h2>
                 <p>View existing roles and open a custom role to edit its permissions.</p>
               </div>
+            </div>
+
+            <div className={styles.sectionNote}>
+              Roles control what a person can do in the workspace. They are separate from the company profile and
+              from the business-wide settings.
             </div>
 
             <div className={styles.roleList}>
@@ -784,6 +832,10 @@ export default function AccountsPage() {
                   <p>Track who has been invited, when it expires, and whether it has been accepted.</p>
                 </div>
               </div>
+
+            <div className={styles.sectionNote}>
+              Invitations belong to people joining the business. They are not business settings.
+            </div>
 
             <div className={styles.tableWrapper}>
               <table className={styles.table}>

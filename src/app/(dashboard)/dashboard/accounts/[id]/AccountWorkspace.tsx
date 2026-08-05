@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import { useGetAccountsQuery, useGetInvitationsQuery, useGetRolesQuery, useUpdateAccountMutation } from '@/lib/features/accounts/accountsApi';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppSelector } from '@/lib/store';
@@ -167,6 +168,9 @@ export function AccountWorkspace() {
   const accountId = params.id;
 
   const { data: me, isLoading: meLoading } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
   const authPermissions = useAppSelector((state) => state.auth.permissions);
   const canManageAccounts = Boolean(
     me?.permissions?.includes('users.manage') || authPermissions.includes('users.manage')
@@ -204,6 +208,12 @@ export function AccountWorkspace() {
     () => invitations.filter((invitation) => invitation.email.toLowerCase() === account?.email?.toLowerCase()),
     [account?.email, invitations]
   );
+  const companyName = business?.name ?? 'Merchant Store';
+  const signedInName = `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || 'Signed-in user';
+  const signedInRole = me?.role_name ?? 'Team member';
+  const signedInEmail = me?.email ?? '';
+  const isSelfAccount = Boolean(me?.id && account?.user_id && me.id === account.user_id);
+  const signedInInitial = signedInName ? signedInName[0].toUpperCase() : 'M';
 
   if (!meLoading && !canManageAccounts) {
     return (
@@ -260,7 +270,10 @@ export function AccountWorkspace() {
             <span>{fullName}</span>
           </div>
           <h1 className={styles.title}>{fullName}</h1>
-          <p className={styles.subtitle}>{account.email}</p>
+          <p className={styles.subtitle}>
+            {account.email}
+            {isSelfAccount ? ' · this is your own login' : ''}
+          </p>
         </div>
 
         <div className={styles.headerStats}>
@@ -279,6 +292,25 @@ export function AccountWorkspace() {
         </div>
       </div>
 
+      <section className={styles.contextStrip} aria-label="Workspace context">
+        <div className={styles.contextCard}>
+          <span className={styles.contextLabel}>Business</span>
+          <strong className={styles.contextValue}>{companyName}</strong>
+          <span className={styles.contextHint}>The workspace this employee belongs to.</span>
+        </div>
+        <div className={styles.contextCard}>
+          <span className={styles.contextLabel}>Signed in as</span>
+          <div className={styles.contextPerson}>
+            <div className={styles.contextAvatar}>{signedInInitial}</div>
+            <div>
+              <strong className={styles.contextValue}>{signedInName}</strong>
+              <span className={styles.contextHint}>{signedInRole}</span>
+              <span className={styles.contextHint}>{signedInEmail}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className={styles.grid}>
         <section className={styles.card}>
           <div className={styles.cardHeader}>
@@ -286,6 +318,11 @@ export function AccountWorkspace() {
               <h2>Employee details</h2>
               <p>Core employee information for this team member.</p>
             </div>
+            {isSelfAccount ? <span className={styles.selfBadge}>Your account</span> : null}
+          </div>
+
+          <div className={styles.sectionNote}>
+            This panel edits the employee account and access. The business profile itself is managed elsewhere.
           </div>
 
           <div className={styles.detailGrid}>
