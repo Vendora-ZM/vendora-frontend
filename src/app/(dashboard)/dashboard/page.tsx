@@ -163,6 +163,102 @@ export default function DashboardOverview() {
   }, [salesTrends]);
 
   const graphMax = Math.max(...graphData.map((point) => point.value), 1);
+  const aiAdvisor = useMemo(() => {
+    const midpoint = Math.max(1, Math.ceil(graphData.length / 2));
+    const earlyPeriodRevenue = graphData.slice(0, midpoint).reduce((sum, point) => sum + point.revenue, 0);
+    const latePeriodRevenue = graphData.slice(midpoint).reduce((sum, point) => sum + point.revenue, 0);
+    const revenueDelta =
+      earlyPeriodRevenue > 0 ? ((latePeriodRevenue - earlyPeriodRevenue) / earlyPeriodRevenue) * 100 : 0;
+    const bestProduct = topProducts[0];
+    const urgentStock = lowStockAlerts[0];
+    const bestProductSold = bestProduct ? Number(bestProduct.quantity_sold) || 0 : 0;
+    const positiveTrend = revenueDelta >= 0;
+
+    const insights: { title: string; text: string; tone: 'positive' | 'warning' | 'neutral' }[] = [];
+
+    if (graphData.length > 1) {
+      insights.push({
+        title: 'Sales momentum',
+        text: `The later part of the selected period is ${Math.abs(revenueDelta).toFixed(1)}% ${
+          positiveTrend ? 'ahead of' : 'behind'
+        } the earlier days.`,
+        tone: positiveTrend ? 'positive' : 'warning',
+      });
+    }
+
+    if (bestProduct) {
+      insights.push({
+        title: 'Top seller',
+        text: `${bestProduct.product_name} leads with ${bestProductSold.toLocaleString()} sold and ${formatCurrency(
+          bestProduct.revenue
+        )} in revenue.`,
+        tone: 'positive',
+      });
+    }
+
+    if (urgentStock) {
+      insights.push({
+        title: 'Stock risk',
+        text: `${urgentStock.product.name} is down to ${urgentStock.available} unit${
+          urgentStock.available === 1 ? '' : 's'
+        }. Reorder soon to avoid lost sales.`,
+        tone: urgentStock.available <= 2 ? 'warning' : 'neutral',
+      });
+    }
+
+    if (profitMargin < 15) {
+      insights.push({
+        title: 'Margin watch',
+        text: `Profit margin is ${profitMargin.toFixed(1)}%, so pricing or cost control needs attention.`,
+        tone: 'warning',
+      });
+    } else if (profitMargin < 25) {
+      insights.push({
+        title: 'Margin watch',
+        text: `Profit margin is ${profitMargin.toFixed(1)}%. There is still room to improve pricing or mix.`,
+        tone: 'neutral',
+      });
+    }
+
+    if (insights.length === 0) {
+      insights.push({
+        title: 'Advisor ready',
+        text: 'Once sales start flowing, Vendora will surface demand, margin, and inventory signals here.',
+        tone: 'neutral',
+      });
+    }
+
+    const healthScore = Math.max(
+      42,
+      Math.min(
+        98,
+        Math.round(
+          68 +
+            (positiveTrend ? 10 : -8) +
+            (profitMargin >= 25 ? 10 : profitMargin >= 15 ? 2 : -12) +
+            (urgentStock ? -8 : 4) +
+            (bestProduct ? 4 : 0)
+        )
+      )
+    );
+
+    return {
+      healthScore,
+      summary:
+        graphData.length > 1
+          ? positiveTrend
+            ? 'The dashboard is trending upward, and the advisor is watching for the next stock or margin risk.'
+            : 'Sales are softer in the later part of the period, so the advisor is highlighting recovery actions.'
+          : 'As more sales come in, the advisor will explain trends, highlight risks, and suggest next steps.',
+      insights,
+      prompts: [
+        'How can I increase profits?',
+        'What should I reorder first?',
+        'Which products should I raise in price?',
+        'Why are sales slowing down?',
+      ],
+    };
+  }, [formatCurrency, graphData, lowStockAlerts, profitMargin, topProducts]);
   const hasError = Boolean(
     trendsError || topProductsError || salesError || balancesError || productsError || customersError
   );
@@ -273,6 +369,52 @@ export default function DashboardOverview() {
           Some dashboard data could not be loaded. The rest of the dashboard is still live.
         </div>
       )}
+
+      <div className={styles.aiAdvisorCard}>
+        <div className={styles.aiAdvisorHeader}>
+          <div>
+            <span className={styles.aiAdvisorEyebrow}>AI Business Advisor</span>
+            <h2 className={styles.aiAdvisorTitle}>Plain-English advice based on live sales and stock data.</h2>
+            <p className={styles.aiAdvisorText}>{aiAdvisor.summary}</p>
+          </div>
+
+          <div className={styles.aiScoreCard}>
+            <span className={styles.aiScoreLabel}>Business health score</span>
+            <strong className={styles.aiScoreValue}>{aiAdvisor.healthScore}/100</strong>
+            <span className={styles.aiScoreHint}>Updated from revenue, margin, and stock signals.</span>
+          </div>
+        </div>
+
+        <div className={styles.aiInsightGrid}>
+          {aiAdvisor.insights.map((insight) => (
+            <article key={insight.title} className={styles.aiInsightCard}>
+              <span
+                className={`${styles.aiInsightTone} ${
+                  insight.tone === 'positive'
+                    ? styles.tonePositive
+                    : insight.tone === 'warning'
+                      ? styles.toneWarning
+                      : styles.toneNeutral
+                }`}
+              >
+                {insight.title}
+              </span>
+              <p>{insight.text}</p>
+            </article>
+          ))}
+        </div>
+
+        <div className={styles.aiPromptRow}>
+          <span className={styles.aiPromptLabel}>Ask the advisor</span>
+          <div className={styles.aiPromptPills}>
+            {aiAdvisor.prompts.map((prompt) => (
+              <span key={prompt} className={styles.aiPromptPill}>
+                {prompt}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
