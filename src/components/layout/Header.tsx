@@ -19,8 +19,8 @@ export const Header = () => {
           <Image
             src="/logos/vendora_logo_white_background.png"
             alt="Vendora"
-            width={180}
-            height={52}
+            width={220}
+            height={64}
             style={{ objectFit: 'contain' }}
             priority
           />
@@ -29,6 +29,9 @@ export const Header = () => {
         {/* Desktop Navigation */}
         <nav className={styles.navDesktop}>
           <Link href="/#features" className={styles.link}>Features</Link>
+          <Link href="/#products" className={styles.link}>Products</Link>
+          <Link href="/#business-types" className={styles.link}>Business types</Link>
+          <Link href="/#ai-advisor" className={styles.link}>AI Advisor</Link>
           <Link href="/#pricing" className={styles.link}>Pricing</Link>
           <Link href="/#contact" className={styles.link}>Contact</Link>
         </nav>
@@ -69,6 +72,9 @@ export const Header = () => {
         <div className={styles.mobileMenu}>
           <nav className={styles.navMobile}>
             <Link href="/#features" className={styles.mobileLink} onClick={toggleMobileMenu}>Features</Link>
+            <Link href="/#products" className={styles.mobileLink} onClick={toggleMobileMenu}>Products</Link>
+            <Link href="/#business-types" className={styles.mobileLink} onClick={toggleMobileMenu}>Business types</Link>
+            <Link href="/#ai-advisor" className={styles.mobileLink} onClick={toggleMobileMenu}>AI Advisor</Link>
             <Link href="/#pricing" className={styles.mobileLink} onClick={toggleMobileMenu}>Pricing</Link>
             <Link href="/#contact" className={styles.mobileLink} onClick={toggleMobileMenu}>Contact</Link>
           </nav>

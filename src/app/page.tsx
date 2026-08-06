@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BUSINESS_CATEGORIES, BUSINESS_HIGHLIGHTS, getBusinessCategory } from '@/lib/business/businessTypes';
 import styles from './page.module.css';
 
 const benefits = [
@@ -60,6 +61,13 @@ const productSections = [
     text: 'Run several branches from one account while still keeping each location distinct.',
     detail: 'Location-level access, reporting, and operational control.',
   },
+];
+
+const productHighlights = [
+  'Fast checkout on mobile, tablet, and desktop',
+  'Live stock visibility before products run out',
+  'Simple role-based access for every team',
+  'Reports that owners can actually read quickly',
 ];
 
 const aiInsights = [
@@ -139,6 +147,9 @@ const faqItems = [
 
 export default function Home() {
   const [isYearly, setIsYearly] = useState(false);
+  const [selectedBusinessCategory, setSelectedBusinessCategory] = useState(BUSINESS_CATEGORIES[0].value);
+  const activeBusinessCategory = getBusinessCategory(selectedBusinessCategory);
+  const activeBusinessHighlights = BUSINESS_HIGHLIGHTS[activeBusinessCategory.value] ?? BUSINESS_HIGHLIGHTS.other;
 
   return (
     <>
@@ -173,6 +184,15 @@ export default function Home() {
               <span className={styles.heroPill}>Role-based access</span>
               <span className={styles.heroPill}>Live inventory</span>
               <span className={styles.heroPill}>Fast checkout</span>
+            </div>
+
+            <div className={styles.heroStats}>
+              {productHighlights.map((item) => (
+                <div key={item} className={styles.heroStat}>
+                  <span className={styles.heroStatLabel}>Why it matters</span>
+                  <strong className={styles.heroStatValue}>{item}</strong>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -233,13 +253,12 @@ export default function Home() {
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={styles.section} id="products">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionEyebrow}>Products</span>
             <h2 className={styles.sectionTitle}>What Vendora helps merchants do.</h2>
             <p className={styles.sectionSubtitle}>
-              This is the breakdown buyers should see before sign-up: simple words, clear outcomes, and enough detail
-              to understand how the product fits their business.
+              A quick breakdown of the platform, written in simple words so buyers can see the value before sign-up.
             </p>
           </div>
 
@@ -254,7 +273,64 @@ export default function Home() {
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={styles.section} id="business-types">
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Business types</span>
+            <h2 className={styles.sectionTitle}>Pick a category, then choose a more specific business type.</h2>
+            <p className={styles.sectionSubtitle}>
+              Vendora can shape the setup around what you sell, whether you run a shop, restaurant, clinic, or service
+              business.
+            </p>
+          </div>
+
+          <div className={styles.businessTypeShell}>
+            <div className={styles.businessTypeTabs}>
+              {BUSINESS_CATEGORIES.map((category) => (
+                <button
+                  key={category.value}
+                  type="button"
+                  className={`${styles.businessTypeTab} ${selectedBusinessCategory === category.value ? styles.businessTypeTabActive : ''}`}
+                  onClick={() => setSelectedBusinessCategory(category.value)}
+                >
+                  {category.label}
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.businessTypePanel}>
+              <div className={styles.businessTypePanelHeader}>
+                <div>
+                  <span className={styles.sectionEyebrow}>Recommended for</span>
+                  <h3 className={styles.businessTypePanelTitle}>{activeBusinessCategory.label}</h3>
+                  <p className={styles.businessTypePanelText}>{activeBusinessCategory.description}</p>
+                </div>
+                <div className={styles.businessTypeBadge}>
+                  <span>Category</span>
+                  <strong>{activeBusinessCategory.label}</strong>
+                </div>
+              </div>
+
+              <div className={styles.businessTypeList}>
+                {activeBusinessCategory.types.map((type) => (
+                  <span key={type} className={styles.businessTypeChip}>
+                    {type}
+                  </span>
+                ))}
+              </div>
+
+              <div className={styles.businessTypeHighlights}>
+                {activeBusinessHighlights.map((highlight) => (
+                  <div key={highlight} className={styles.businessTypeHighlightCard}>
+                    <span className={styles.businessTypeHighlightLabel}>Built for this type</span>
+                    <strong>{highlight}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.section} id="ai-advisor">
           <div className={styles.analyticsBanner}>
             <div className={styles.analyticsCopy}>
               <span className={styles.sectionEyebrow}>AI Dashboard</span>
