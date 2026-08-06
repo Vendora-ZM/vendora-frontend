@@ -101,7 +101,7 @@ export const ProductFormModal: React.FC = () => {
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) newErrors.name = 'Product name is required.';
-    if (!form.sku.trim()) newErrors.sku = 'SKU is required.';
+    if (!form.sku.trim()) newErrors.sku = 'Item code is required.';
     if (form.selling_price && isNaN(parseFloat(form.selling_price))) {
       newErrors.selling_price = 'Must be a valid number.';
     }
@@ -175,7 +175,7 @@ export const ProductFormModal: React.FC = () => {
         {apiError && <div className={styles.apiError}>{apiError}</div>}
 
         <div className={styles.formGrid}>
-          {/* Row 1: Name + SKU */}
+          {/* Row 1: Name + Item code */}
           <Input
             id="product-name"
             label="Product Name *"
@@ -186,7 +186,7 @@ export const ProductFormModal: React.FC = () => {
           />
           <Input
             id="product-sku"
-            label="SKU *"
+            label="Item code *"
             placeholder="e.g. WM-001"
             value={form.sku}
             onChange={set('sku')}

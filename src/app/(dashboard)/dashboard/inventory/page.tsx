@@ -36,13 +36,77 @@ export default function InventoryPage() {
   const lowStockCount = balances.filter((b) => parseFloat(b.quantity_available) <= 5).length;
   const outOfStockCount = balances.filter((b) => parseFloat(b.quantity_available) <= 0).length;
 
+  const advancedInventory = useMemo(() => {
+    const movementByProduct = new Map<string, number>();
+    const movementByType = new Map<string, number>();
+    const recentMovementProductIds = new Set<string>();
+
+    movements.forEach((movement) => {
+      const delta = Math.abs(parseFloat(movement.quantity_delta || '0'));
+      movementByProduct.set(movement.product_id, (movementByProduct.get(movement.product_id) ?? 0) + delta);
+      movementByType.set(movement.movement_type, (movementByType.get(movement.movement_type) ?? 0) + 1);
+      recentMovementProductIds.add(movement.product_id);
+    });
+
+    const lowStockBalances = balances
+      .map((balance) => {
+        const product = productsMap[balance.product_id];
+        const available = Number.parseFloat(balance.quantity_available || '0');
+        return product ? { product, available } : null;
+      })
+      .filter((item): item is { product: Product; available: number } => item !== null)
+      .filter((item) => item.available <= 5)
+      .sort((a, b) => a.available - b.available)
+      .slice(0, 3);
+
+    const quietStock = balances
+      .map((balance) => {
+        const product = productsMap[balance.product_id];
+        const available = Number.parseFloat(balance.quantity_available || '0');
+        return product ? { product, available, productId: balance.product_id } : null;
+      })
+      .filter((item): item is { product: Product; available: number; productId: string } => item !== null)
+      .filter((item) => !recentMovementProductIds.has(item.productId) && item.available > 0)
+      .sort((a, b) => b.available - a.available)
+      .slice(0, 3);
+
+    const mostActiveProductId = [...movementByProduct.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const mostActiveProduct = mostActiveProductId ? productsMap[mostActiveProductId] : undefined;
+    const mostActiveMovementCount = mostActiveProductId ? movementByProduct.get(mostActiveProductId) ?? 0 : 0;
+
+    const movementTypeRows = [...movementByType.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([type, count]) => ({ type, count }))
+      .slice(0, 4);
+
+    const aiSummary = (() => {
+      if (lowStockBalances.length > 0) {
+        const [first] = lowStockBalances;
+        return `${first.product.name} is the clearest reorder candidate with ${first.available} unit${first.available === 1 ? '' : 's'} left.`;
+      }
+      if (mostActiveProduct) {
+        return `${mostActiveProduct.name} is the most active item in the current movement window, with ${mostActiveMovementCount.toFixed(0)} units moving.`;
+      }
+      return 'Inventory looks calm right now. As more movement data builds up, Vendora will surface reorder and dead-stock patterns here.';
+    })();
+
+    return {
+      lowStockBalances,
+      quietStock,
+      movementTypeRows,
+      mostActiveProduct,
+      mostActiveMovementCount,
+      aiSummary,
+    };
+  }, [balances, movements, productsMap]);
+
   return (
     <div className={styles.page}>
       {/* Header */}
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Inventory</h1>
-          <p className={styles.subtitle}>Track stock levels, movements and adjustments across all locations.</p>
+          <p className={styles.subtitle}>Track stock levels, item movement, and restocking across all locations.</p>
         </div>
       </div>
 
@@ -56,7 +120,7 @@ export default function InventoryPage() {
             </svg>
           </div>
           <div>
-            <p className={styles.statLabel}>Total SKUs</p>
+            <p className={styles.statLabel}>Tracked items</p>
             <p className={styles.statValue}>{totalSkus}</p>
           </div>
         </div>
@@ -100,6 +164,113 @@ export default function InventoryPage() {
           </div>
         </div>
       </div>
+
+      <details className={styles.advancedInventoryCard} open>
+        <summary className={styles.advancedInventorySummary}>
+          <div>
+            <span className={styles.advancedEyebrow}>Advanced Inventory</span>
+            <h2 className={styles.advancedTitle}>Deeper stock insights and AI guidance.</h2>
+            <p className={styles.advancedText}>
+              Use this area to spot reorder risks, quiet items, and movement patterns that deserve attention.
+            </p>
+          </div>
+          <span className={styles.advancedHint}>Built from live balances and recent movement history</span>
+        </summary>
+
+        <div className={styles.advancedGrid}>
+          <article className={styles.advancedCard}>
+            <span className={styles.advancedLabel}>Reorder soon</span>
+            <strong className={styles.advancedValue}>{advancedInventory.lowStockBalances.length}</strong>
+            <p className={styles.advancedCopy}>Items sitting at five units or fewer.</p>
+          </article>
+
+          <article className={styles.advancedCard}>
+            <span className={styles.advancedLabel}>Quiet stock</span>
+            <strong className={styles.advancedValue}>{advancedInventory.quietStock.length}</strong>
+            <p className={styles.advancedCopy}>Items with stock on hand but no recent movement in this window.</p>
+          </article>
+
+          <article className={styles.advancedCard}>
+            <span className={styles.advancedLabel}>Movement types</span>
+            <strong className={styles.advancedValue}>{advancedInventory.movementTypeRows.length}</strong>
+            <p className={styles.advancedCopy}>Adjustment, transfer, and other movement patterns in view.</p>
+          </article>
+
+          <article className={styles.advancedCard}>
+            <span className={styles.advancedLabel}>Most active item</span>
+            <strong className={styles.advancedValue}>
+              {advancedInventory.mostActiveProduct?.name ?? 'None'}
+            </strong>
+            <p className={styles.advancedCopy}>
+              {advancedInventory.mostActiveProduct
+                ? `${advancedInventory.mostActiveMovementCount.toFixed(0)} units moved in the current window.`
+                : 'No movement data available yet.'}
+            </p>
+          </article>
+        </div>
+
+        <div className={styles.advancedSplit}>
+          <div className={styles.advancedPanel}>
+            <h3 className={styles.advancedPanelTitle}>AI inventory notes</h3>
+            <p className={styles.advancedPanelCopy}>{advancedInventory.aiSummary}</p>
+            <div className={styles.advancedPills}>
+              <span className={styles.advancedPill}>Reorder suggestions</span>
+              <span className={styles.advancedPill}>Dead stock watch</span>
+              <span className={styles.advancedPill}>Movement patterns</span>
+            </div>
+          </div>
+
+          <div className={styles.advancedPanel}>
+            <h3 className={styles.advancedPanelTitle}>Movement mix</h3>
+            <div className={styles.movementMixList}>
+              {advancedInventory.movementTypeRows.length > 0 ? (
+                advancedInventory.movementTypeRows.map((row) => (
+                  <div key={row.type} className={styles.movementMixRow}>
+                    <span>{row.type.replace(/_/g, ' ')}</span>
+                    <strong>{row.count}</strong>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.advancedPanelCopy}>No movement patterns have been recorded yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.advancedSplit}>
+          <div className={styles.advancedPanel}>
+            <h3 className={styles.advancedPanelTitle}>Items to watch</h3>
+            <div className={styles.watchList}>
+              {advancedInventory.lowStockBalances.length > 0 ? (
+                advancedInventory.lowStockBalances.map((item) => (
+                  <div key={item.product.id} className={styles.watchItem}>
+                    <strong>{item.product.name}</strong>
+                    <span>{item.available} units available</span>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.advancedPanelCopy}>No urgent reorder items right now.</p>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.advancedPanel}>
+            <h3 className={styles.advancedPanelTitle}>Quiet stock</h3>
+            <div className={styles.watchList}>
+              {advancedInventory.quietStock.length > 0 ? (
+                advancedInventory.quietStock.map((item) => (
+                  <div key={item.product.id} className={styles.watchItem}>
+                    <strong>{item.product.name}</strong>
+                    <span>{item.available} units on hand, no recent movement</span>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.advancedPanelCopy}>Nothing is sitting idle in the current movement window.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </details>
 
       {/* Tabs */}
       <div className={styles.tabsBar}>

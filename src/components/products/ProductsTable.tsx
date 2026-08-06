@@ -72,7 +72,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoadin
                   <td>
                     <div className={styles.productCell}>
                       <span className={styles.productName}>{product.name}</span>
-                      <span className={styles.productSku}>SKU: {product.sku}</span>
+                      <span className={styles.productSku}>Item code: {product.sku}</span>
                     </div>
                   </td>
                   <td className={styles.categoryCell}>

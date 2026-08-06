@@ -101,7 +101,7 @@ function ProductDetailsEditor({ product }: { product: Product }) {
   const validate = () => {
     const nextErrors: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) nextErrors.name = 'Product name is required.';
-    if (!form.sku.trim()) nextErrors.sku = 'SKU is required.';
+    if (!form.sku.trim()) nextErrors.sku = 'Item code is required.';
     if (form.selling_price && Number.isNaN(Number(form.selling_price))) {
       nextErrors.selling_price = 'Must be a valid number.';
     }
@@ -146,7 +146,7 @@ function ProductDetailsEditor({ product }: { product: Product }) {
     <section className={styles.card}>
       <div className={styles.summaryHeader}>
         <div>
-          <h2>{product.sku}</h2>
+          <h2>Item code: {product.sku}</h2>
           <p>{selectedCategoryName}</p>
         </div>
         <span>{product.is_active ? 'Active' : 'Inactive'}</span>
@@ -191,7 +191,7 @@ function ProductDetailsEditor({ product }: { product: Product }) {
         />
         <Input
           id="product-sku"
-          label="SKU *"
+          label="Item code *"
           value={form.sku}
           onChange={set('sku')}
           error={errors.sku}
@@ -437,7 +437,7 @@ export function ProductWorkspace() {
       <section className={styles.summaryCard}>
         <div className={styles.summaryHeader}>
           <div>
-            <h2>{product?.sku}</h2>
+            <h2>Item code: {product?.sku}</h2>
             <p>{product?.category_id ? 'Category assigned' : 'Uncategorised'}</p>
           </div>
           <span>{product?.is_active ? 'Active' : 'Inactive'}</span>

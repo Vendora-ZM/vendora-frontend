@@ -57,7 +57,7 @@ export default function NewProductPage() {
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) newErrors.name = 'Product name is required.';
-    if (!form.sku.trim()) newErrors.sku = 'SKU is required.';
+    if (!form.sku.trim()) newErrors.sku = 'Item code is required.';
     if (form.selling_price && isNaN(parseFloat(form.selling_price))) {
       newErrors.selling_price = 'Must be a valid number.';
     }
@@ -136,7 +136,7 @@ export default function NewProductPage() {
                 />
                 <Input
                   id="product-sku"
-                  label="SKU *"
+                  label="Item code *"
                   placeholder="e.g. WM-001"
                   value={form.sku}
                   onChange={set('sku')}

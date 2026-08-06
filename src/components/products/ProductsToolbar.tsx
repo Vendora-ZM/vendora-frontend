@@ -38,7 +38,7 @@ export const ProductsToolbar: React.FC = () => {
           <input
             id="product-search"
             type="text"
-            placeholder="Search products by name or SKU…"
+            placeholder="Search products by name or item code…"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             className={styles.searchInput}
