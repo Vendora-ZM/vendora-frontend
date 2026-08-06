@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAcceptInvitationMutation, useLoginMutation, useRegisterMutation } from "@/lib/features/auth/authApi";
+import { BUSINESS_CATEGORIES, BUSINESS_HIGHLIGHTS, getBusinessCategory } from "@/lib/business/businessTypes";
 import { useAppDispatch } from "@/lib/store";
 import { setCredentials } from "@/lib/features/auth/authSlice";
 import styles from "./login.module.css";
@@ -29,6 +30,8 @@ function LoginForm() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [businessCategory, setBusinessCategory] = useState(BUSINESS_CATEGORIES[0].value);
+  const [businessType, setBusinessType] = useState(BUSINESS_CATEGORIES[0].types[0]);
   const [phone, setPhone] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -68,6 +71,8 @@ function LoginForm() {
           first_name: firstName,
           last_name: lastName,
           business_name: businessName,
+          business_category: businessCategory,
+          business_type: businessType,
           phone: phone || undefined,
         }).unwrap();
         
@@ -116,6 +121,14 @@ function LoginForm() {
   };
 
   const isLoading = isLoginLoading || isRegisterLoading || isAcceptingInvitation;
+  const selectedCategory = getBusinessCategory(businessCategory);
+  const selectedHighlights = BUSINESS_HIGHLIGHTS[selectedCategory.value] ?? BUSINESS_HIGHLIGHTS.other;
+
+  const handleBusinessCategoryChange = (value: string) => {
+    const nextCategory = getBusinessCategory(value);
+    setBusinessCategory(nextCategory.value);
+    setBusinessType(nextCategory.types[0]);
+  };
 
   return (
     <div className={styles.container}>
@@ -225,6 +238,55 @@ function LoginForm() {
                     onChange={(e) => setBusinessName(e.target.value)}
                     required
                   />
+                </div>
+
+                <div className={styles.row} style={{ marginBottom: "20px" }}>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="businessCategory">Business Category</label>
+                    <select
+                      id="businessCategory"
+                      className={styles.input}
+                      value={businessCategory}
+                      onChange={(e) => handleBusinessCategoryChange(e.target.value)}
+                      required
+                    >
+                      {BUSINESS_CATEGORIES.map((category) => (
+                        <option key={category.value} value={category.value}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="businessType">Business Type</label>
+                    <select
+                      id="businessType"
+                      className={styles.input}
+                      value={businessType}
+                      onChange={(e) => setBusinessType(e.target.value)}
+                      required
+                    >
+                      {selectedCategory.types.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className={styles.selectorSummary}>
+                  <div className={styles.selectorSummaryCopy}>
+                    <span className={styles.selectorSummaryLabel}>Recommended for</span>
+                    <strong>{selectedCategory.description}</strong>
+                  </div>
+                  <div className={styles.selectorSummaryPills}>
+                    {selectedHighlights.map((pill) => (
+                      <span key={pill} className={styles.selectorSummaryPill}>
+                        {pill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <div className={styles.row} style={{ marginBottom: "20px" }}>

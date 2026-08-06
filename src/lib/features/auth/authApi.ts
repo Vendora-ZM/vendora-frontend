@@ -20,6 +20,8 @@ interface RegisterRequest {
   first_name: string;
   last_name: string;
   business_name: string;
+  business_category: string;
+  business_type: string;
   phone?: string;
 }
 

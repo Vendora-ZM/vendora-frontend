@@ -8,6 +8,7 @@ import { Input, Select } from '@/components/ui/Input';
 import { useLogoutMutation } from '@/lib/features/auth/authApi';
 import { logout } from '@/lib/features/auth/authSlice';
 import { useGetBusinessQuery, useUpdateBusinessMutation } from '@/lib/features/business/businessApi';
+import { BUSINESS_CATEGORIES, BUSINESS_HIGHLIGHTS, getBusinessCategory } from '@/lib/business/businessTypes';
 import {
   BILLING_PAYMENT_METHODS,
   BILLING_PLANS,
@@ -45,6 +46,8 @@ function WorkspaceProfileCard({
   initialName,
   initialCurrencyCode,
   initialTimezone,
+  initialBusinessCategory,
+  initialBusinessType,
   initialPaymentTypes,
   initialReceiptShowLogo,
   initialReceiptHeaderText,
@@ -68,6 +71,8 @@ function WorkspaceProfileCard({
   initialName: string;
   initialCurrencyCode: string;
   initialTimezone: string;
+  initialBusinessCategory: string;
+  initialBusinessType: string;
   initialPaymentTypes: string[];
   initialReceiptShowLogo: boolean;
   initialReceiptHeaderText: string;
@@ -90,6 +95,8 @@ function WorkspaceProfileCard({
   const [name, setName] = useState(initialName);
   const [currencyCode, setCurrencyCode] = useState(initialCurrencyCode);
   const [timezone, setTimezone] = useState(initialTimezone);
+  const [businessCategory, setBusinessCategory] = useState(initialBusinessCategory);
+  const [businessType, setBusinessType] = useState(initialBusinessType);
   const [paymentTypes, setPaymentTypes] = useState(initialPaymentTypes);
   const [paymentTypeDraft, setPaymentTypeDraft] = useState('');
   const [receiptShowLogo, setReceiptShowLogo] = useState(initialReceiptShowLogo);
@@ -104,6 +111,8 @@ function WorkspaceProfileCard({
   const selectedPlan = BILLING_PLANS.find((plan) => plan.id === planId) ?? BILLING_PLANS[1];
   const selectedMethod =
     BILLING_PAYMENT_METHODS.find((method) => method.id === paymentMethodId) ?? BILLING_PAYMENT_METHODS[0];
+  const selectedCategory = getBusinessCategory(businessCategory);
+  const selectedHighlights = BUSINESS_HIGHLIGHTS[selectedCategory.value] ?? BUSINESS_HIGHLIGHTS.other;
   const expiresText = new Date(trialExpiresAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -141,6 +150,8 @@ function WorkspaceProfileCard({
           name: name.trim() || null,
           currency_code: currencyCode.trim().toUpperCase() || null,
           timezone: timezone.trim() || null,
+          business_category: businessCategory,
+          business_type: businessType,
           payment_types: paymentTypes,
           receipt_show_logo: receiptShowLogo,
           receipt_header_text: receiptHeaderText.trim() || null,
@@ -154,6 +165,8 @@ function WorkspaceProfileCard({
       setName(updated.name);
       setCurrencyCode(updated.currency_code);
       setTimezone(updated.timezone);
+      setBusinessCategory(updated.business_category);
+      setBusinessType(updated.business_type);
       setPaymentTypes(updated.payment_types ?? []);
       setReceiptShowLogo(updated.receipt_show_logo);
       setReceiptHeaderText(updated.receipt_header_text);
@@ -241,6 +254,38 @@ function WorkspaceProfileCard({
             </Select>
 
             <Select
+              id="business-category"
+              label="Business category"
+              value={businessCategory}
+              onChange={(event) => {
+                const nextCategory = getBusinessCategory(event.target.value);
+                setBusinessCategory(nextCategory.value);
+                setBusinessType(nextCategory.types[0]);
+              }}
+              helpText="The main business group you operate in."
+            >
+              {BUSINESS_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              id="business-type"
+              label="Business type"
+              value={businessType}
+              onChange={(event) => setBusinessType(event.target.value)}
+              helpText="The more specific type that best describes your business."
+            >
+              {selectedCategory.types.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </Select>
+
+            <Select
               id="billing-plan"
               label="Billing plan"
               value={planId}
@@ -318,6 +363,48 @@ function WorkspaceProfileCard({
                   No payment types yet. Add at least one so the POS has clear choices.
                 </p>
               )}
+            </div>
+          </div>
+
+          <div className={styles.businessTypeCard}>
+            <div className={styles.businessTypeHeader}>
+              <div>
+                <span className={styles.cardKicker}>Business type</span>
+                <h3 className={styles.paymentTypesTitle}>Keep the workspace tailored to your industry.</h3>
+                <p className={styles.cardText}>
+                  Vendora can use the selected category and type to frame the workspace and future setup guidance.
+                </p>
+              </div>
+              <span className={styles.paymentTypesCount}>
+                {selectedCategory.label}
+              </span>
+            </div>
+
+            <div className={styles.businessTypeSummary}>
+              <div>
+                <span className={styles.detailLabel}>Category</span>
+                <strong>{selectedCategory.label}</strong>
+              </div>
+              <div>
+                <span className={styles.detailLabel}>Type</span>
+                <strong>{businessType}</strong>
+              </div>
+            </div>
+
+            <div className={styles.selectorPills}>
+              {selectedCategory.types.slice(0, 4).map((type) => (
+                <span key={type} className={styles.selectorSummaryPill}>
+                  {type}
+                </span>
+              ))}
+            </div>
+
+            <div className={styles.selectorPills}>
+              {selectedHighlights.map((highlight) => (
+                <span key={highlight} className={styles.selectorSummaryPill}>
+                  {highlight}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -559,6 +646,8 @@ export default function SettingsPage() {
         initialName={business.name}
         initialCurrencyCode={business.currency_code}
         initialTimezone={business.timezone}
+        initialBusinessCategory={business.business_category}
+        initialBusinessType={business.business_type}
         initialPaymentTypes={paymentTypes}
         initialReceiptShowLogo={receiptShowLogo}
         initialReceiptHeaderText={receiptHeaderText}

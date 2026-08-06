@@ -8,6 +8,8 @@ export interface BusinessResponse {
   currency_code: string;
   timezone: string;
   is_active: boolean;
+  business_category: string;
+  business_type: string;
   payment_types: string[];
   receipt_show_logo: boolean;
   receipt_header_text: string;
@@ -55,6 +57,8 @@ export const businessApi = createApi({
           name?: string | null;
           currency_code?: string | null;
           timezone?: string | null;
+          business_category?: string | null;
+          business_type?: string | null;
           payment_types?: string[] | null;
           receipt_show_logo?: boolean | null;
           receipt_header_text?: string | null;

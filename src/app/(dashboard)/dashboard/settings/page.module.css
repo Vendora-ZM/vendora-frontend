@@ -262,6 +262,64 @@
   line-height: 1.5;
 }
 
+.businessTypeCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(6, 41, 107, 0.12);
+  background: rgba(15, 118, 110, 0.05);
+}
+
+.businessTypeHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.businessTypeSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(6, 41, 107, 0.08);
+}
+
+.businessTypeSummary strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-primary-navy);
+}
+
+.detailLabel {
+  display: block;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selectorPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectorSummaryPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(6, 41, 107, 0.08);
+  color: var(--color-primary-navy);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .receiptCard {
   display: grid;
   gap: 14px;
@@ -410,7 +468,8 @@
   }
 
   .statusStrip,
-  .preferenceSummary {
+  .preferenceSummary,
+  .businessTypeSummary {
     grid-template-columns: 1fr;
   }
 }
@@ -434,6 +493,10 @@
   }
 
   .paymentTypesHeader {
+    flex-direction: column;
+  }
+
+  .businessTypeHeader {
     flex-direction: column;
   }
 
