@@ -32,6 +32,9 @@ const timezoneOptions = [
   'America/Los_Angeles',
 ];
 
+const languageOptions = ['English', 'Swahili', 'French', 'Portuguese'];
+const SETTINGS_LANGUAGE_STORAGE_KEY = 'vendora.settings.language.v1';
+
 function isUnauthorizedError(error: unknown) {
   return Boolean(
     error &&
@@ -64,8 +67,10 @@ function WorkspaceProfileCard({
   roleName,
   businessName,
   businessSlug,
+  language,
   initial,
   onSignOut,
+  onLanguageChange,
 }: {
   businessId: string;
   initialName: string;
@@ -89,8 +94,10 @@ function WorkspaceProfileCard({
   roleName: string;
   businessName: string;
   businessSlug: string;
+  language: string;
   initial: string;
   onSignOut: () => void;
+  onLanguageChange: (value: string) => void;
 }) {
   const [name, setName] = useState(initialName);
   const [currencyCode, setCurrencyCode] = useState(initialCurrencyCode);
@@ -201,11 +208,67 @@ function WorkspaceProfileCard({
         </div>
       </section>
 
+      <section className={styles.identityGrid}>
+        <article className={styles.identityCard}>
+          <span className={styles.cardKicker}>Company profile</span>
+          <h2 className={styles.identityTitle}>{businessName}</h2>
+          <p className={styles.identityText}>
+            This is the company being represented across the dashboard, receipts, and billing.
+          </p>
+          <div className={styles.identityDetails}>
+            <div>
+              <span className={styles.detailLabel}>Slug</span>
+              <strong>{businessSlug}</strong>
+            </div>
+            <div>
+              <span className={styles.detailLabel}>Category</span>
+              <strong>{selectedCategory.label}</strong>
+            </div>
+            <div>
+              <span className={styles.detailLabel}>Type</span>
+              <strong>{businessType}</strong>
+            </div>
+            <div>
+              <span className={styles.detailLabel}>Currency / time zone</span>
+              <strong>
+                {currencyCode} · {timezone}
+              </strong>
+            </div>
+          </div>
+        </article>
+
+        <article className={styles.identityCard}>
+          <span className={styles.cardKicker}>Signed-in account</span>
+          <h2 className={styles.identityTitle}>{fullName}</h2>
+          <p className={styles.identityText}>
+            This is the personal login currently using Vendora, separate from the company profile.
+          </p>
+          <div className={styles.identityDetails}>
+            <div>
+              <span className={styles.detailLabel}>Email</span>
+              <strong>{email}</strong>
+            </div>
+            <div>
+              <span className={styles.detailLabel}>Role</span>
+              <strong>{roleName}</strong>
+            </div>
+            <div>
+              <span className={styles.detailLabel}>Language</span>
+              <strong>{language}</strong>
+            </div>
+            <div>
+              <span className={styles.detailLabel}>Session</span>
+              <strong>Stays signed in until sign out</strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
       <div className={styles.grid}>
       <section className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
-            <span className={styles.cardKicker}>Business profile</span>
+            <span className={styles.cardKicker}>Company settings</span>
             <h2 className={styles.cardTitle}>Edit the company details that appear across the platform.</h2>
             <p className={styles.cardText}>
               This controls how the company is named in the dashboard, receipts, and future operational settings.
@@ -518,6 +581,39 @@ function WorkspaceProfileCard({
         <section className={styles.card}>
           <div className={styles.cardHeader}>
             <div>
+              <span className={styles.cardKicker}>Personal preferences</span>
+              <h2 className={styles.cardTitle}>Tailor the interface to the signed-in account.</h2>
+              <p className={styles.cardText}>
+                These settings stay on this device and help the account feel separate from the company profile.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.sidebarForm}>
+            <Select
+              id="app-language"
+              label="App language"
+              value={language}
+              onChange={(event) => onLanguageChange(event.target.value)}
+              helpText="Stored locally on this browser."
+            >
+              {languageOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Select>
+
+            <div className={styles.preferenceCallout}>
+              <strong>Your login and company stay separate.</strong>
+              <span>Language and session preferences follow the signed-in account on this device.</span>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div>
               <span className={styles.cardKicker}>Quick access</span>
               <h2 className={styles.cardTitle}>Move to the main operational areas faster.</h2>
             </div>
@@ -561,6 +657,7 @@ export default function SettingsPage() {
   const { data: business, error: businessError } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
   });
+  const [language, setLanguage] = useState(languageOptions[0]);
 
   useEffect(() => {
     const unauthorized = isUnauthorizedError(meError) || isUnauthorizedError(businessError);
@@ -570,6 +667,25 @@ export default function SettingsPage() {
       router.replace('/login');
     }
   }, [businessError, dispatch, meError, router]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const storedLanguage = window.localStorage.getItem(SETTINGS_LANGUAGE_STORAGE_KEY);
+    if (storedLanguage && languageOptions.includes(storedLanguage)) {
+      setLanguage(storedLanguage);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem(SETTINGS_LANGUAGE_STORAGE_KEY, language);
+  }, [language]);
 
   const fullName = useMemo(
     () => `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || authState.userName || 'Signed-in user',
@@ -664,8 +780,10 @@ export default function SettingsPage() {
         roleName={roleName}
         businessName={businessName}
         businessSlug={businessSlug}
+        language={language}
         initial={initial}
         onSignOut={handleSignOut}
+        onLanguageChange={setLanguage}
       />
     </div>
   );

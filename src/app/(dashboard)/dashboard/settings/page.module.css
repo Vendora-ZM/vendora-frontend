@@ -58,6 +58,46 @@
   gap: 12px;
 }
 
+.identityGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.identityCard {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff, #fbfcff);
+  border: 1px solid rgba(6, 41, 107, 0.08);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+}
+
+.identityTitle {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 1.1rem;
+}
+
+.identityText {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.identityDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.identityDetails strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-primary-navy);
+}
+
 .statusCard {
   background: linear-gradient(180deg, #ffffff, #fbfcff);
   border: 1px solid rgba(6, 41, 107, 0.08);
@@ -438,6 +478,27 @@
   align-items: center;
 }
 
+.sidebarForm {
+  padding: 0 22px 22px;
+  display: grid;
+  gap: 16px;
+}
+
+.preferenceCallout {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(6, 41, 107, 0.04);
+  border: 1px solid rgba(6, 41, 107, 0.08);
+  color: #0f172a;
+}
+
+.preferenceCallout span {
+  color: #64748b;
+  line-height: 1.5;
+}
+
 .quickLinks {
   display: grid;
   gap: 12px;
@@ -468,6 +529,7 @@
   }
 
   .statusStrip,
+  .identityGrid,
   .preferenceSummary,
   .businessTypeSummary {
     grid-template-columns: 1fr;
@@ -481,6 +543,10 @@
 
   .heroStats {
     width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .identityDetails {
     grid-template-columns: 1fr;
   }
 
