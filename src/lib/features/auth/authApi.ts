@@ -23,6 +23,7 @@ interface RegisterRequest {
   business_category: string;
   business_type: string;
   phone?: string;
+  promo_code?: string;
 }
 
 interface AcceptInvitationRequest {

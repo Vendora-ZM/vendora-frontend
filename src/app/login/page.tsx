@@ -18,6 +18,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite') ?? '';
   const inviteEmail = searchParams.get('email') ?? '';
+  const invitePromoCode = searchParams.get('promo_code') ?? '';
   const initialMode = inviteToken ? 'ACCEPT_INVITE' : searchParams.get('mode') === 'register' ? 'REGISTER' : 'LOGIN';
 
   const [mode, setMode] = useState<AuthMode>(initialMode);
@@ -33,6 +34,7 @@ function LoginForm() {
   const [businessCategory, setBusinessCategory] = useState(BUSINESS_CATEGORIES[0].value);
   const [businessType, setBusinessType] = useState(BUSINESS_CATEGORIES[0].types[0]);
   const [phone, setPhone] = useState("");
+  const [promoCode, setPromoCode] = useState(invitePromoCode);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -74,6 +76,7 @@ function LoginForm() {
           business_category: businessCategory,
           business_type: businessType,
           phone: phone || undefined,
+          promo_code: promoCode.trim() || undefined,
         }).unwrap();
         
         if (response.success) {
@@ -287,6 +290,21 @@ function LoginForm() {
                       </span>
                     ))}
                   </div>
+                </div>
+
+                <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
+                  <label htmlFor="promoCode">Promo Code (Optional)</label>
+                  <input
+                    id="promoCode"
+                    type="text"
+                    className={styles.input}
+                    placeholder="INVITE-1234"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                  />
+                  <p className={styles.fieldHint}>
+                    If someone invited you to Vendora, enter the code they shared here.
+                  </p>
                 </div>
 
                 <div className={styles.row} style={{ marginBottom: "20px" }}>

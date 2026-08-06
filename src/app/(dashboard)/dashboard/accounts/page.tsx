@@ -588,19 +588,19 @@ export default function AccountsPage() {
               </div>
 
               <form className={styles.form} onSubmit={handleInviteSubmit}>
-                <div className={styles.inviteRewardCard}>
-                  <div>
-                    <span className={styles.detailLabel}>Invite reward</span>
-                    <p className={styles.helperText}>
+              <div className={styles.inviteRewardCard}>
+                <div>
+                  <span className={styles.detailLabel}>Invite reward</span>
+                  <p className={styles.helperText}>
                     Every accepted invite can earn a free extra month. Promo codes are optional and can be shared
                     with the new signup.
                   </p>
                 </div>
                 <div className={styles.promoSummary}>
-                    <span className={styles.promoBadge}>Optional promo code</span>
-                    <span className={styles.promoHint}>Use it only if you want to track an invite campaign.</span>
-                  </div>
+                  <span className={styles.promoBadge}>Optional promo code</span>
+                  <span className={styles.promoHint}>Use it only if you want to track an invite campaign.</span>
                 </div>
+              </div>
 
                 <div className={styles.sectionNote}>
                   Invite to Vendora creates an employee account for the business. It does not change the company
