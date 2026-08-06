@@ -9,6 +9,9 @@ export interface BusinessResponse {
   timezone: string;
   is_active: boolean;
   payment_types: string[];
+  receipt_show_logo: boolean;
+  receipt_header_text: string;
+  receipt_footer_text: string;
   billing_plan_id: BillingPlanId;
   billing_payment_method_id: BillingPaymentMethodId;
   billing_apply_to_all_locations: boolean;
@@ -53,6 +56,9 @@ export const businessApi = createApi({
           currency_code?: string | null;
           timezone?: string | null;
           payment_types?: string[] | null;
+          receipt_show_logo?: boolean | null;
+          receipt_header_text?: string | null;
+          receipt_footer_text?: string | null;
           billing_plan_id?: BillingPlanId | null;
           billing_payment_method_id?: BillingPaymentMethodId | null;
           billing_apply_to_all_locations?: boolean | null;

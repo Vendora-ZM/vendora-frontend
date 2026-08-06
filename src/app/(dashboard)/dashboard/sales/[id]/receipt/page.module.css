@@ -109,6 +109,10 @@
   margin-bottom: 10px;
 }
 
+.logoWrap {
+  margin-bottom: 12px;
+}
+
 .receiptHeader h2 {
   font-size: 1.65rem;
   color: var(--color-primary-navy);
@@ -117,6 +121,12 @@
 .receiptHeader p {
   color: var(--color-grey);
   margin-top: 6px;
+}
+
+.headerNote {
+  max-width: 520px;
+  color: var(--color-primary-navy);
+  font-weight: 700;
 }
 
 .statusBlock {
@@ -284,6 +294,12 @@
 .footerNote {
   padding: 0 28px 28px;
   color: var(--color-grey);
+}
+
+.receiptFooter {
+  margin-top: 12px;
+  color: var(--color-primary-navy);
+  font-weight: 700;
 }
 
 .footerNote p {

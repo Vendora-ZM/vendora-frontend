@@ -46,6 +46,9 @@ function WorkspaceProfileCard({
   initialCurrencyCode,
   initialTimezone,
   initialPaymentTypes,
+  initialReceiptShowLogo,
+  initialReceiptHeaderText,
+  initialReceiptFooterText,
   initialPlanId,
   initialMethodId,
   initialApplyToAllLocations,
@@ -66,6 +69,9 @@ function WorkspaceProfileCard({
   initialCurrencyCode: string;
   initialTimezone: string;
   initialPaymentTypes: string[];
+  initialReceiptShowLogo: boolean;
+  initialReceiptHeaderText: string;
+  initialReceiptFooterText: string;
   initialPlanId: BillingPlanId;
   initialMethodId: BillingPaymentMethodId;
   initialApplyToAllLocations: boolean;
@@ -86,6 +92,9 @@ function WorkspaceProfileCard({
   const [timezone, setTimezone] = useState(initialTimezone);
   const [paymentTypes, setPaymentTypes] = useState(initialPaymentTypes);
   const [paymentTypeDraft, setPaymentTypeDraft] = useState('');
+  const [receiptShowLogo, setReceiptShowLogo] = useState(initialReceiptShowLogo);
+  const [receiptHeaderText, setReceiptHeaderText] = useState(initialReceiptHeaderText);
+  const [receiptFooterText, setReceiptFooterText] = useState(initialReceiptFooterText);
   const [planId, setPlanId] = useState<BillingPlanId>(initialPlanId);
   const [paymentMethodId, setPaymentMethodId] = useState<BillingPaymentMethodId>(initialMethodId);
   const [applyToAllLocations, setApplyToAllLocations] = useState(initialApplyToAllLocations);
@@ -133,6 +142,9 @@ function WorkspaceProfileCard({
           currency_code: currencyCode.trim().toUpperCase() || null,
           timezone: timezone.trim() || null,
           payment_types: paymentTypes,
+          receipt_show_logo: receiptShowLogo,
+          receipt_header_text: receiptHeaderText.trim() || null,
+          receipt_footer_text: receiptFooterText.trim() || null,
           billing_plan_id: planId,
           billing_payment_method_id: paymentMethodId,
           billing_apply_to_all_locations: applyToAllLocations,
@@ -143,6 +155,9 @@ function WorkspaceProfileCard({
       setCurrencyCode(updated.currency_code);
       setTimezone(updated.timezone);
       setPaymentTypes(updated.payment_types ?? []);
+      setReceiptShowLogo(updated.receipt_show_logo);
+      setReceiptHeaderText(updated.receipt_header_text);
+      setReceiptFooterText(updated.receipt_footer_text);
       setBillingIsActive(updated.billing_is_active);
       setStatusMessage('Workspace settings saved successfully.');
     } catch (error) {
@@ -306,6 +321,45 @@ function WorkspaceProfileCard({
             </div>
           </div>
 
+          <div className={styles.receiptCard}>
+            <div className={styles.receiptHeader}>
+              <div>
+                <span className={styles.cardKicker}>Receipt branding</span>
+                <h3 className={styles.receiptTitle}>Customize what prints on the receipt.</h3>
+                <p className={styles.cardText}>
+                  Add the header and footer text your staff should see on printed and downloadable receipts.
+                </p>
+              </div>
+            </div>
+
+            <label className={styles.checkboxRow} htmlFor="receipt-show-logo">
+              <input
+                id="receipt-show-logo"
+                type="checkbox"
+                checked={receiptShowLogo}
+                onChange={(event) => setReceiptShowLogo(event.target.checked)}
+              />
+              <span>Show receipt logo area</span>
+            </label>
+
+            <div className={styles.formGrid}>
+              <Input
+                id="receipt-header-text"
+                label="Receipt header"
+                value={receiptHeaderText}
+                onChange={(event) => setReceiptHeaderText(event.target.value)}
+                helpText="A short line that appears near the top of the receipt."
+              />
+              <Input
+                id="receipt-footer-text"
+                label="Receipt footer"
+                value={receiptFooterText}
+                onChange={(event) => setReceiptFooterText(event.target.value)}
+                helpText="A note, support line, or returns reminder for the customer."
+              />
+            </div>
+          </div>
+
           <label className={styles.checkboxRow} htmlFor="billing-apply-all">
             <input
               id="billing-apply-all"
@@ -441,6 +495,10 @@ export default function SettingsPage() {
   const email = me?.email ?? authState.email ?? 'No email loaded';
   const initial = fullName ? fullName[0].toUpperCase() : 'M';
   const paymentTypes = business?.payment_types?.length ? business.payment_types : ['Cash', 'Card', 'Mobile Money'];
+  const receiptShowLogo = business?.receipt_show_logo ?? true;
+  const receiptHeaderText = business?.receipt_header_text ?? 'Thanks for shopping with us.';
+  const receiptFooterText =
+    business?.receipt_footer_text ?? 'Please keep this receipt for returns or support.';
 
   const handleSignOut = async () => {
     try {
@@ -502,6 +560,9 @@ export default function SettingsPage() {
         initialCurrencyCode={business.currency_code}
         initialTimezone={business.timezone}
         initialPaymentTypes={paymentTypes}
+        initialReceiptShowLogo={receiptShowLogo}
+        initialReceiptHeaderText={receiptHeaderText}
+        initialReceiptFooterText={receiptFooterText}
         initialPlanId={business.billing_plan_id}
         initialMethodId={business.billing_payment_method_id}
         initialApplyToAllLocations={business.billing_apply_to_all_locations}

@@ -262,6 +262,26 @@
   line-height: 1.5;
 }
 
+.receiptCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(6, 41, 107, 0.12);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.receiptHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.receiptTitle {
+  margin: 10px 0 0;
+  color: var(--color-primary-navy);
+  font-size: 1rem;
+}
+
 .actions {
   display: flex;
   gap: 12px;
@@ -411,6 +431,10 @@
 
   .paymentTypesInputRow {
     grid-template-columns: 1fr;
+  }
+
+  .paymentTypesHeader {
+    flex-direction: column;
   }
 
   .statusStrip,

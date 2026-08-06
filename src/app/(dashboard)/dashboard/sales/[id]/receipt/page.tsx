@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useGetAccountsQuery } from '@/lib/features/accounts/accountsApi';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
@@ -76,6 +77,10 @@ export default function SaleReceiptPage() {
     ? formatEmployeeName(employee.first_name, employee.last_name, employee.email)
     : sale?.created_by ?? 'Unknown user';
   const paymentTypes = business?.payment_types;
+  const receiptShowLogo = business?.receipt_show_logo ?? true;
+  const receiptHeaderText = business?.receipt_header_text ?? 'Thanks for shopping with us.';
+  const receiptFooterText =
+    business?.receipt_footer_text ?? 'Please keep this receipt for returns or support.';
 
   useEffect(() => {
     if (sale) {
@@ -109,11 +114,23 @@ export default function SaleReceiptPage() {
           <section className={styles.receiptCard}>
             <div className={styles.receiptHeader}>
               <div>
+                {receiptShowLogo ? (
+                  <div className={styles.logoWrap}>
+                    <Image
+                      src="/logos/vendora_logo_trans_background.png"
+                      alt="Vendora logo"
+                      width={180}
+                      height={54}
+                      priority={false}
+                    />
+                  </div>
+                ) : null}
                 <span className={styles.brand}>{business?.name ?? 'Vendora'}</span>
                 <h2>{sale?.sale_number ?? (isLoading ? 'Loading receipt…' : 'Receipt')}</h2>
                 <p>
                   {location?.name ?? sale?.location_id ?? 'Unknown location'} · {receiptDate ? formatDateTime(receiptDate) : '—'}
                 </p>
+                <p className={styles.headerNote}>{receiptHeaderText}</p>
               </div>
 
               <div className={styles.statusBlock}>
@@ -240,6 +257,7 @@ export default function SaleReceiptPage() {
 
             <div className={styles.footerNote}>
               {sale?.notes ? <p>{sale.notes}</p> : <p>No notes were attached to this sale.</p>}
+              <p className={styles.receiptFooter}>{receiptFooterText}</p>
             </div>
           </section>
         </main>
