@@ -13,6 +13,104 @@
   gap: 24px;
 }
 
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px 24px 0;
+  flex-wrap: wrap;
+}
+
+.summaryEyebrow {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(6, 41, 107, 0.08);
+  color: var(--color-primary-navy);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summaryTitle {
+  margin: 12px 0 0;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--color-primary-navy);
+}
+
+.summaryText {
+  margin: 10px 0 0;
+  max-width: 720px;
+  color: var(--color-grey);
+  line-height: 1.6;
+}
+
+.summaryNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.summaryNavLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(6, 41, 107, 0.06);
+  border: 1px solid rgba(6, 41, 107, 0.12);
+  color: var(--color-primary-navy);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.summaryNavLink:hover {
+  background: rgba(6, 41, 107, 0.1);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding: 0 24px;
+}
+
+.summaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(0, 112, 243, 0.04), rgba(255, 255, 255, 1));
+  border: 1px solid rgba(140, 144, 152, 0.12);
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--color-grey);
+}
+
+.summaryValue {
+  font-size: 1.8rem;
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--color-primary-navy);
+}
+
+.summaryMeta {
+  font-size: 0.825rem;
+  color: var(--color-grey);
+}
+
 .reportGrid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
@@ -509,12 +607,17 @@
     grid-template-columns: 1fr;
   }
 
+  .summaryGrid,
   .statsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
+  .summaryHeader {
+    padding: 18px 16px 0;
+  }
+
   .toolbar {
     padding: 14px 16px;
     gap: 12px;
@@ -525,6 +628,7 @@
     width: 100%;
   }
 
+  .summaryGrid,
   .statsGrid {
     padding: 0 16px;
     gap: 12px;
@@ -559,6 +663,7 @@
 }
 
 @media (max-width: 480px) {
+  .summaryGrid,
   .statsGrid {
     grid-template-columns: 1fr;
   }

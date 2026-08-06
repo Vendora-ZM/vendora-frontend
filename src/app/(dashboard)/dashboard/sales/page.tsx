@@ -154,6 +154,7 @@ export default function SalesPage() {
   const summary = useMemo(() => {
     const completedSales = reportSales.filter((sale) => sale.status === 'completed');
     const refundedSales = reportSales.filter((sale) => sale.status === 'refunded');
+    const paymentCount = reportSales.reduce((sum, sale) => sum + sale.payments.length, 0);
     const revenue = reportSales.reduce((sum, sale) => sum + (sale.total_amount ?? 0), 0);
     const itemsSold = reportSales.reduce(
       (sum, sale) =>
@@ -169,8 +170,19 @@ export default function SalesPage() {
       averageTicket,
       completedSales: completedSales.length,
       refundedSales: refundedSales.length,
+      paymentCount,
     };
   }, [reportSales]);
+
+  const sectionLinks = [
+    { href: '#sales-summary', label: 'Summary' },
+    { href: '#sales-by-item', label: 'Items' },
+    { href: '#sales-by-category', label: 'Categories' },
+    { href: '#sales-by-employee', label: 'Employees' },
+    { href: '#sales-by-payment-type', label: 'Payments' },
+    { href: '#sales-receipts', label: 'Receipts' },
+    { href: '#sales-shifts', label: 'Shifts' },
+  ];
 
   const itemRows = useMemo(() => {
     const map = new Map<string, AggregateRow>();
@@ -305,6 +317,48 @@ export default function SalesPage() {
       </div>
 
       <div className={`${pageStyles.card} ${styles.reportCard}`} style={{ gridColumn: '1 / -1' }}>
+        <div className={styles.summaryHeader} id="sales-summary">
+          <div>
+            <span className={styles.summaryEyebrow}>Sales Summary</span>
+            <h2 className={styles.summaryTitle}>A clear view of what is selling, who is selling it, and how it was paid.</h2>
+            <p className={styles.summaryText}>
+              This sales workspace keeps the main breakdowns in one place so owners can scan the numbers and jump
+              straight to the detail they need.
+            </p>
+          </div>
+
+          <div className={styles.summaryNav}>
+            {sectionLinks.map((link) => (
+              <a key={link.href} href={link.href} className={styles.summaryNavLink}>
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.summaryGrid}>
+          <div className={styles.summaryCard}>
+            <span className={styles.summaryLabel}>Sales</span>
+            <strong className={styles.summaryValue}>{summary.totalSales.toLocaleString()}</strong>
+            <span className={styles.summaryMeta}>Filtered transactions in view</span>
+          </div>
+          <div className={styles.summaryCard}>
+            <span className={styles.summaryLabel}>Revenue</span>
+            <strong className={styles.summaryValue}>{formatAmount(summary.revenue)}</strong>
+            <span className={styles.summaryMeta}>Completed and draft sales combined</span>
+          </div>
+          <div className={styles.summaryCard}>
+            <span className={styles.summaryLabel}>Items sold</span>
+            <strong className={styles.summaryValue}>{formatDecimal(summary.itemsSold)}</strong>
+            <span className={styles.summaryMeta}>Total units across item lines</span>
+          </div>
+          <div className={styles.summaryCard}>
+            <span className={styles.summaryLabel}>Average ticket</span>
+            <strong className={styles.summaryValue}>{formatAmount(summary.averageTicket)}</strong>
+            <span className={styles.summaryMeta}>{summary.paymentCount} payments recorded</span>
+          </div>
+        </div>
+
         <div className={styles.toolbar}>
           <div className={styles.tabsBar} role="tablist" aria-label="Filter by status">
             {STATUS_TABS.map((tab) => (
@@ -334,31 +388,6 @@ export default function SalesPage() {
           </div>
         </div>
 
-        {!reportLoading && !pageQuery.error && (
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Sales</span>
-              <strong className={styles.statValue}>{summary.totalSales.toLocaleString()}</strong>
-              <span className={styles.statMeta}>Filtered records loaded for reporting</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Revenue</span>
-              <strong className={styles.statValue}>{formatAmount(summary.revenue)}</strong>
-              <span className={styles.statMeta}>Completed and draft sales in the current filter</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Items sold</span>
-              <strong className={styles.statValue}>{formatDecimal(summary.itemsSold)}</strong>
-              <span className={styles.statMeta}>Across all loaded item lines</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Average ticket</span>
-              <strong className={styles.statValue}>{formatAmount(summary.averageTicket)}</strong>
-              <span className={styles.statMeta}>{summary.refundedSales} refunded sales in view</span>
-            </div>
-          </div>
-        )}
-
         {pageQuery.error && (
           <div className={styles.errorState}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -372,7 +401,7 @@ export default function SalesPage() {
 
         <div className={styles.reportGrid}>
           <div className={styles.leftColumn}>
-            <section className={pageStyles.card}>
+            <section className={pageStyles.card} id="sales-by-item">
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitleText}>Sales by Item</h2>
@@ -427,7 +456,7 @@ export default function SalesPage() {
               </div>
             </section>
 
-            <section className={pageStyles.card}>
+            <section className={pageStyles.card} id="sales-by-category">
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitleText}>Sales by Category</h2>
@@ -482,7 +511,7 @@ export default function SalesPage() {
               </div>
             </section>
 
-            <section className={pageStyles.card}>
+            <section className={pageStyles.card} id="sales-receipts">
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitleText}>Receipts</h2>
@@ -529,7 +558,7 @@ export default function SalesPage() {
           </div>
 
           <div className={styles.rightColumn}>
-            <section className={pageStyles.card}>
+            <section className={pageStyles.card} id="sales-by-employee">
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitleText}>Sales by Employee</h2>
@@ -562,7 +591,7 @@ export default function SalesPage() {
               </div>
             </section>
 
-            <section className={pageStyles.card}>
+            <section className={pageStyles.card} id="sales-by-payment-type">
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitleText}>Sales by Payment Type</h2>
@@ -595,7 +624,7 @@ export default function SalesPage() {
               </div>
             </section>
 
-            <section className={pageStyles.card}>
+            <section className={pageStyles.card} id="sales-shifts">
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitleText}>Shifts</h2>
