@@ -9,6 +9,7 @@ import styles from './Header.module.css';
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isBusinessTypesOpen, setIsBusinessTypesOpen] = useState(false);
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [selectedBusinessTypeCategory, setSelectedBusinessTypeCategory] = useState(BUSINESS_CATEGORIES[0].value);
 
   const activeBusinessCategory = useMemo(
@@ -19,15 +20,49 @@ export const Header = () => {
     () => activeBusinessCategory.types.slice(0, 6),
     [activeBusinessCategory.types]
   );
+  const productHighlights = [
+    {
+      title: 'Point of Sale',
+      text: 'Sell from a smartphone, tablet, or computer with a fast checkout flow.',
+    },
+    {
+      title: 'Inventory management',
+      text: 'Track what is in stock, what is moving, and what needs to be reordered.',
+    },
+    {
+      title: 'AI Business Advisor',
+      text: 'Ask plain-English questions and get useful explanations from live business data.',
+    },
+    {
+      title: 'Sales analytics',
+      text: 'See sales by item, employee, payment type, category, and time period.',
+    },
+    {
+      title: 'Employee management',
+      text: 'Assign permissions and PIN access so every team member sees the right tools.',
+    },
+    {
+      title: 'CRM and loyalty',
+      text: 'Keep customer history, repeat visits, and discount-aware workflows in one place.',
+    },
+  ];
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     setIsBusinessTypesOpen(false);
+    setIsProductsOpen(false);
   };
 
   const toggleBusinessTypes = () => {
     setIsBusinessTypesOpen((open) => !open);
     setIsMobileMenuOpen(false);
+    setIsProductsOpen(false);
+  };
+
+  const toggleProducts = () => {
+    setIsProductsOpen((open) => !open);
+    setIsMobileMenuOpen(false);
+    setIsBusinessTypesOpen(false);
   };
 
   const chooseBusinessCategory = (value: string) => {
@@ -53,7 +88,44 @@ export const Header = () => {
         {/* Desktop Navigation */}
         <nav className={styles.navDesktop}>
           <Link href="/#features" className={styles.link}>Features</Link>
-          <Link href="/#products" className={styles.link}>Products</Link>
+          <div className={styles.dropdownWrap}>
+            <button
+              type="button"
+              className={`${styles.link} ${styles.dropdownButton} ${isProductsOpen ? styles.dropdownButtonActive : ''}`}
+              onClick={toggleProducts}
+              aria-expanded={isProductsOpen}
+              aria-haspopup="true"
+            >
+              Products
+            </button>
+
+            {isProductsOpen && (
+              <div className={styles.dropdownPanel}>
+                <div className={styles.dropdownPanelHeader}>
+                  <div>
+                    <span className={styles.dropdownEyebrow}>Vendora products</span>
+                    <h3 className={styles.dropdownTitle}>A simple breakdown of what users get.</h3>
+                    <p className={styles.dropdownText}>
+                      The platform is built around fast checkout, stock visibility, clear reporting, and AI help that
+                      explains what is happening in the business.
+                    </p>
+                  </div>
+                  <Link href="/#products" className={styles.dropdownCta} onClick={() => setIsProductsOpen(false)}>
+                    View the full section
+                  </Link>
+                </div>
+
+                <div className={styles.productDropdownGrid}>
+                  {productHighlights.map((item) => (
+                    <article key={item.title} className={styles.productDropdownCard}>
+                      <h4>{item.title}</h4>
+                      <p>{item.text}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <div className={styles.dropdownWrap}>
             <button
               type="button"
@@ -152,7 +224,28 @@ export const Header = () => {
         <div className={styles.mobileMenu}>
           <nav className={styles.navMobile}>
             <Link href="/#features" className={styles.mobileLink} onClick={toggleMobileMenu}>Features</Link>
-            <Link href="/#products" className={styles.mobileLink} onClick={toggleMobileMenu}>Products</Link>
+            <button
+              type="button"
+              className={styles.mobileLinkButton}
+              onClick={() => setIsProductsOpen((open) => !open)}
+            >
+              Products
+            </button>
+            {isProductsOpen && (
+              <div className={styles.mobileDropdown}>
+                <div className={styles.mobileDropdownHeader}>
+                  <strong>Vendora products</strong>
+                  <span>Point of Sale, inventory, AI, analytics, employees, CRM, and multi-store tools.</span>
+                </div>
+                <div className={styles.mobileDropdownChips}>
+                  {productHighlights.map((item) => (
+                    <span key={item.title} className={styles.mobileDropdownChip}>
+                      {item.title}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             <button
               type="button"
               className={styles.mobileLinkButton}
