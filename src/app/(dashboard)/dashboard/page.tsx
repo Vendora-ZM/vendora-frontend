@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { setDateRangePreset, setLocationId, DateRangePreset } from '@/lib/features/analytics/analyticsSlice';
@@ -64,6 +64,17 @@ export default function DashboardOverview() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { dateRangePreset, locationId } = useAppSelector((s) => s.analytics);
+  const advisorPrompts = [
+    'How can I increase profits?',
+    'Why are sales dropping?',
+    'Which products should I discontinue?',
+    'Predict next month’s sales.',
+    'Suggest reorder quantities.',
+    'Recommend price increases.',
+    'Identify slow-moving stock.',
+    'Benchmark performance.',
+  ];
+  const [selectedPrompt, setSelectedPrompt] = useState(advisorPrompts[0]);
   const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
 
   const { data: locationsRaw = [] } = useGetLocationsQuery();
@@ -253,12 +264,177 @@ export default function DashboardOverview() {
       insights,
       prompts: [
         'How can I increase profits?',
-        'What should I reorder first?',
-        'Which products should I raise in price?',
-        'Why are sales slowing down?',
+        'Why are sales dropping?',
+        'Which products should I discontinue?',
+        'Predict next month’s sales.',
+        'Suggest reorder quantities.',
+        'Recommend price increases.',
+        'Identify slow-moving stock.',
+        'Benchmark performance.',
       ],
     };
   }, [formatCurrency, graphData, lowStockAlerts, profitMargin, topProducts]);
+
+  const advisorResponse = useMemo(() => {
+    const topSeller = topProducts[0];
+    const urgentStock = lowStockAlerts[0];
+    const secondStock = lowStockAlerts[1];
+    const slowMoving = [...productsRaw]
+      .filter((product) => Number(product.quantity_sold ?? 0) <= 3)
+      .sort((a, b) => Number(a.quantity_sold ?? 0) - Number(b.quantity_sold ?? 0))
+      .slice(0, 3);
+    const salesTrendLabel =
+      graphData.length > 1
+        ? graphData[graphData.length - 1].revenue >= graphData[0].revenue
+          ? 'rising'
+          : 'softening'
+        : 'steady';
+
+    if (selectedPrompt === 'How can I increase profits?') {
+      return {
+        answer:
+          profitMargin < 15
+            ? 'Profit is tight right now. Focus on raising prices on low-elasticity items, cutting deep discounting, and pushing your strongest margin products more often.'
+            : 'You have room to grow profit by nudging prices on fast movers, reducing avoidable discounts, and keeping stock on the items that sell with the best margin.',
+        bullets: [
+          topSeller ? `${topSeller.product_name} is the clearest product to bundle or spotlight.` : 'Spotlight your best-selling products first.',
+          urgentStock
+            ? `${urgentStock.product.name} is close to running out, so missed sales are likely on busy days.`
+            : 'Keep an eye on the products that are closest to the reorder point.',
+          'Review discounting rules so staff only discount when there is a real reason.',
+        ],
+        actions: ['Raise prices', 'Tighten discounts', 'Bundle top sellers'],
+      };
+    }
+
+    if (selectedPrompt === 'Why are sales dropping?') {
+      return {
+        answer:
+          salesTrends.length > 1
+            ? `Sales are ${salesTrendLabel}. The advisor sees the change mainly in recent daily revenue, and low stock on fast movers can also make the drop feel worse.`
+            : 'There is not enough sales history yet, but the advisor will explain whether the pattern is seasonal, stock-related, or pricing-related once more data arrives.',
+        bullets: [
+          `Recent sales momentum is ${salesTrendLabel}.`,
+          urgentStock
+            ? `${urgentStock.product.name} is low, which can suppress sales if customers expect it to be available.`
+            : 'No urgent stock shortage is showing in the current snapshot.',
+          'Compare the last 7 days against the previous week to separate demand changes from stock issues.',
+        ],
+        actions: ['Check stockouts', 'Compare weeks', 'Review pricing'],
+      };
+    }
+
+    if (selectedPrompt === 'Which products should I discontinue?') {
+      return {
+        answer:
+          slowMoving.length > 0
+            ? `Start by reviewing ${slowMoving[0].name}. It has very little recent movement, so it is a candidate for discontinuation, deeper discounting, or a smaller reorder size.`
+            : 'No strongly slow-moving products are obvious yet. The advisor would normally look for items with weak sales, low repeat demand, and space pressure.',
+        bullets: slowMoving.length > 0
+          ? slowMoving.map((product) => `${product.name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
+          : ['Watch for products that have not moved in several weeks.', 'Look at items with repeated stock sitting on the shelf.'],
+        actions: ['Review slow movers', 'Discount old stock', 'Pause reorders'],
+      };
+    }
+
+    if (selectedPrompt === 'Predict next month’s sales.') {
+      return {
+        answer:
+          graphData.length > 1
+            ? `If the current trend continues, next month should look ${salesTrendLabel}. The advisor expects sales to stay close to the current run rate unless stockouts or promotions change the pattern.`
+            : 'There is not enough history to make a confident forecast yet, but the advisor will grow more accurate as more sales are recorded.',
+        bullets: [
+          'Forecasts improve when the dashboard has more daily sales history.',
+          topSeller ? `${topSeller.product_name} will likely keep contributing if stock stays available.` : 'Fast movers usually shape the next forecast most strongly.',
+          urgentStock ? `Reorder ${urgentStock.product.name} before demand peaks.` : 'Keep stock levels stable on your fastest movers.',
+        ],
+        actions: ['View forecast', 'Plan reorders', 'Run promotion'],
+      };
+    }
+
+    if (selectedPrompt === 'Suggest reorder quantities.') {
+      const urgentQty = urgentStock ? Math.max(10, Math.ceil(10 - urgentStock.available + 5)) : 0;
+      return {
+        answer:
+          urgentStock
+            ? `I would reorder ${urgentQty} units of ${urgentStock.product.name} first, then ${secondStock ? secondStock.product.name : 'your next top mover'} after that.`
+            : 'Nothing is close to a critical reorder point in the current snapshot. Keep your best sellers topped up and review the last week of sales before ordering more.',
+        bullets: urgentStock
+          ? [
+              `${urgentStock.product.name} is at ${urgentStock.available} unit${urgentStock.available === 1 ? '' : 's'} available.`,
+              secondStock
+                ? `${secondStock.product.name} is the next item to watch closely.`
+                : 'No second urgent item is visible yet.',
+            ]
+          : ['Keep a safety stock buffer on top sellers.', 'Use sales trends to decide on medium-priority items.'],
+        actions: ['Reorder now', 'Check stock levels', 'Review fast movers'],
+      };
+    }
+
+    if (selectedPrompt === 'Recommend price increases.') {
+      return {
+        answer:
+          topSeller
+            ? `Consider a small price increase on ${topSeller.product_name} first if demand is steady and customers keep buying it.`
+            : 'The advisor would normally recommend price increases on fast-moving, low-friction items first.',
+        bullets: [
+          'Start with products that sell often and trigger few customer complaints.',
+          profitMargin < 15
+            ? 'Margin pressure is a good reason to review pricing now.'
+            : 'Protect the strongest-margin items from unnecessary discounting.',
+          'Test small increases instead of changing every price at once.',
+        ],
+        actions: ['Test higher price', 'Watch margin', 'Compare demand'],
+      };
+    }
+
+    if (selectedPrompt === 'Identify slow-moving stock.') {
+      return {
+        answer:
+          slowMoving.length > 0
+            ? `${slowMoving[0].name} is the clearest slow-moving item right now. It deserves either a smaller reorder, a promotion, or a pause on replenishment.`
+            : 'No obvious slow movers are standing out yet. As more days of sales accumulate, this panel will become more precise.',
+        bullets: slowMoving.length > 0
+          ? slowMoving.map((product) => `${product.name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
+          : ['Use this panel to catch items sitting too long.', 'Review items with frequent stock but weak turnover.'],
+        actions: ['Promote stock', 'Reduce reorder', 'Review shelf space'],
+      };
+    }
+
+    if (selectedPrompt === 'Benchmark performance.') {
+      return {
+        answer:
+          graphData.length > 1
+            ? `Overall, this period looks ${salesTrendLabel} with ${profitMargin.toFixed(1)}% margin and ${summary.totalSales.toLocaleString()} sales in view.`
+            : 'There is not enough data for a full benchmark yet, but the advisor will compare sales, margin, and stock as the dataset grows.',
+        bullets: [
+          `Profit margin is ${profitMargin.toFixed(1)}%.`,
+          `${summary.totalSales.toLocaleString()} sales are loaded in the current view.`,
+          `${balances.length.toLocaleString()} stock records are helping power the inventory side of the benchmark.`,
+        ],
+        actions: ['Open report', 'Compare periods', 'Track trends'],
+      };
+    }
+
+    return {
+      answer: aiAdvisor.summary,
+      bullets: aiAdvisor.insights.map((insight) => insight.text).slice(0, 3),
+      actions: aiAdvisor.prompts.slice(0, 3),
+    };
+  }, [
+    aiAdvisor.insights,
+    aiAdvisor.prompts,
+    aiAdvisor.summary,
+    balances.length,
+    graphData,
+    lowStockAlerts,
+    productsRaw,
+    profitMargin,
+    salesTrends.length,
+    selectedPrompt,
+    summary.totalSales,
+    topProducts,
+  ]);
   const hasError = Boolean(
     trendsError || topProductsError || salesError || balancesError || productsError || customersError
   );
@@ -385,6 +561,50 @@ export default function DashboardOverview() {
           </div>
         </div>
 
+        <div className={styles.aiConversation}>
+          <div className={styles.aiConversationHeader}>
+            <div>
+              <span className={styles.aiConversationLabel}>Ask the advisor</span>
+              <h3 className={styles.aiConversationTitle}>{selectedPrompt}</h3>
+            </div>
+            <p className={styles.aiConversationHint}>
+              These answers are generated from the live dashboard data already loaded on this screen.
+            </p>
+          </div>
+
+          <div className={styles.aiPromptPills}>
+            {advisorPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                className={`${styles.aiPromptPillButton} ${selectedPrompt === prompt ? styles.aiPromptPillButtonActive : ''}`}
+                onClick={() => setSelectedPrompt(prompt)}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.aiAnswerCard}>
+            <div className={styles.aiAnswerLabel}>Vendora says</div>
+            <p className={styles.aiAnswerText}>{advisorResponse.answer}</p>
+            <div className={styles.aiAnswerBullets}>
+              {advisorResponse.bullets.map((bullet) => (
+                <div key={bullet} className={styles.aiAnswerBullet}>
+                  {bullet}
+                </div>
+              ))}
+            </div>
+            <div className={styles.aiAnswerActions}>
+              {advisorResponse.actions.map((action) => (
+                <span key={action} className={styles.aiAnswerAction}>
+                  {action}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className={styles.aiInsightGrid}>
           {aiAdvisor.insights.map((insight) => (
             <article key={insight.title} className={styles.aiInsightCard}>
@@ -402,17 +622,6 @@ export default function DashboardOverview() {
               <p>{insight.text}</p>
             </article>
           ))}
-        </div>
-
-        <div className={styles.aiPromptRow}>
-          <span className={styles.aiPromptLabel}>Ask the advisor</span>
-          <div className={styles.aiPromptPills}>
-            {aiAdvisor.prompts.map((prompt) => (
-              <span key={prompt} className={styles.aiPromptPill}>
-                {prompt}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
