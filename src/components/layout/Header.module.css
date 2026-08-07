@@ -24,7 +24,7 @@
 }
 
 .logoImage {
-  width: 280px;
+  width: 340px;
   height: auto;
 }
 
@@ -149,6 +149,6 @@
 
 @media (max-width: 767px) {
   .logoImage {
-    width: 220px;
+    width: 260px;
   }
 }

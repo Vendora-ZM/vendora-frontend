@@ -70,6 +70,12 @@ const productHighlights = [
   'Reports that owners can actually read quickly',
 ];
 
+const posHighlights = [
+  'Sell from a smartphone, tablet, or computer.',
+  'Move faster with quick discounts and one-tap receipts.',
+  'Keep staff handoffs simple during busy hours.',
+];
+
 const aiInsights = [
   'Sales increased 23% because beverages sold well.',
   'You may run out of Coca-Cola in 4 days.',
@@ -179,6 +185,19 @@ export default function Home() {
                 Sign in
               </Link>
             </div>
+            <section className={styles.posSpotlight} aria-label="Point of sale spotlight">
+              <div className={styles.posSpotlightHeader}>
+                <span className={styles.posSpotlightKicker}>Point of Sale</span>
+                <strong>Sell from a smartphone, tablet, or computer.</strong>
+              </div>
+              <div className={styles.posSpotlightList}>
+                {posHighlights.map((item) => (
+                  <span key={item} className={styles.posSpotlightItem}>
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </section>
             <div className={styles.heroPills}>
               <span className={styles.heroPill}>Multi-location ready</span>
               <span className={styles.heroPill}>Role-based access</span>

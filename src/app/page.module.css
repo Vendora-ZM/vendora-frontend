@@ -128,6 +128,50 @@
   flex-wrap: wrap;
 }
 
+.posSpotlight {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.15);
+}
+
+.posSpotlightHeader {
+  display: grid;
+  gap: 6px;
+}
+
+.posSpotlightKicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.posSpotlightHeader strong {
+  font-size: 1.15rem;
+  line-height: 1.45;
+  color: var(--color-white);
+}
+
+.posSpotlightList {
+  display: grid;
+  gap: 8px;
+}
+
+.posSpotlightItem {
+  color: rgba(255, 255, 255, 0.84);
+  line-height: 1.55;
+}
+
 .heroImage {
   flex: 1;
   width: 100%;
