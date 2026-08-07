@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCreateProductMutation, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { Input, Textarea, Select } from '@/components/ui/Input';
@@ -207,6 +208,15 @@ export default function NewProductPage() {
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </Select>
+                <div className={styles.categoryHelper}>
+                  <span className={styles.categoryHelperLabel}>Need a new category?</span>
+                  <p className={styles.categoryHelperText}>
+                    Create one first, then come back and assign it to this product.
+                  </p>
+                  <Link href="/dashboard/categories" className={styles.categoryHelperLink}>
+                    Manage categories
+                  </Link>
+                </div>
                 <Input
                   id="product-unit"
                   label="Unit"

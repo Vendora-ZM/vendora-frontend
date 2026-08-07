@@ -209,6 +209,15 @@ function ProductDetailsEditor({ product }: { product: Product }) {
             </option>
           ))}
         </Select>
+        <div className={styles.categoryHelper}>
+          <span className={styles.categoryHelperLabel}>Need a new category?</span>
+          <p className={styles.categoryHelperText}>
+            Create it on the categories page, then come back and assign it here.
+          </p>
+          <Link href="/dashboard/categories" className={styles.categoryHelperLink}>
+            Manage categories
+          </Link>
+        </div>
         <Input
           id="product-unit"
           label="Unit"

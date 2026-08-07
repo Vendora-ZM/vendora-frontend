@@ -21,6 +21,36 @@
   gap: 16px;
 }
 
+.categoryHelper {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(6, 41, 107, 0.04);
+  border: 1px solid rgba(6, 41, 107, 0.08);
+  display: grid;
+  gap: 6px;
+}
+
+.categoryHelperLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-navy);
+}
+
+.categoryHelperText {
+  margin: 0;
+  color: var(--color-grey);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.categoryHelperLink {
+  width: fit-content;
+  color: var(--color-accent-blue);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 @media (min-width: 540px) {
   .toggleRow {
     flex-direction: row;

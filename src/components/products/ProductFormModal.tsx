@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { closeFormModal } from '@/lib/features/products/productsSlice';
 import {
@@ -205,6 +206,15 @@ export const ProductFormModal: React.FC = () => {
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </Select>
+          <div className={styles.categoryHelper}>
+            <span className={styles.categoryHelperLabel}>Need a new category?</span>
+            <p className={styles.categoryHelperText}>
+              Create it on the categories page, then assign it here.
+            </p>
+            <Link href="/dashboard/categories" className={styles.categoryHelperLink}>
+              Manage categories
+            </Link>
+          </div>
           <Input
             id="product-unit"
             label="Unit"

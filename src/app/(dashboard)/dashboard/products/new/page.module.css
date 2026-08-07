@@ -130,6 +130,35 @@
   gap: 20px;
 }
 
+.categoryHelper {
+  grid-column: 1 / -1;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(6, 41, 107, 0.04);
+  border: 1px solid rgba(6, 41, 107, 0.08);
+  display: grid;
+  gap: 6px;
+}
+
+.categoryHelperLabel {
+  color: var(--color-primary-navy);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.categoryHelperText {
+  margin: 0;
+  color: var(--color-grey);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.categoryHelperLink {
+  width: fit-content;
+  color: var(--color-accent-blue);
+  font-weight: 700;
+}
+
 .toggle {
   display: flex;
   align-items: center;
