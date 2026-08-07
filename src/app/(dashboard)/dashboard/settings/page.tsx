@@ -114,6 +114,11 @@ function WorkspaceProfileCard({
   const [applyToAllLocations, setApplyToAllLocations] = useState(initialApplyToAllLocations);
   const [billingIsActive, setBillingIsActive] = useState(initialBillingIsActive);
   const [statusMessage, setStatusMessage] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
   const selectedPlan = BILLING_PLANS.find((plan) => plan.id === planId) ?? BILLING_PLANS[1];
   const selectedMethod =
@@ -183,6 +188,62 @@ function WorkspaceProfileCard({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to save workspace settings.';
       setStatusMessage(message);
+    }
+  };
+
+  const handleChangePassword = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setPasswordMessage('');
+
+    if (!currentPassword.trim() || !newPassword.trim()) {
+      setPasswordMessage('Please enter both your current password and a new password.');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordMessage('Your new password must be at least 8 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordMessage('The new passwords do not match.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const response = await fetch('/api/auth/password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      });
+
+      const payload = await response.json().catch(() => null);
+      const message =
+        (payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
+          ? payload.message
+          : null) ?? 'Password updated successfully.';
+
+      if (!response.ok) {
+        setPasswordMessage(message);
+        return;
+      }
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setPasswordMessage('Password updated. Please sign in again with your new password.');
+      await handleSignOut();
+    } catch {
+      setPasswordMessage('Unable to update your password right now. Please try again.');
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -576,6 +637,54 @@ function WorkspaceProfileCard({
               View Terms
             </Link>
           </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div>
+              <span className={styles.cardKicker}>Security</span>
+              <h2 className={styles.cardTitle}>Change the password for this account.</h2>
+              <p className={styles.cardText}>
+                Enter your current password and confirm the new one so the account stays secure.
+              </p>
+            </div>
+          </div>
+
+          <form className={styles.sidebarForm} onSubmit={handleChangePassword}>
+            <Input
+              id="current-password"
+              label="Current password"
+              type="password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              helpText="We use this to verify it is really you."
+              required
+            />
+            <Input
+              id="new-password"
+              label="New password"
+              type="password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              helpText="Use at least 8 characters."
+              required
+            />
+            <Input
+              id="confirm-new-password"
+              label="Confirm new password"
+              type="password"
+              value={confirmNewPassword}
+              onChange={(event) => setConfirmNewPassword(event.target.value)}
+              helpText="Re-enter the new password to avoid mistakes."
+              required
+            />
+
+            {passwordMessage ? <div className={styles.notice}>{passwordMessage}</div> : null}
+
+            <Button type="submit" disabled={isChangingPassword}>
+              {isChangingPassword ? 'Updating…' : 'Update password'}
+            </Button>
+          </form>
         </section>
 
         <section className={styles.card}>
