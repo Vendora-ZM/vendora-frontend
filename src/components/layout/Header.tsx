@@ -1,15 +1,38 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { BUSINESS_CATEGORIES, getBusinessCategory } from '@/lib/business/businessTypes';
 import styles from './Header.module.css';
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isBusinessTypesOpen, setIsBusinessTypesOpen] = useState(false);
+  const [selectedBusinessTypeCategory, setSelectedBusinessTypeCategory] = useState(BUSINESS_CATEGORIES[0].value);
+
+  const activeBusinessCategory = useMemo(
+    () => getBusinessCategory(selectedBusinessTypeCategory),
+    [selectedBusinessTypeCategory]
+  );
+  const activeBusinessHighlights = useMemo(
+    () => activeBusinessCategory.types.slice(0, 6),
+    [activeBusinessCategory.types]
+  );
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsBusinessTypesOpen(false);
+  };
+
+  const toggleBusinessTypes = () => {
+    setIsBusinessTypesOpen((open) => !open);
+    setIsMobileMenuOpen(false);
+  };
+
+  const chooseBusinessCategory = (value: string) => {
+    setSelectedBusinessTypeCategory(value);
+    setIsBusinessTypesOpen(true);
   };
 
   return (
@@ -31,7 +54,63 @@ export const Header = () => {
         <nav className={styles.navDesktop}>
           <Link href="/#features" className={styles.link}>Features</Link>
           <Link href="/#products" className={styles.link}>Products</Link>
-          <Link href="/#business-types" className={styles.link}>Business types</Link>
+          <div className={styles.dropdownWrap}>
+            <button
+              type="button"
+              className={`${styles.link} ${styles.dropdownButton} ${isBusinessTypesOpen ? styles.dropdownButtonActive : ''}`}
+              onClick={toggleBusinessTypes}
+              aria-expanded={isBusinessTypesOpen}
+              aria-haspopup="true"
+            >
+              Business types
+            </button>
+
+            {isBusinessTypesOpen && (
+              <div className={styles.dropdownPanel}>
+                <div className={styles.dropdownPanelHeader}>
+                  <div>
+                    <span className={styles.dropdownEyebrow}>Recommended business types</span>
+                    <h3 className={styles.dropdownTitle}>{activeBusinessCategory.label}</h3>
+                    <p className={styles.dropdownText}>{activeBusinessCategory.description}</p>
+                  </div>
+                  <Link href="/signup" className={styles.dropdownCta} onClick={() => setIsBusinessTypesOpen(false)}>
+                    Start with this type
+                  </Link>
+                </div>
+
+                <div className={styles.dropdownLayout}>
+                  <div className={styles.dropdownCategoryList}>
+                    {BUSINESS_CATEGORIES.map((category) => (
+                      <button
+                        key={category.value}
+                        type="button"
+                        className={`${styles.dropdownCategoryButton} ${selectedBusinessTypeCategory === category.value ? styles.dropdownCategoryButtonActive : ''}`}
+                        onClick={() => chooseBusinessCategory(category.value)}
+                      >
+                        <strong>{category.label}</strong>
+                        <span>{category.types.length} options</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className={styles.dropdownTypeList}>
+                    {activeBusinessCategory.types.map((type) => (
+                      <span key={type} className={styles.dropdownTypeChip}>
+                        {type}
+                      </span>
+                    ))}
+                    <div className={styles.dropdownHighlightRow}>
+                      {activeBusinessHighlights.map((item) => (
+                        <div key={item} className={styles.dropdownHighlightCard}>
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           <Link href="/#ai-advisor" className={styles.link}>AI Advisor</Link>
           <Link href="/#pricing" className={styles.link}>Pricing</Link>
           <Link href="/#contact" className={styles.link}>Contact</Link>
@@ -74,7 +153,28 @@ export const Header = () => {
           <nav className={styles.navMobile}>
             <Link href="/#features" className={styles.mobileLink} onClick={toggleMobileMenu}>Features</Link>
             <Link href="/#products" className={styles.mobileLink} onClick={toggleMobileMenu}>Products</Link>
-            <Link href="/#business-types" className={styles.mobileLink} onClick={toggleMobileMenu}>Business types</Link>
+            <button
+              type="button"
+              className={styles.mobileLinkButton}
+              onClick={() => setIsBusinessTypesOpen((open) => !open)}
+            >
+              Business types
+            </button>
+            {isBusinessTypesOpen && (
+              <div className={styles.mobileDropdown}>
+                <div className={styles.mobileDropdownHeader}>
+                  <strong>{activeBusinessCategory.label}</strong>
+                  <span>{activeBusinessCategory.description}</span>
+                </div>
+                <div className={styles.mobileDropdownChips}>
+                  {activeBusinessCategory.types.map((type) => (
+                    <span key={type} className={styles.mobileDropdownChip}>
+                      {type}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             <Link href="/#ai-advisor" className={styles.mobileLink} onClick={toggleMobileMenu}>AI Advisor</Link>
             <Link href="/#pricing" className={styles.mobileLink} onClick={toggleMobileMenu}>Pricing</Link>
             <Link href="/#contact" className={styles.mobileLink} onClick={toggleMobileMenu}>Contact</Link>
