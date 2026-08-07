@@ -186,6 +186,16 @@ export const accountsApi = createApi({
       }),
       invalidatesTags: [{ type: 'Account', id: 'LIST' }],
     }),
+    deleteAccount: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/accounts/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Account', id },
+        { type: 'Account', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -199,4 +209,5 @@ export const {
   useCreateInvitationMutation,
   useResendInvitationMutation,
   useUpdateAccountMutation,
+  useDeleteAccountMutation,
 } = accountsApi;

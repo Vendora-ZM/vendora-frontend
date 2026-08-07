@@ -2,14 +2,22 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
-import { useGetAccountsQuery, useGetInvitationsQuery, useGetRolesQuery, useUpdateAccountMutation } from '@/lib/features/accounts/accountsApi';
+import {
+  useDeleteAccountMutation,
+  useGetAccountsQuery,
+  useGetInvitationsQuery,
+  useGetRolesQuery,
+  useUpdateAccountMutation,
+} from '@/lib/features/accounts/accountsApi';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { useLogoutMutation } from '@/lib/features/auth/authApi';
+import { logout } from '@/lib/features/auth/authSlice';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
-import { useAppSelector } from '@/lib/store';
+import { useAppDispatch, useAppSelector } from '@/lib/store';
 import styles from './page.module.css';
 
 function formatDate(value?: string | null) {
@@ -165,6 +173,8 @@ function AccessEditor({ account, roles, locations }: AccessEditorProps) {
 
 export function AccountWorkspace() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const accountId = params.id;
 
   const { data: me, isLoading: meLoading } = useGetMeQuery();
@@ -188,6 +198,8 @@ export function AccountWorkspace() {
   const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery(undefined, {
     skip: !canManageAccounts,
   });
+  const [logoutApi] = useLogoutMutation();
+  const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
 
   const account = useMemo(
     () => accounts.find((entry) => entry.membership_id === accountId) ?? null,
@@ -214,6 +226,43 @@ export function AccountWorkspace() {
   const signedInEmail = me?.email ?? '';
   const isSelfAccount = Boolean(me?.id && account?.user_id && me.id === account.user_id);
   const signedInInitial = signedInName ? signedInName[0].toUpperCase() : 'M';
+
+  const handleDeleteAccount = async () => {
+    if (!account) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      isSelfAccount
+        ? 'Delete your own employee account? You will be signed out after this action.'
+        : `Delete ${fullName}? This removes the employee from this business.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteAccount(account.membership_id).unwrap();
+
+      if (isSelfAccount) {
+        try {
+          await logoutApi({}).unwrap();
+        } catch {
+          // Clear local auth even if the backend logout request fails.
+        }
+
+        dispatch(logout());
+        router.push('/login');
+        return;
+      }
+
+      router.push('/dashboard/accounts');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to delete this account.';
+      window.alert(message);
+    }
+  };
 
   if (!meLoading && !canManageAccounts) {
     return (
@@ -394,6 +443,27 @@ export function AccountWorkspace() {
                 <span className={styles.muted}>{isBusy ? 'Loading invitation history…' : 'No invitation history found.'}</span>
               )}
             </div>
+          </section>
+
+          <section className={styles.dangerCard}>
+            <div>
+              <span className={styles.dangerEyebrow}>Danger zone</span>
+              <h2>Delete employee access</h2>
+              <p>
+                This removes the employee from this business and revokes their active refresh tokens.
+                {isSelfAccount ? ' If you delete your own account, Vendora will sign you out.' : ''}
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className={styles.dangerButton}
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting…' : 'Delete account'}
+            </Button>
           </section>
         </aside>
       </div>
