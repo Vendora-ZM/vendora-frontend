@@ -515,7 +515,7 @@ export default function SalesPage() {
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitleText}>Receipts</h2>
-                  <p className={styles.sectionHint}>Download receipt files for the most recent sales in view.</p>
+                  <p className={styles.sectionHint}>Open a receipt to download a copy or print it as a PDF.</p>
                 </div>
               </div>
               <div className={styles.receiptList}>

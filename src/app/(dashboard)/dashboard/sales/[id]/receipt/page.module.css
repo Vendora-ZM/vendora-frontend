@@ -302,6 +302,11 @@
   font-weight: 700;
 }
 
+.downloadHint {
+  margin-top: 12px;
+  color: var(--color-grey);
+}
+
 .footerNote p {
   padding: 16px 18px;
   border-radius: 12px;

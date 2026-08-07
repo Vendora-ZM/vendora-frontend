@@ -82,6 +82,46 @@ export default function SaleReceiptPage() {
   const receiptFooterText =
     business?.receipt_footer_text ?? 'Please keep this receipt for returns or support.';
 
+  const downloadReceipt = () => {
+    if (!sale) return;
+
+    const lines: string[] = [
+      business?.name ?? 'Vendora',
+      `Receipt: ${sale.sale_number}`,
+      `Status: ${STATUS_LABELS[sale.status]}`,
+      `Date: ${receiptDate ? formatDateTime(receiptDate) : '—'}`,
+      `Location: ${location?.name ?? sale?.location_id ?? 'Unknown location'}`,
+      `Cashier: ${cashierName}`,
+      '',
+      'Items',
+      ...sale.items.map((item) => {
+        const product = productMap.get(item.product_id);
+        return `${product?.name ?? item.product_id} | Qty: ${parseQuantity(item.quantity)} | Unit: ${formatAmount(item.unit_price)} | Total: ${formatAmount(item.line_total)}`;
+      }),
+      '',
+      'Payments',
+      ...sale.payments.map((payment) => `${getPaymentTypeLabel(payment.method, paymentTypes)} | ${payment.reference ?? '—'} | ${formatAmount(payment.amount)}`),
+      '',
+      `Subtotal: ${formatAmount(sale.subtotal ?? 0)}`,
+      `Tax: ${formatAmount(sale.tax_amount ?? 0)}`,
+      `Discount: ${formatAmount(sale.discount_amount ?? 0)}`,
+      `Total: ${formatAmount(sale.total_amount ?? 0)}`,
+      '',
+      sale.notes ? `Notes: ${sale.notes}` : 'Notes: No notes were attached to this sale.',
+      receiptFooterText,
+    ];
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${sale.sale_number.replace(/\s+/g, '-')}-receipt.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     if (sale) {
       document.title = `${sale.sale_number} receipt`;
@@ -101,8 +141,11 @@ export default function SaleReceiptPage() {
           <Link href="/dashboard/sales" className={styles.secondaryButton}>
             Back to sales
           </Link>
+          <button type="button" className={styles.secondaryButton} onClick={downloadReceipt} disabled={!sale}>
+            Download receipt
+          </button>
           <button type="button" className={styles.primaryButton} onClick={() => window.print()}>
-            Print receipt
+            Print / save PDF
           </button>
         </div>
       </div>
@@ -258,6 +301,9 @@ export default function SaleReceiptPage() {
             <div className={styles.footerNote}>
               {sale?.notes ? <p>{sale.notes}</p> : <p>No notes were attached to this sale.</p>}
               <p className={styles.receiptFooter}>{receiptFooterText}</p>
+              <p className={styles.downloadHint}>
+                Use the download button above to save a copy, or print the receipt to create a PDF.
+              </p>
             </div>
           </section>
         </main>
