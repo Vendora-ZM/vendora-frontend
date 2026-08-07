@@ -29,12 +29,48 @@ export default function DashboardLayout({
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const authState = useAppSelector((state) => state.auth);
-  const { data: me, error: meError } = useGetMeQuery();
+  const { data: me, error: meError } = useGetMeQuery(undefined, {
+    skip: !sessionReady,
+  });
   const { data: business, error: businessError } = useGetBusinessQuery(me?.business_id ?? '', {
-    skip: !me?.business_id,
+    skip: !sessionReady || !me?.business_id,
   });
   const pathname = usePathname();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const refreshSession = async () => {
+      try {
+        const response = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.status === 401) {
+          dispatch(logout());
+          router.replace('/login');
+        }
+      } catch {
+        // If refresh fails because the network is down, keep the current session state
+        // and let the regular protected queries handle recovery when the connection returns.
+      } finally {
+        if (!cancelled) {
+          setSessionReady(true);
+        }
+      }
+    };
+
+    refreshSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, router]);
 
   useEffect(() => {
     if (me) {
@@ -104,6 +140,27 @@ export default function DashboardLayout({
     }
     return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
   }, [userName]);
+
+  if (!sessionReady) {
+    return (
+      <div className={styles.layout}>
+        <div className={styles.mainContent}>
+          <main className={styles.content}>
+            <section className={styles.billingGate}>
+              <div className={styles.gateCard}>
+                <span className={styles.gateKicker}>Restoring session</span>
+                <h1 className={styles.gateTitle}>Keeping you signed in.</h1>
+                <p className={styles.gateText}>
+                  Vendora is refreshing your session before loading the dashboard so you do not get bounced back
+                  to the login screen during normal use.
+                </p>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.layout}>
