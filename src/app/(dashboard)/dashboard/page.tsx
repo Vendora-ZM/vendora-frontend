@@ -60,6 +60,15 @@ function isUnauthorizedError(error: unknown) {
   );
 }
 
+function normalizeQuestion(question: string) {
+  return question.trim().toLowerCase();
+}
+
+function matchesQuestion(question: string, keywords: string[]) {
+  const normalized = normalizeQuestion(question);
+  return keywords.some((keyword) => normalized.includes(keyword));
+}
+
 export default function DashboardOverview() {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -75,6 +84,7 @@ export default function DashboardOverview() {
     'Benchmark performance.',
   ];
   const [selectedPrompt, setSelectedPrompt] = useState(advisorPrompts[0]);
+  const [questionDraft, setQuestionDraft] = useState(advisorPrompts[0]);
   const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
 
   const { data: locationsRaw = [] } = useGetLocationsQuery();
@@ -289,8 +299,9 @@ export default function DashboardOverview() {
           ? 'rising'
           : 'softening'
         : 'steady';
+    const matchedQuestion = normalizeQuestion(selectedPrompt);
 
-    if (selectedPrompt === 'How can I increase profits?') {
+    if (matchesQuestion(matchedQuestion, ['profit', 'profits', 'margin', 'increase profit'])) {
       return {
         answer:
           profitMargin < 15
@@ -307,7 +318,7 @@ export default function DashboardOverview() {
       };
     }
 
-    if (selectedPrompt === 'Why are sales dropping?') {
+    if (matchesQuestion(matchedQuestion, ['sales drop', 'sales dropping', 'sales down', 'decline', 'falling'])) {
       return {
         answer:
           salesTrends.length > 1
@@ -324,7 +335,7 @@ export default function DashboardOverview() {
       };
     }
 
-    if (selectedPrompt === 'Which products should I discontinue?') {
+    if (matchesQuestion(matchedQuestion, ['discontinue', 'stop selling', 'remove', 'slow mover', 'slow-moving', 'slow moving'])) {
       return {
         answer:
           slowMoving.length > 0
@@ -337,7 +348,7 @@ export default function DashboardOverview() {
       };
     }
 
-    if (selectedPrompt === 'Predict next month’s sales.') {
+    if (matchesQuestion(matchedQuestion, ['predict', 'forecast', 'next month', 'sales next month'])) {
       return {
         answer:
           graphData.length > 1
@@ -352,7 +363,7 @@ export default function DashboardOverview() {
       };
     }
 
-    if (selectedPrompt === 'Suggest reorder quantities.') {
+    if (matchesQuestion(matchedQuestion, ['reorder', 'reorder quantities', 'restock', 'replenish', 'stock up'])) {
       const urgentQty = urgentStock ? Math.max(10, Math.ceil(10 - urgentStock.available + 5)) : 0;
       return {
         answer:
@@ -371,7 +382,7 @@ export default function DashboardOverview() {
       };
     }
 
-    if (selectedPrompt === 'Recommend price increases.') {
+    if (matchesQuestion(matchedQuestion, ['price increase', 'price increases', 'raise prices', 'pricing'])) {
       return {
         answer:
           topSeller
@@ -388,7 +399,7 @@ export default function DashboardOverview() {
       };
     }
 
-    if (selectedPrompt === 'Identify slow-moving stock.') {
+    if (matchesQuestion(matchedQuestion, ['slow-moving stock', 'slow moving stock', 'slow movers', 'slow-moving', 'slow moving'])) {
       return {
         answer:
           slowMoving.length > 0
@@ -401,7 +412,7 @@ export default function DashboardOverview() {
       };
     }
 
-    if (selectedPrompt === 'Benchmark performance.') {
+    if (matchesQuestion(matchedQuestion, ['benchmark', 'performance', 'compare', 'how are we doing'])) {
       return {
         answer:
           graphData.length > 1
@@ -417,7 +428,10 @@ export default function DashboardOverview() {
     }
 
     return {
-      answer: aiAdvisor.summary,
+      answer:
+        selectedPrompt === advisorPrompts[0]
+          ? aiAdvisor.summary
+          : `I can answer questions about profits, sales trends, reorder timing, pricing, slow movers, and benchmark performance. Try rephrasing "${selectedPrompt}" using one of those topics.`,
       bullets: aiAdvisor.insights.map((insight) => insight.text).slice(0, 3),
       actions: aiAdvisor.prompts.slice(0, 3),
     };
@@ -435,6 +449,18 @@ export default function DashboardOverview() {
     summary.totalSales,
     topProducts,
   ]);
+
+  function handleAdvisorSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextQuestion = questionDraft.trim();
+    if (!nextQuestion) return;
+    setSelectedPrompt(nextQuestion);
+  }
+
+  function handlePromptClick(prompt: string) {
+    setQuestionDraft(prompt);
+    setSelectedPrompt(prompt);
+  }
   const hasError = Boolean(
     trendsError || topProductsError || salesError || balancesError || productsError || customersError
   );
@@ -568,7 +594,7 @@ export default function DashboardOverview() {
               <h3 className={styles.aiConversationTitle}>{selectedPrompt}</h3>
             </div>
             <p className={styles.aiConversationHint}>
-              These answers are generated from the live dashboard data already loaded on this screen.
+              Ask a custom question or pick a shortcut. Answers are generated from the live dashboard data already loaded on this screen.
             </p>
           </div>
 
@@ -578,12 +604,31 @@ export default function DashboardOverview() {
                 key={prompt}
                 type="button"
                 className={`${styles.aiPromptPillButton} ${selectedPrompt === prompt ? styles.aiPromptPillButtonActive : ''}`}
-                onClick={() => setSelectedPrompt(prompt)}
+                onClick={() => handlePromptClick(prompt)}
               >
                 {prompt}
               </button>
             ))}
           </div>
+
+          <form className={styles.aiQuestionForm} onSubmit={handleAdvisorSubmit}>
+            <label className={styles.aiQuestionLabel} htmlFor="advisor-question">
+              Ask your own question
+            </label>
+            <div className={styles.aiQuestionRow}>
+              <input
+                id="advisor-question"
+                type="text"
+                className={styles.aiQuestionInput}
+                value={questionDraft}
+                onChange={(event) => setQuestionDraft(event.target.value)}
+                placeholder="For example: Why are sales down this week?"
+              />
+              <button type="submit" className={styles.aiQuestionButton}>
+                Ask
+              </button>
+            </div>
+          </form>
 
           <div className={styles.aiAnswerCard}>
             <div className={styles.aiAnswerLabel}>Vendora says</div>
