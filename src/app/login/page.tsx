@@ -19,9 +19,13 @@ function LoginForm() {
   const inviteToken = searchParams.get('invite') ?? '';
   const inviteEmail = searchParams.get('email') ?? '';
   const invitePromoCode = searchParams.get('promo_code') ?? '';
-  const initialMode = inviteToken ? 'ACCEPT_INVITE' : searchParams.get('mode') === 'register' ? 'REGISTER' : 'LOGIN';
+  const initialMode: AuthMode = inviteToken
+    ? 'ACCEPT_INVITE'
+    : searchParams.get('mode') === 'register'
+      ? 'REGISTER'
+      : 'LOGIN';
 
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [mode, setMode] = useState<AuthMode>(() => initialMode);
 
   // Form states
   const [email, setEmail] = useState(inviteEmail);
