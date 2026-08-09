@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { setDateRangePreset, setLocationId, DateRangePreset } from '@/lib/features/analytics/analyticsSlice';
 import { useGetSalesTrendsQuery, useGetTopProductsQuery } from '@/lib/features/analytics/analyticsApi';
+import { useGetAccountsQuery } from '@/lib/features/accounts/accountsApi';
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
 import { useGetBalancesQuery } from '@/lib/features/inventory/inventoryApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
@@ -113,6 +114,7 @@ export default function DashboardOverview() {
   const { data: balances = [], isLoading: balancesLoading, error: balancesError } = useGetBalancesQuery({
     location_id: locationId,
   });
+  const { data: accounts = [] } = useGetAccountsQuery();
   const { data: productsRaw = [], isLoading: productsLoading, error: productsError } = useGetProductsQuery({});
   const { data: customersRaw = [], isLoading: customersLoading, error: customersError } = useGetCustomersQuery({});
 
@@ -156,6 +158,17 @@ export default function DashboardOverview() {
       .sort((a: Sale, b: Sale) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5);
   }, [salesResponse]);
+
+  const employeeMap = useMemo(
+    () =>
+      new Map(
+        accounts.map((account) => [
+          account.user_id,
+          `${account.first_name} ${account.last_name}`.trim() || account.email,
+        ])
+      ),
+    [accounts]
+  );
 
   const recentSalesSummary = useMemo(() => {
     const paymentTotals = new Map<string, number>();
