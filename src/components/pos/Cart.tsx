@@ -25,6 +25,7 @@ type SaleSummary = {
 interface CartProps {
   initialStage?: CheckoutStage;
   paymentTypes?: string[];
+  salesChannelLabel?: string;
   onBackToSelection?: () => void;
   onStartNewSale?: () => void;
 }
@@ -36,6 +37,7 @@ function formatAmount(amount: number) {
 export const Cart: React.FC<CartProps> = ({
   initialStage = 2,
   paymentTypes,
+  salesChannelLabel,
   onBackToSelection,
   onStartNewSale,
 }) => {
@@ -124,6 +126,7 @@ export const Cart: React.FC<CartProps> = ({
       const sale = await createSale({
         location_id: locationId,
         discount_amount: Math.round(discount * 100),
+        notes: salesChannelLabel ? `Sales channel: ${salesChannelLabel}` : undefined,
         items: cart.map((item) => {
           let taxAmount = 0;
           if (item.is_taxable && item.tax_rate) {
@@ -326,6 +329,13 @@ export const Cart: React.FC<CartProps> = ({
             <h3>Complete payment</h3>
             <span>{locationName}</span>
           </div>
+
+          {salesChannelLabel ? (
+            <div className={styles.channelSummary}>
+              <span className={styles.summaryLabel}>Sales channel</span>
+              <strong>{salesChannelLabel}</strong>
+            </div>
+          ) : null}
 
           <div className={styles.paymentSummary}>
             <div>

@@ -10,6 +10,13 @@ import { logout } from '@/lib/features/auth/authSlice';
 import { useGetBusinessQuery, useUpdateBusinessMutation } from '@/lib/features/business/businessApi';
 import { BUSINESS_CATEGORIES, BUSINESS_HIGHLIGHTS, getBusinessCategory } from '@/lib/business/businessTypes';
 import {
+  SALES_CHANNEL_OPTIONS,
+  SALES_CHANNEL_STORAGE_PREFIX,
+  getRecommendedSalesChannels,
+  normalizeSalesChannels,
+  type SalesChannelId,
+} from '@/lib/business/salesChannels';
+import {
   BILLING_PAYMENT_METHODS,
   BILLING_PLANS,
   type BillingPaymentMethodId,
@@ -118,6 +125,9 @@ function WorkspaceProfileCard({
   const [businessType, setBusinessType] = useState(initialBusinessType);
   const [paymentTypes, setPaymentTypes] = useState(initialPaymentTypes);
   const [paymentTypeDraft, setPaymentTypeDraft] = useState('');
+  const [salesChannels, setSalesChannels] = useState<SalesChannelId[]>(() =>
+    getRecommendedSalesChannels(initialBusinessCategory)
+  );
   const [receiptShowLogo, setReceiptShowLogo] = useState(initialReceiptShowLogo);
   const [receiptHeaderText, setReceiptHeaderText] = useState(initialReceiptHeaderText);
   const [receiptFooterText, setReceiptFooterText] = useState(initialReceiptFooterText);
@@ -137,6 +147,7 @@ function WorkspaceProfileCard({
     BILLING_PAYMENT_METHODS.find((method) => method.id === paymentMethodId) ?? BILLING_PAYMENT_METHODS[0];
   const selectedCategory = getBusinessCategory(businessCategory);
   const selectedHighlights = BUSINESS_HIGHLIGHTS[selectedCategory.value] ?? BUSINESS_HIGHLIGHTS.other;
+  const salesChannelStorageKey = `${SALES_CHANNEL_STORAGE_PREFIX}.${businessId}`;
   const expiresText = new Date(trialExpiresAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -161,6 +172,40 @@ function WorkspaceProfileCard({
 
   const removePaymentType = (label: string) => {
     setPaymentTypes((current) => current.filter((entry) => entry !== label));
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const storedSalesChannels = window.localStorage.getItem(salesChannelStorageKey);
+    if (storedSalesChannels) {
+      try {
+        setSalesChannels(normalizeSalesChannels(JSON.parse(storedSalesChannels)));
+        return;
+      } catch {
+        // Ignore malformed local preferences and fall back to the recommended set below.
+      }
+    }
+
+    setSalesChannels(getRecommendedSalesChannels(businessCategory));
+  }, [businessCategory, salesChannelStorageKey]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem(salesChannelStorageKey, JSON.stringify(salesChannels));
+  }, [salesChannelStorageKey, salesChannels]);
+
+  const toggleSalesChannel = (channelId: SalesChannelId) => {
+    setSalesChannels((current) =>
+      current.includes(channelId)
+        ? current.filter((entry) => entry !== channelId)
+        : [...current, channelId]
+    );
   };
 
   const handleSave = async (event: React.FormEvent) => {
@@ -499,6 +544,45 @@ function WorkspaceProfileCard({
                   No payment types yet. Add at least one so the POS has clear choices.
                 </p>
               )}
+            </div>
+          </div>
+
+          <div className={styles.salesChannelsCard}>
+            <div className={styles.paymentTypesHeader}>
+              <div>
+                <span className={styles.cardKicker}>Sales channel</span>
+                <h3 className={styles.paymentTypesTitle}>What order types should appear on the POS?</h3>
+                <p className={styles.cardText}>
+                  Choose the channels that fit this business. The POS will use the saved list to help staff label sales.
+                </p>
+              </div>
+              <span className={styles.paymentTypesCount}>
+                {salesChannels.length} enabled
+              </span>
+            </div>
+
+            <div className={styles.salesChannelGrid}>
+              {SALES_CHANNEL_OPTIONS.map((channel) => {
+                const checked = salesChannels.includes(channel.id);
+                const isRecommended = getRecommendedSalesChannels(selectedCategory.value).includes(channel.id);
+
+                return (
+                  <label key={channel.id} className={`${styles.salesChannelItem} ${checked ? styles.salesChannelItemActive : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleSalesChannel(channel.id)}
+                    />
+                    <div>
+                      <strong>
+                        {channel.label}
+                        {isRecommended ? <span className={styles.salesChannelRecommended}>Recommended</span> : null}
+                      </strong>
+                      <span>{channel.description}</span>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
           </div>
 

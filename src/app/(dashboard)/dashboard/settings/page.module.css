@@ -227,6 +227,15 @@
   background: rgba(6, 41, 107, 0.03);
 }
 
+.salesChannelsCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(6, 41, 107, 0.12);
+  background: rgba(6, 41, 107, 0.03);
+}
+
 .paymentTypesHeader {
   display: flex;
   justify-content: space-between;
@@ -264,6 +273,62 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.salesChannelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.salesChannelItem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(6, 41, 107, 0.1);
+  cursor: pointer;
+}
+
+.salesChannelItem input {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent-blue);
+  flex-shrink: 0;
+}
+
+.salesChannelItem strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary-navy);
+}
+
+.salesChannelItem span {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.salesChannelItemActive {
+  border-color: rgba(6, 41, 107, 0.22);
+  background: rgba(6, 41, 107, 0.06);
+}
+
+.salesChannelRecommended {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .paymentTypeChip {

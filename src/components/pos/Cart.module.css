@@ -343,6 +343,22 @@
   color: var(--color-primary-navy);
 }
 
+.channelSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 20px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(6, 41, 107, 0.05);
+  border: 1px solid rgba(6, 41, 107, 0.12);
+}
+
+.channelSummary strong {
+  color: var(--color-primary-navy);
+  font-size: 1rem;
+}
+
 .inlineActions {
   display: flex;
   gap: 12px;
@@ -461,6 +477,12 @@
 .successMeta {
   font-size: 0.8125rem;
   color: var(--color-grey);
+}
+
+@media (max-width: 768px) {
+  .channelSummary {
+    margin: 0 16px;
+  }
 }
 
 @media (max-width: 1024px) {

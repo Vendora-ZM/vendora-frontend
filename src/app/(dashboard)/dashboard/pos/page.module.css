@@ -58,6 +58,44 @@
   min-height: 0;
 }
 
+.channelBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(140, 144, 152, 0.14);
+  box-shadow: 0 10px 24px rgba(6, 41, 107, 0.05);
+}
+
+.channelCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+}
+
+.channelLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.channelCopy strong {
+  font-size: 1rem;
+  color: var(--color-primary-navy);
+}
+
+.channelCopy p {
+  margin: 0;
+  color: var(--color-grey);
+  line-height: 1.5;
+}
+
 .selectionPanel {
   flex: 1;
   min-height: 0;
@@ -127,6 +165,11 @@
   }
 
   .selectionFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .channelBar {
     flex-direction: column;
     align-items: stretch;
   }
