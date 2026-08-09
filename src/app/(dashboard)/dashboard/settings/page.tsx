@@ -75,6 +75,7 @@ function WorkspaceProfileCard({
   initial,
   currentMembershipId,
   canDeleteCurrentAccount,
+  isDeletingAccount,
   onSignOut,
   onLanguageChange,
   onDeleteCurrentAccount,
@@ -105,6 +106,7 @@ function WorkspaceProfileCard({
   initial: string;
   currentMembershipId: string | null;
   canDeleteCurrentAccount: boolean;
+  isDeletingAccount: boolean;
   onSignOut: () => void;
   onLanguageChange: (value: string) => void;
   onDeleteCurrentAccount: () => void;
@@ -967,6 +969,7 @@ export default function SettingsPage() {
         initial={initial}
         currentMembershipId={currentMembershipId}
         canDeleteCurrentAccount={canDeleteCurrentAccount}
+        isDeletingAccount={isDeletingAccount}
         onSignOut={handleSignOut}
         onLanguageChange={setLanguage}
         onDeleteCurrentAccount={handleDeleteCurrentAccount}
