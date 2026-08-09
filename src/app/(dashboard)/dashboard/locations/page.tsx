@@ -2,8 +2,10 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { useDeleteLocationMutation } from '@/lib/features/locations/locationsApi';
 import styles from './page.module.css';
 
 const PAGE_SIZE = 8;
@@ -17,9 +19,12 @@ function formatDate(iso: string) {
 }
 
 export default function LocationsPage() {
+  const router = useRouter();
   const { data: locations = [], isLoading } = useGetLocationsQuery();
   const { data: me } = useGetMeQuery();
   const [currentPage, setCurrentPage] = useState(1);
+  const [deletingLocationId, setDeletingLocationId] = useState<string | null>(null);
+  const [deleteLocation, { isLoading: isDeleting }] = useDeleteLocationMutation();
   const canManageLocations = Boolean(me?.permissions?.includes('locations.manage'));
 
   const totalPages = Math.max(1, Math.ceil(locations.length / PAGE_SIZE));
@@ -33,6 +38,24 @@ export default function LocationsPage() {
 
   const startItem = locations.length === 0 ? 0 : (safeCurrentPage - 1) * PAGE_SIZE + 1;
   const endItem = Math.min(safeCurrentPage * PAGE_SIZE, locations.length);
+
+  const handleDeleteLocation = async (locationId: string, locationName: string) => {
+    const confirmed = window.confirm(`Delete ${locationName}? This will remove the branch from active lists.`);
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingLocationId(locationId);
+
+    try {
+      await deleteLocation(locationId).unwrap();
+      router.refresh();
+    } catch {
+      window.alert('Unable to delete this location. Please try again.');
+    } finally {
+      setDeletingLocationId(null);
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -104,6 +127,17 @@ export default function LocationsPage() {
                             Edit
                           </Link>
                         ) : null}
+                        {canManageLocations ? (
+                          <button
+                            type="button"
+                            className={styles.dangerActionButton}
+                            onClick={() => handleDeleteLocation(location.id, location.name)}
+                            disabled={isDeleting && deletingLocationId === location.id}
+                            aria-label={`Delete ${location.name}`}
+                          >
+                            {isDeleting && deletingLocationId === location.id ? 'Deleting…' : 'Delete'}
+                          </button>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
@@ -120,12 +154,12 @@ export default function LocationsPage() {
             </div>
 
             <div className={styles.paginationControls}>
-                <button
-                  type="button"
-                  className={styles.pageButton}
-                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                  disabled={safeCurrentPage === 1}
-                >
+              <button
+                type="button"
+                className={styles.pageButton}
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={safeCurrentPage === 1}
+              >
                 Previous
               </button>
 
@@ -142,12 +176,12 @@ export default function LocationsPage() {
                 ))}
               </div>
 
-                <button
-                  type="button"
-                  className={styles.pageButton}
-                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                  disabled={safeCurrentPage === totalPages}
-                >
+              <button
+                type="button"
+                className={styles.pageButton}
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={safeCurrentPage === totalPages}
+              >
                 Next
               </button>
             </div>
