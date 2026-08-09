@@ -1,18 +1,15 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import {
   SalesTrendPoint,
   TopProductRow,
   InventoryTurnoverRow,
   AnalyticsFilterParams,
 } from '@/types/analytics';
-
-const BASE_URL = '/api/proxy';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export const analyticsApi = createApi({
   reducerPath: 'analyticsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   endpoints: (builder) => ({
     getSalesTrends: builder.query<SalesTrendPoint[], AnalyticsFilterParams>({
       query: (params) => {

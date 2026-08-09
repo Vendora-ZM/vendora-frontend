@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export interface MeResponse {
   id: string;
@@ -18,9 +19,7 @@ export interface MeResponse {
 
 export const profileApi = createApi({
   reducerPath: 'profileApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: '/api/proxy',
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   tagTypes: ['Me'],
   endpoints: (builder) => ({
     getMe: builder.query<MeResponse, void>({

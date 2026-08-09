@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export interface Account {
   membership_id: string;
@@ -71,9 +72,7 @@ export interface UpdateAccountPayload {
   location_ids: string[];
 }
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: '/api/proxy',
-});
+const baseQuery = createReauthBaseQuery('/api/proxy');
 
 function arrayOrEmpty<T>(value: T[] | null | undefined): T[] {
   return Array.isArray(value) ? value : [];

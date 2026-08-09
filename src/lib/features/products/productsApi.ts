@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import {
   Product,
   Category,
@@ -7,14 +7,11 @@ import {
   UpdateProductPayload,
   ListProductsParams,
 } from '@/types/product';
-
-const BASE_URL = '/api/proxy';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export const productsApi = createApi({
   reducerPath: 'productsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   tagTypes: ['Product', 'Category'],
   endpoints: (builder) => ({
     // ─── Products ────────────────────────────────────────────────────────────

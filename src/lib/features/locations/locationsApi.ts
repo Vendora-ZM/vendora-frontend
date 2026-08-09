@@ -1,7 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import { Location } from '@/types/location';
-
-const BASE_URL = '/api/proxy';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export interface CreateLocationPayload {
   name: string;
@@ -33,9 +32,7 @@ export interface UpdateLocationPayload {
 
 export const locationsApi = createApi({
   reducerPath: 'locationsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   tagTypes: ['Location'],
   endpoints: (builder) => ({
     getLocations: builder.query<Location[], void>({

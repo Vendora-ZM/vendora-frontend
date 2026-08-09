@@ -1,7 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import { Sale, ListSalesParams, CreateSaleRequest, CompleteSaleRequest } from '@/types/sale';
-
-const BASE_URL = '/api/proxy';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export interface SalesMeta {
   total: number;
@@ -16,9 +15,7 @@ export interface PaginatedSalesResponse {
 
 export const salesApi = createApi({
   reducerPath: 'salesApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   tagTypes: ['Sale'],
   endpoints: (builder) => ({
     getSales: builder.query<PaginatedSalesResponse, ListSalesParams>({

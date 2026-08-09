@@ -1,13 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import { Customer, CreateCustomerPayload, UpdateCustomerPayload, ListCustomersParams } from '@/types/customer';
-
-const BASE_URL = '/api/proxy';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export const customersApi = createApi({
   reducerPath: 'customersApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   tagTypes: ['Customer'],
   endpoints: (builder) => ({
     getCustomers: builder.query<Customer[], ListCustomersParams>({

@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import {
   InventoryBalance,
   InventoryMovement,
@@ -7,14 +7,11 @@ import {
   GetBalancesParams,
   GetMovementsParams,
 } from '@/types/inventory';
-
-const BASE_URL = '/api/proxy';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export const inventoryApi = createApi({
   reducerPath: 'inventoryApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   tagTypes: ['Inventory', 'Movement'],
   endpoints: (builder) => ({
     getBalances: builder.query<InventoryBalance[], GetBalancesParams>({

@@ -36,7 +36,7 @@ interface AcceptInvitationRequest {
 // The custom routes read the response from the backend, set HttpOnly cookies, and return success/business.
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api/auth' }),
+  baseQuery: fetchBaseQuery({ baseUrl: '/api/auth', credentials: 'include' }),
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({

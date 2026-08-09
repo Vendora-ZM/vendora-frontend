@@ -1,5 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import type { BillingPaymentMethodId, BillingPlanId } from '@/lib/billing/billingStorage';
+import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export interface BusinessResponse {
   id: string;
@@ -35,9 +36,7 @@ export interface BillingEventResponse {
 
 export const businessApi = createApi({
   reducerPath: 'businessApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: '/api/proxy',
-  }),
+  baseQuery: createReauthBaseQuery('/api/proxy'),
   tagTypes: ['Business'],
   endpoints: (builder) => ({
     getBusiness: builder.query<BusinessResponse, string>({
