@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useLogoutMutation } from '@/lib/features/auth/authApi';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch } from '@/lib/store';
 import { logout } from '@/lib/features/auth/authSlice';
@@ -36,11 +37,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
   const authPermissions = useAppSelector((state) => state.auth.permissions);
   const [logoutApi] = useLogoutMutation();
   const canManageAccounts = Boolean(
     me?.permissions?.includes('users.manage') || authPermissions.includes('users.manage')
   );
+  const workspaceName = business?.name ?? 'Merchant Store';
+  const signedInName = `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || 'Signed-in user';
+  const signedInRole = me?.role_name ?? 'Team member';
 
   const handleLogout = async () => {
     try {
@@ -81,6 +88,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
+        </div>
+
+        <div className={styles.identityPanel}>
+          <span className={styles.identityLabel}>Workspace</span>
+          <strong className={styles.identityValue}>{workspaceName}</strong>
+          <span className={styles.identityLabel}>Signed in as</span>
+          <div className={styles.identityPerson}>
+            <span className={styles.identityAvatar}>{signedInName[0]?.toUpperCase() ?? 'M'}</span>
+            <div className={styles.identityCopy}>
+              <strong>{signedInName}</strong>
+              <span>{signedInRole}</span>
+            </div>
+          </div>
         </div>
 
         <nav className={styles.nav}>
