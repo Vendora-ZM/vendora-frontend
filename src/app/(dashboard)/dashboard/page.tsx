@@ -432,7 +432,7 @@ export default function DashboardOverview() {
     const topSeller = topProducts[0];
     const urgentStock = lowStockAlerts[0];
     const secondStock = lowStockAlerts[1];
-    const slowMoving = [...productsRaw]
+    const slowMoving = [...topProducts]
       .filter((product) => Number(product.quantity_sold ?? 0) <= 3)
       .sort((a, b) => Number(a.quantity_sold ?? 0) - Number(b.quantity_sold ?? 0))
       .slice(0, 3);
@@ -482,10 +482,10 @@ export default function DashboardOverview() {
       return {
         answer:
           slowMoving.length > 0
-            ? `Start by reviewing ${slowMoving[0].name}. It has very little recent movement, so it is a candidate for discontinuation, deeper discounting, or a smaller reorder size.`
+            ? `Start by reviewing ${slowMoving[0].product_name}. It has very little recent movement, so it is a candidate for discontinuation, deeper discounting, or a smaller reorder size.`
             : 'No strongly slow-moving products are obvious yet. The advisor would normally look for items with weak sales, low repeat demand, and space pressure.',
         bullets: slowMoving.length > 0
-          ? slowMoving.map((product) => `${product.name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
+          ? slowMoving.map((product) => `${product.product_name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
           : ['Watch for products that have not moved in several weeks.', 'Look at items with repeated stock sitting on the shelf.'],
         actions: ['Review slow movers', 'Discount old stock', 'Pause reorders'],
       };
@@ -625,10 +625,10 @@ export default function DashboardOverview() {
       return {
         answer:
           slowMoving.length > 0
-            ? `${slowMoving[0].name} is the clearest slow-moving item right now. It deserves either a smaller reorder, a promotion, or a pause on replenishment.`
+            ? `${slowMoving[0].product_name} is the clearest slow-moving item right now. It deserves either a smaller reorder, a promotion, or a pause on replenishment.`
             : 'No obvious slow movers are standing out yet. As more days of sales accumulate, this panel will become more precise.',
         bullets: slowMoving.length > 0
-          ? slowMoving.map((product) => `${product.name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
+          ? slowMoving.map((product) => `${product.product_name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
           : ['Use this panel to catch items sitting too long.', 'Review items with frequent stock but weak turnover.'],
         actions: ['Promote stock', 'Reduce reorder', 'Review shelf space'],
       };
