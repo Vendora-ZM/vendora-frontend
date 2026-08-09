@@ -15,6 +15,10 @@ import {
   type BillingPaymentMethodId,
   type BillingPlanId,
 } from '@/lib/billing/billingStorage';
+import {
+  useDeleteAccountMutation,
+  useGetAccountsQuery,
+} from '@/lib/features/accounts/accountsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import styles from './page.module.css';
@@ -69,8 +73,11 @@ function WorkspaceProfileCard({
   businessSlug,
   language,
   initial,
+  currentMembershipId,
+  canDeleteCurrentAccount,
   onSignOut,
   onLanguageChange,
+  onDeleteCurrentAccount,
 }: {
   businessId: string;
   initialName: string;
@@ -96,8 +103,11 @@ function WorkspaceProfileCard({
   businessSlug: string;
   language: string;
   initial: string;
+  currentMembershipId: string | null;
+  canDeleteCurrentAccount: boolean;
   onSignOut: () => void;
   onLanguageChange: (value: string) => void;
+  onDeleteCurrentAccount: () => void;
 }) {
   const [name, setName] = useState(initialName);
   const [currencyCode, setCurrencyCode] = useState(initialCurrencyCode);
@@ -720,6 +730,29 @@ function WorkspaceProfileCard({
           </div>
         </section>
 
+        {canManageAccounts ? (
+          <section className={styles.dangerCard}>
+            <div>
+              <span className={styles.dangerEyebrow}>Danger zone</span>
+              <h2>Delete my account</h2>
+              <p>
+                Remove the signed-in employee account from this business.
+                {currentMembershipId ? ' The action is tied to your current employee membership.' : ''}
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className={styles.dangerButton}
+              onClick={onDeleteCurrentAccount}
+              disabled={!canDeleteCurrentAccount || isDeletingAccount}
+            >
+              {isDeletingAccount ? 'Deleting…' : 'Delete my account'}
+            </Button>
+          </section>
+        ) : null}
+
         <section className={styles.card}>
           <div className={styles.cardHeader}>
             <div>
@@ -762,6 +795,7 @@ export default function SettingsPage() {
   const dispatch = useAppDispatch();
   const authState = useAppSelector((state) => state.auth);
   const [logoutApi] = useLogoutMutation();
+  const [deleteAccount, { isLoading: isDeletingAccount }] = useDeleteAccountMutation();
   const { data: me, error: meError } = useGetMeQuery();
   const { data: business, error: businessError } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
@@ -811,6 +845,15 @@ export default function SettingsPage() {
   const receiptHeaderText = business?.receipt_header_text ?? 'Thanks for shopping with us.';
   const receiptFooterText =
     business?.receipt_footer_text ?? 'Please keep this receipt for returns or support.';
+  const canManageAccounts = Boolean(me?.permissions?.includes('users.manage') || authState.permissions.includes('users.manage'));
+  const { data: accounts = [] } = useGetAccountsQuery(undefined, {
+    skip: !me?.business_id || !canManageAccounts,
+  });
+  const currentMembershipId = useMemo(
+    () => accounts.find((account) => account.user_id === me?.id)?.membership_id ?? null,
+    [accounts, me?.id]
+  );
+  const canDeleteCurrentAccount = Boolean(canManageAccounts && currentMembershipId);
 
   const handleSignOut = async () => {
     try {
@@ -821,6 +864,37 @@ export default function SettingsPage() {
 
     dispatch(logout());
     router.push('/login');
+  };
+
+  const handleDeleteCurrentAccount = async () => {
+    if (!currentMembershipId) {
+      window.alert('Your employee record is not available right now. Please refresh and try again.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Delete your own employee account? You will be signed out after this action.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteAccount(currentMembershipId).unwrap();
+
+      try {
+        await logoutApi({}).unwrap();
+      } catch {
+        // Clear local auth even if the backend logout request fails.
+      }
+
+      dispatch(logout());
+      router.push('/login');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to delete your account.';
+      window.alert(message);
+    }
   };
 
   if (!business) {
@@ -891,8 +965,11 @@ export default function SettingsPage() {
         businessSlug={businessSlug}
         language={language}
         initial={initial}
+        currentMembershipId={currentMembershipId}
+        canDeleteCurrentAccount={canDeleteCurrentAccount}
         onSignOut={handleSignOut}
         onLanguageChange={setLanguage}
+        onDeleteCurrentAccount={handleDeleteCurrentAccount}
       />
     </div>
   );
