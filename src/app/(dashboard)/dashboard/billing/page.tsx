@@ -61,6 +61,15 @@ function BillingWorkspace({
   const selectedPlan = BILLING_PLANS.find((plan) => plan.id === planId) ?? BILLING_PLANS[1];
   const selectedMethod =
     BILLING_PAYMENT_METHODS.find((method) => method.id === paymentMethodId) ?? BILLING_PAYMENT_METHODS[0];
+  const trialSeverity = trialIsExpired ? 'expired' : trialDaysRemaining <= 3 ? 'urgent' : trialDaysRemaining <= 7 ? 'warning' : 'normal';
+  const trialCalloutClass =
+    trialSeverity === 'expired'
+      ? styles.trialCallout_expired
+      : trialSeverity === 'urgent'
+        ? styles.trialCallout_urgent
+        : trialSeverity === 'warning'
+          ? styles.trialCallout_warning
+          : '';
 
   const expiresText = new Date(trialExpiresAt).toLocaleDateString('en-US', {
     month: 'short',
@@ -122,6 +131,25 @@ function BillingWorkspace({
             <strong className={styles.statusValue}>{billingIsActive ? 'Unlocked' : 'Locked'}</strong>
           </div>
         </div>
+      </div>
+
+      <div className={`${styles.trialCallout} ${trialCalloutClass}`}>
+        <div>
+          <span className={styles.trialCalloutLabel}>Trial countdown</span>
+          <h2>
+            {trialIsExpired
+              ? 'Your trial has ended.'
+              : `${trialDaysRemaining} day${trialDaysRemaining === 1 ? '' : 's'} left before the POS locks.`}
+          </h2>
+          <p>
+            {trialIsExpired
+              ? 'Choose a plan and payment method now to restore sales access.'
+              : `Your trial expires on ${expiresText}. Save billing details early so the POS never surprises your team.`}
+          </p>
+        </div>
+        <Link href="/dashboard/pos" className={styles.trialCalloutLink}>
+          {trialIsExpired ? 'Open payment gate' : 'Check POS access'}
+        </Link>
       </div>
 
       {statusMessage ? <div className={styles.notice}>{statusMessage}</div> : null}

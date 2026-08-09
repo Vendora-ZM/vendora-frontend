@@ -112,6 +112,75 @@
   font-weight: 700;
 }
 
+.trialCallout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(6, 41, 107, 0.12);
+  background: linear-gradient(135deg, rgba(6, 41, 107, 0.06), rgba(255, 255, 255, 0.96));
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+}
+
+.trialCallout h2 {
+  margin: 6px 0 0;
+  color: var(--color-primary-navy);
+  font-size: 1.2rem;
+}
+
+.trialCallout p {
+  margin: 8px 0 0;
+  max-width: 720px;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.trialCalloutLabel {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(6, 41, 107, 0.08);
+  color: var(--color-primary-navy);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trialCalloutLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 800;
+  white-space: nowrap;
+  background: var(--color-accent-blue);
+  color: #fff;
+}
+
+.trialCallout_warning {
+  border-color: rgba(245, 158, 11, 0.22);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(255, 255, 255, 0.96));
+}
+
+.trialCallout_urgent {
+  border-color: rgba(220, 38, 38, 0.2);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(255, 255, 255, 0.96));
+}
+
+.trialCallout_expired {
+  border-color: rgba(220, 38, 38, 0.2);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.14), rgba(255, 255, 255, 0.96));
+}
+
 .expiredBanner {
   position: relative;
   z-index: 1;
