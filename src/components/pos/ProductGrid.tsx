@@ -75,7 +75,7 @@ export const ProductGrid: React.FC = () => {
               >
                 <div className={styles.productInfo}>
                   <h4 className={styles.productName}>{product.name}</h4>
-                  <span className={styles.productSku}>{product.sku}</span>
+                  <span className={styles.productSku}>Item code (SKU): {product.sku}</span>
                 </div>
                 <div className={styles.productPrice}>
                   K{(product.selling_price / 100).toFixed(2)}

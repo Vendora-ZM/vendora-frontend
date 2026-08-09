@@ -872,7 +872,7 @@ export default function DashboardOverview() {
                     <div className={styles.productInfo}>
                       <span className={styles.productName}>{product.product_name}</span>
                       <span className={styles.productSales}>
-                        SKU {product.sku} · {product.quantity_sold} sold
+                        Item code (SKU) {product.sku} · {product.quantity_sold} sold
                       </span>
                     </div>
                     <span className={styles.productRevenue}>{formatCurrency(product.revenue)}</span>

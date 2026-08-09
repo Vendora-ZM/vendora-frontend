@@ -81,7 +81,7 @@ export const TransferStockModal: React.FC = () => {
     >
       <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--color-dark-grey)' }}>
-          Transferring inventory for <strong>{product?.name}</strong> (SKU: {product?.sku})
+          Transferring inventory for <strong>{product?.name}</strong> (Item code: {product?.sku})
         </p>
 
         {error && (

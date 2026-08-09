@@ -37,7 +37,7 @@ export const TopProductsTable: React.FC = () => {
                   <td>
                     <div className={styles.productCell}>
                       <span className={styles.productName}>{row.product_name}</span>
-                      <span className={styles.productSku}>{row.sku}</span>
+                      <span className={styles.productSku}>Item code (SKU): {row.sku}</span>
                     </div>
                   </td>
                   <td className={styles.rightAlign}>{row.quantity_sold}</td>

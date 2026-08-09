@@ -402,7 +402,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                           <td>
                             <div className={styles.productCell}>
                               <span className={styles.productName}>{row.product_name}</span>
-                              <span className={styles.productSku}>{row.sku}</span>
+                              <span className={styles.productSku}>Item code (SKU): {row.sku}</span>
                             </div>
                           </td>
                           <td>{row.quantity_sold}</td>
@@ -500,7 +500,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                         <td>
                           <div className={styles.productCell}>
                             <span className={styles.productName}>{row.product_name}</span>
-                            <span className={styles.productSku}>{row.sku}</span>
+                            <span className={styles.productSku}>Item code (SKU): {row.sku}</span>
                           </div>
                         </td>
                         <td>{row.quantity_sold}</td>
@@ -550,7 +550,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                       <td>
                         <div className={styles.productCell}>
                           <span className={styles.productName}>{row.product_name}</span>
-                          <span className={styles.productSku}>{row.sku}</span>
+                          <span className={styles.productSku}>Item code (SKU): {row.sku}</span>
                         </div>
                       </td>
                       <td>{row.quantity_sold}</td>
@@ -652,7 +652,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                         <td>
                           <div className={styles.productCell}>
                             <span className={styles.productName}>{product?.name ?? balance.product_id}</span>
-                            <span className={styles.productSku}>{product?.sku ?? 'No SKU available'}</span>
+                            <span className={styles.productSku}>Item code (SKU): {product?.sku ?? 'N/A'}</span>
                           </div>
                         </td>
                         <td>{Number(balance.quantity_on_hand || 0)}</td>

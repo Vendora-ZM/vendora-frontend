@@ -235,7 +235,7 @@ export default function SaleReceiptPage() {
                             <td>
                               <div className={styles.itemCell}>
                                 <strong>{product?.name ?? item.product_id}</strong>
-                                <span>{product?.sku ?? 'No SKU available'}</span>
+                                <span>Item code (SKU): {product?.sku ?? 'N/A'}</span>
                               </div>
                             </td>
                             <td>{parseQuantity(item.quantity)}</td>

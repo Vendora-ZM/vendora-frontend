@@ -72,7 +72,7 @@ export const BalancesTable: React.FC<BalancesTableProps> = ({ balances, products
                     <td>
                       <div className={styles.productCell}>
                         <span className={styles.productName}>{product?.name || 'Unknown Product'}</span>
-                        <span className={styles.productSku}>SKU: {product?.sku || 'N/A'}</span>
+                        <span className={styles.productSku}>Item code (SKU): {product?.sku || 'N/A'}</span>
                       </div>
                     </td>
                     <td>{locationName}</td>
