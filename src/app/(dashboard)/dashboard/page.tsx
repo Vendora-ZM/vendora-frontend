@@ -74,6 +74,23 @@ function matchesQuestion(question: string, keywords: string[]) {
   return keywords.some((keyword) => normalized.includes(keyword));
 }
 
+type RecentSalesSummary = {
+  totalDiscount: number;
+  totalTax: number;
+  totalRefunded: number;
+  refundCount: number;
+  totalCompleted: number;
+  cashShare: number;
+  topPayment: [string, number] | null;
+  suspiciousDiscountSale:
+    | {
+        sale: Sale;
+        employeeLabel: string;
+        discountShare: number;
+      }
+    | null;
+};
+
 export default function DashboardOverview() {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -170,7 +187,7 @@ export default function DashboardOverview() {
     [accounts]
   );
 
-  const recentSalesSummary = useMemo(() => {
+  const recentSalesSummary = useMemo<RecentSalesSummary>(() => {
     const paymentTotals = new Map<string, number>();
     let totalDiscount = 0;
     let totalTax = 0;
