@@ -617,8 +617,13 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
       {activeView === 'inventory' && (
         <section className={styles.tableCard}>
           <div className={styles.panelHeader}>
-            <h3>Inventory</h3>
-            <span>Stock and turnover</span>
+            <div>
+              <h3>Inventory</h3>
+              <span>Stock and turnover</span>
+            </div>
+            <Link className={styles.secondaryActionLink} href="/dashboard/inventory#advanced-inventory">
+              Advanced inventory
+            </Link>
           </div>
           <div className={styles.tableWrapper}>
             <table className={styles.table}>

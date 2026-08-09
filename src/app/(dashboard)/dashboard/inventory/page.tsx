@@ -165,7 +165,7 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      <details className={styles.advancedInventoryCard} open>
+      <details id="advanced-inventory" className={styles.advancedInventoryCard} open>
         <summary className={styles.advancedInventorySummary}>
           <div>
             <span className={styles.advancedEyebrow}>Advanced Inventory</span>
