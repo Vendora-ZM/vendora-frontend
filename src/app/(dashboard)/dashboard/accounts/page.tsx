@@ -73,6 +73,13 @@ function roleBadge(role: Role) {
   return role.is_system ? 'System role' : 'Custom role';
 }
 
+function createInvitePromoCode(businessName: string, firstName: string, lastName: string) {
+  const source = `${businessName} ${firstName} ${lastName}`.trim().toUpperCase();
+  const letters = source.replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'VENDORA';
+  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `VND-${letters}-${random}`;
+}
+
 export default function AccountsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('accounts');
   const [currentPage, setCurrentPage] = useState(1);
@@ -209,6 +216,13 @@ export default function AccountsPage() {
     setInviteForm((current) => ({
       ...current,
       locationIds: unique(toggleValue(current.locationIds, locationId)),
+    }));
+  };
+
+  const handleGeneratePromoCode = () => {
+    setInviteForm((current) => ({
+      ...current,
+      promoCode: createInvitePromoCode(companyName, current.firstName, current.lastName),
     }));
   };
 
@@ -588,23 +602,24 @@ export default function AccountsPage() {
               </div>
 
               <form className={styles.form} onSubmit={handleInviteSubmit}>
-              <div className={styles.inviteRewardCard}>
-                <div>
-                  <span className={styles.detailLabel}>Invite reward</span>
-                  <p className={styles.helperText}>
-                    Every accepted invite can earn a free extra month. Promo codes are optional and can be shared
-                    with the new signup.
-                  </p>
+                <div className={styles.inviteRewardCard}>
+                  <div>
+                    <span className={styles.detailLabel}>Invite reward</span>
+                    <p className={styles.helperText}>
+                      Every accepted invite earns your business one free extra month. Ts & Cs apply.
+                    </p>
+                  </div>
+                  <div className={styles.promoSummary}>
+                    <span className={styles.promoBadge}>Optional promo code</span>
+                    <span className={styles.promoHint}>
+                      Generate one if you want to track who shared the invite and give the new signup a code to enter.
+                    </span>
+                  </div>
                 </div>
-                <div className={styles.promoSummary}>
-                  <span className={styles.promoBadge}>Optional promo code</span>
-                  <span className={styles.promoHint}>Use it only if you want to track an invite campaign.</span>
-                </div>
-              </div>
 
                 <div className={styles.sectionNote}>
-                  Invite to Vendora creates an employee account for the business. It does not change the company
-                  profile above.
+                  Invite to Vendora creates an employee account for the business. The company profile above stays
+                  separate from the signed-in account and the person you invite.
                 </div>
 
                 <div className={styles.formGrid}>
@@ -647,8 +662,16 @@ export default function AccountsPage() {
                   label="Promo code"
                   value={inviteForm.promoCode}
                   onChange={(event) => setInviteForm((current) => ({ ...current, promoCode: event.target.value }))}
-                  helpText="Optional. The invited person can use this when they sign up."
+                  helpText="Optional. The invited person can enter this on signup."
                 />
+                <div className={styles.promoActions}>
+                  <Button type="button" variant="outline" size="sm" onClick={handleGeneratePromoCode}>
+                    Generate promo code
+                  </Button>
+                  <span className={styles.promoActionHint}>
+                    Handy if you want a campaign code that can be shared by email, chat, or social media.
+                  </span>
+                </div>
 
                 <Select
                   id="invite-role"
@@ -695,7 +718,7 @@ export default function AccountsPage() {
                 </div>
 
                 <Button type="submit" disabled={creatingInvitation || !inviteForm.locationIds.length}>
-                      {creatingInvitation ? 'Sending invite…' : 'Send invitation'}
+                  {creatingInvitation ? 'Sending invite…' : 'Send invitation'}
                 </Button>
               </form>
             </section>

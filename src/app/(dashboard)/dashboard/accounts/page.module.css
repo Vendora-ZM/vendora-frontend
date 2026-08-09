@@ -497,6 +497,13 @@
   align-items: center;
 }
 
+.promoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
 .promoBadge {
   display: inline-flex;
   align-items: center;
@@ -511,6 +518,12 @@
 .promoHint {
   color: #64748b;
   font-size: 0.92rem;
+}
+
+.promoActionHint {
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .formGrid {
@@ -689,6 +702,10 @@
 
   .filters {
     grid-template-columns: 1fr;
+  }
+
+  .promoActions {
+    align-items: stretch;
   }
 
   .tabs {
