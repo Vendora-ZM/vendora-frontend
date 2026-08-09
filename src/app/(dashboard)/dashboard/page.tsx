@@ -38,6 +38,10 @@ function formatCurrency(amount: number) {
   })}`;
 }
 
+function formatPercent(value: number) {
+  return `${value.toFixed(1)}%`;
+}
+
 function formatDateTime(iso: string) {
   const value = new Date(iso);
   return value.toLocaleDateString('en-US', {
@@ -153,6 +157,65 @@ export default function DashboardOverview() {
       .slice(0, 5);
   }, [salesResponse]);
 
+  const recentSalesSummary = useMemo(() => {
+    const paymentTotals = new Map<string, number>();
+    let totalDiscount = 0;
+    let totalTax = 0;
+    let totalRefunded = 0;
+    let totalCompleted = 0;
+    let refundCount = 0;
+    let suspiciousDiscountSale:
+      | {
+          sale: Sale;
+          employeeLabel: string;
+          discountShare: number;
+        }
+      | null = null;
+
+    recentSales.forEach((sale) => {
+      totalDiscount += sale.discount_amount ?? 0;
+      totalTax += sale.tax_amount ?? 0;
+
+      if (sale.status === 'refunded') {
+        refundCount += 1;
+        totalRefunded += sale.total_amount ?? 0;
+      }
+
+      if (sale.status === 'completed') {
+        totalCompleted += sale.total_amount ?? 0;
+      }
+
+      sale.payments.forEach((payment) => {
+        paymentTotals.set(payment.method, (paymentTotals.get(payment.method) ?? 0) + (payment.amount ?? 0));
+      });
+
+      const discountShare = sale.total_amount > 0 ? sale.discount_amount / sale.total_amount : 0;
+      if (sale.discount_amount > 0 && (!suspiciousDiscountSale || discountShare > suspiciousDiscountSale.discountShare)) {
+        suspiciousDiscountSale = {
+          sale,
+          employeeLabel: sale.created_by ? employeeMap.get(sale.created_by) ?? `User ${sale.created_by.slice(0, 8)}` : 'Unassigned',
+          discountShare,
+        };
+      }
+    });
+
+    const cashTotal = paymentTotals.get('cash') ?? 0;
+    const paymentTotal = [...paymentTotals.values()].reduce((sum, amount) => sum + amount, 0);
+    const topPayment =
+      [...paymentTotals.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
+
+    return {
+      totalDiscount,
+      totalTax,
+      totalRefunded,
+      refundCount,
+      totalCompleted,
+      cashShare: paymentTotal > 0 ? cashTotal / paymentTotal : 0,
+      topPayment,
+      suspiciousDiscountSale,
+    };
+  }, [employeeMap, recentSales]);
+
   const lowStockAlerts = useMemo(() => {
     return balances
       .map((balance) => {
@@ -194,6 +257,7 @@ export default function DashboardOverview() {
     const urgentStock = lowStockAlerts[0];
     const bestProductSold = bestProduct ? Number(bestProduct.quantity_sold) || 0 : 0;
     const positiveTrend = revenueDelta >= 0;
+    const cashSharePercent = recentSalesSummary.cashShare * 100;
 
     const insights: { title: string; text: string; tone: 'positive' | 'warning' | 'neutral' }[] = [];
 
@@ -224,6 +288,51 @@ export default function DashboardOverview() {
           urgentStock.available === 1 ? '' : 's'
         }. Reorder soon to avoid lost sales.`,
         tone: urgentStock.available <= 2 ? 'warning' : 'neutral',
+      });
+    }
+
+    if (recentSalesSummary.refundCount > 0) {
+      insights.push({
+        title: 'Refund watch',
+        text: `${recentSalesSummary.refundCount.toLocaleString()} sale${recentSalesSummary.refundCount === 1 ? '' : 's'} were refunded in the recent feed, totaling ${formatCurrency(recentSalesSummary.totalRefunded)}.`,
+        tone: 'warning',
+      });
+    }
+
+    if (recentSalesSummary.suspiciousDiscountSale) {
+      insights.push({
+        title: 'Discount watch',
+        text: `${recentSalesSummary.suspiciousDiscountSale.employeeLabel} gave the largest recent discount on ${recentSalesSummary.suspiciousDiscountSale.sale.sale_number}. That discount represented ${formatPercent(
+          recentSalesSummary.suspiciousDiscountSale.discountShare * 100
+        )} of the sale.`,
+        tone: recentSalesSummary.suspiciousDiscountSale.discountShare > 0.2 ? 'warning' : 'neutral',
+      });
+    }
+
+    if (recentSalesSummary.totalTax > 0) {
+      insights.push({
+        title: 'Tax summary',
+        text: `Recent sales collected ${formatCurrency(recentSalesSummary.totalTax)} in tax, so there is a live tax trail to review before month-end reporting.`,
+        tone: 'neutral',
+      });
+    }
+
+    if (recentSalesSummary.totalDiscount > 0) {
+      insights.push({
+        title: 'Discount summary',
+        text: `Recent sales included ${formatCurrency(recentSalesSummary.totalDiscount)} in discounts, which is worth comparing against margin before the next promotion.`,
+        tone: recentSalesSummary.totalDiscount > totalRevenue * 0.15 ? 'warning' : 'neutral',
+      });
+    }
+
+    if (recentSalesSummary.cashShare > 0) {
+      insights.push({
+        title: 'Cash flow pulse',
+        text:
+          cashSharePercent >= 60
+            ? `Cash sales are carrying ${formatPercent(cashSharePercent)} of recent payments, which is healthy for short-term cash flow.`
+            : `Only ${formatPercent(cashSharePercent)} of recent payments are cash, so card and mobile money timing will matter more for cash flow planning.`,
+        tone: cashSharePercent >= 60 ? 'positive' : 'neutral',
       });
     }
 
@@ -279,11 +388,15 @@ export default function DashboardOverview() {
         'Predict next month’s sales.',
         'Suggest reorder quantities.',
         'Recommend price increases.',
+        'Identify suspicious refunds.',
+        'Show cash flow risk.',
+        'Summarize tax due.',
+        'Which employee discounts too much?',
         'Identify slow-moving stock.',
         'Benchmark performance.',
       ],
     };
-  }, [formatCurrency, graphData, lowStockAlerts, profitMargin, topProducts]);
+  }, [formatCurrency, graphData, lowStockAlerts, profitMargin, recentSalesSummary, topProducts]);
 
   const advisorResponse = useMemo(() => {
     const topSeller = topProducts[0];
@@ -399,6 +512,85 @@ export default function DashboardOverview() {
       };
     }
 
+    if (matchesQuestion(matchedQuestion, ['cash flow', 'cashflow', 'liquidity', 'cash inflow', 'cash outflow'])) {
+      const cashSharePercent = recentSalesSummary.cashShare * 100;
+      return {
+        answer:
+          recentSalesSummary.cashShare > 0
+            ? cashSharePercent >= 60
+              ? `Cash flow looks healthy right now because ${formatPercent(cashSharePercent)} of recent payments are cash.`
+              : `Cash flow is more dependent on card and mobile money timing because only ${formatPercent(cashSharePercent)} of recent payments are cash.`
+            : 'There is not enough payment history yet to estimate cash flow, but Vendora will start showing a clearer pattern as more sales are recorded.',
+        bullets: [
+          recentSalesSummary.topPayment
+            ? `${recentSalesSummary.topPayment[0]} is the most common recent payment method.`
+            : 'No payment mix is visible yet.',
+          recentSalesSummary.totalCompleted > 0
+            ? `${formatCurrency(recentSalesSummary.totalCompleted)} in completed sales is feeding the current cash picture.`
+            : 'No completed sales are in the recent sample yet.',
+          'Use this together with expenses and supplier payments for a fuller cash plan.',
+        ],
+        actions: ['Review cash mix', 'Track collections', 'Plan payments'],
+      };
+    }
+
+    if (matchesQuestion(matchedQuestion, ['refund', 'refunds', 'suspicious refund', 'suspicious refunds'])) {
+      return {
+        answer:
+          recentSalesSummary.refundCount > 0
+            ? `${recentSalesSummary.refundCount.toLocaleString()} recent sale${recentSalesSummary.refundCount === 1 ? '' : 's'} were refunded, totaling ${formatCurrency(recentSalesSummary.totalRefunded)}.`
+            : 'No refunded sales are showing in the current sample, so refund risk looks quiet for now.',
+        bullets: [
+          recentSalesSummary.refundCount > 0
+            ? 'Check whether refunds cluster around a product, shift, or employee.'
+            : 'Keep watching the refunded-sales panel as more transactions come in.',
+          recentSalesSummary.suspiciousDiscountSale
+            ? `${recentSalesSummary.suspiciousDiscountSale.employeeLabel} also applied the largest discount on ${recentSalesSummary.suspiciousDiscountSale.sale.sale_number}.`
+            : 'No unusually discounted sale stands out in the recent sample.',
+          recentSalesSummary.totalRefunded > 0
+            ? `Refunds removed ${formatCurrency(recentSalesSummary.totalRefunded)} from the recent sample.`
+            : 'No refund amount is showing in the recent sample.',
+        ],
+        actions: ['Review refunds', 'Audit discounts', 'Check receipt notes'],
+      };
+    }
+
+    if (matchesQuestion(matchedQuestion, ['discount', 'discounts too much', 'who is discounting', 'too much discount'])) {
+      return {
+        answer:
+          recentSalesSummary.suspiciousDiscountSale
+            ? `${recentSalesSummary.suspiciousDiscountSale.employeeLabel} applied the largest recent discount on ${recentSalesSummary.suspiciousDiscountSale.sale.sale_number}.`
+            : 'No clear discount outlier is visible in the current sample, but the advisor will keep watching for repeated deep discounts.',
+        bullets: [
+          recentSalesSummary.suspiciousDiscountSale
+            ? `That sale discounted ${formatPercent(recentSalesSummary.suspiciousDiscountSale.discountShare * 100)} of the ticket value.`
+            : 'No sale in the recent feed has a standout discount ratio.',
+          'Look at the item mix if the discount was used to clear stock or rescue a slow sale.',
+          'Set a clear approval rule for larger discounts so it is easier to spot abuse.',
+        ],
+        actions: ['Review discount policy', 'Check employee sales', 'Tighten approvals'],
+      };
+    }
+
+    if (matchesQuestion(matchedQuestion, ['tax', 'tax summary', 'taxes', 'monthly review', 'business review'])) {
+      return {
+        answer:
+          recentSalesSummary.totalTax > 0
+            ? `Vendora can already see ${formatCurrency(recentSalesSummary.totalTax)} in tax from the recent sales sample, which is a good base for a month-end summary.`
+            : 'There is not enough tax activity in the current sample yet, but the advisor will summarize tax automatically as sales accumulate.',
+        bullets: [
+          recentSalesSummary.totalTax > 0
+            ? 'Use this figure to sanity-check month-end reporting.'
+            : 'Tax detail will become more useful as more completed sales are recorded.',
+          totalRefunds > 0 ? `${formatCurrency(totalRefunds)} in refunds is already affecting the period totals.` : 'No refund drag is visible in the current trend window.',
+          profitMargin >= 25
+            ? 'Healthy margin gives you some room if taxes or supplier costs tick up.'
+            : 'Margin is tighter, so tax and cost control matter more.',
+        ],
+        actions: ['Open sales report', 'Review tax totals', 'Export monthly review'],
+      };
+    }
+
     if (matchesQuestion(matchedQuestion, ['slow-moving stock', 'slow moving stock', 'slow movers', 'slow-moving', 'slow moving'])) {
       return {
         answer:
@@ -448,6 +640,8 @@ export default function DashboardOverview() {
     selectedPrompt,
     summary.totalSales,
     topProducts,
+    recentSalesSummary,
+    totalRefunds,
   ]);
 
   function handleAdvisorSubmit(event: React.FormEvent<HTMLFormElement>) {
