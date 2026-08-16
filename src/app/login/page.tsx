@@ -168,14 +168,14 @@ function LoginForm() {
         <div className={styles.header}>
           {mode === "LOGIN" && (
             <>
-              <h1>Welcome Back</h1>
-              <p>Enter your details to access your account.</p>
+              <h1>Sign in to your workspace</h1>
+              <p>Welcome back. Let&apos;s see how your business is performing today.</p>
             </>
           )}
           {mode === "REGISTER" && (
             <>
-              <h1>Create Business Account</h1>
-              <p>Join Vendora and grow your business today.</p>
+              <h1>Start your Vendora journey</h1>
+              <p>Set up your workspace in minutes and take full control of your operations.</p>
             </>
           )}
           {mode === "FORGOT_PASSWORD" && (

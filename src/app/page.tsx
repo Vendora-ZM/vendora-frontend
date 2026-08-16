@@ -169,13 +169,12 @@ export default function Home() {
 
         <section className={styles.hero}>
           <div className={styles.heroContent}>
-            <span className={styles.kicker}>Built for stores, branches, and growing teams</span>
+            <span className={styles.kicker}>The all-in-one OS for growing businesses</span>
             <h1 className={styles.title}>
-              Run sales, stock, and locations from one clear platform.
+              Everything you need to sell, scale, and manage your business.
             </h1>
             <p className={styles.subtitle}>
-              Vendora helps merchants sell faster, stay stocked, and manage teams with role-based access and live
-              visibility across the business.
+              From intelligent inventory to lightning-fast point of sale, Vendora gives you the clarity and control to run your operations smoothly—whether you have one store or fifty.
             </p>
             <div className={styles.ctaGroup}>
               <Link href="/signup" className={styles.primaryButton}>
@@ -253,8 +252,8 @@ export default function Home() {
 
         <section className={styles.section} id="features">
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionEyebrow}>Why teams switch</span>
-            <h2 className={styles.sectionTitle}>Less noise. More control. Better decisions.</h2>
+            <span className={styles.sectionEyebrow}>The Vendora Advantage</span>
+            <h2 className={styles.sectionTitle}>Smarter tools for smoother operations.</h2>
             <p className={styles.sectionSubtitle}>
               Vendora brings the selling tools, analytics, and AI guidance into one system so the platform feels
               useful from day one.
@@ -353,10 +352,9 @@ export default function Home() {
           <div className={styles.analyticsBanner}>
             <div className={styles.analyticsCopy}>
               <span className={styles.sectionEyebrow}>AI Dashboard</span>
-              <h2 className={styles.sectionTitle}>ChatGPT-style advice inside your POS.</h2>
+              <h2 className={styles.sectionTitle}>Meet your AI Business Co-pilot.</h2>
               <p className={styles.sectionSubtitle}>
-                Vendora should not just show charts. It should explain what happened, what may happen next, and what
-                the owner should do about it.
+                Go beyond standard reports. Vendora analyzes your data in real-time to explain sales trends, forecast demand, and recommend your next move.
               </p>
             </div>
 
