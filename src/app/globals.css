@@ -12,8 +12,8 @@
   --color-dark-grey: #171717;
 
   /* Gradients */
-  --gradient-blue: linear-gradient(135deg, #06296B, #0A67BC, #1A84DD);
-  --gradient-orange: linear-gradient(135deg, #E85A00, #F57C00, #FF9800);
+  --gradient-blue: linear-gradient(135deg, #0f172a, #1e3a8a, #3b82f6);
+  --gradient-orange: linear-gradient(135deg, #ea580c, #f97316, #fb923c);
 
   /* Theme mappings */
   --background: var(--color-light-grey);

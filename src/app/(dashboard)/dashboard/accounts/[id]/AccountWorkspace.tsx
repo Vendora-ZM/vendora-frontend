@@ -3,8 +3,8 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Input';
+import { Button } from '../../../../../components/ui/Button';
+import { Select } from '../../../../../components/ui/Input';
 import {
   type Account,
   type Invitation,
@@ -14,14 +14,14 @@ import {
   useGetInvitationsQuery,
   useGetRolesQuery,
   useUpdateAccountMutation,
-} from '@/lib/features/accounts/accountsApi';
-import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
-import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
-import { useLogoutMutation } from '@/lib/features/auth/authApi';
-import { logout } from '@/lib/features/auth/authSlice';
-import { useGetMeQuery } from '@/lib/features/profile/profileApi';
-import { useAppDispatch, useAppSelector } from '@/lib/store';
-import type { Location } from '@/types/location';
+} from '../../../../../lib/features/accounts/accountsApi';
+import { useGetBusinessQuery } from '../../../../../lib/features/business/businessApi';
+import { useGetLocationsQuery } from '../../../../../lib/features/locations/locationsApi';
+import { useLogoutMutation } from '../../../../../lib/features/auth/authApi';
+import { logout } from '../../../../../lib/features/auth/authSlice';
+import { useGetMeQuery } from '../../../../../lib/features/profile/profileApi';
+import { useAppDispatch, useAppSelector } from '../../../../../lib/store';
+import type { Location } from '../../../../../types/location';
 import styles from './page.module.css';
 
 function formatDate(value?: string | null) {
