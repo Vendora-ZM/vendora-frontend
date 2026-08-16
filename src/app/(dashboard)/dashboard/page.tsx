@@ -112,6 +112,7 @@ export default function DashboardOverview() {
   const { dateRangePreset, locationId } = useAppSelector((s) => s.analytics);
   const [selectedPrompt, setSelectedPrompt] = useState(ADVISOR_PROMPTS[0]);
   const [questionDraft, setQuestionDraft] = useState(ADVISOR_PROMPTS[0]);
+  const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
   const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
 
   const { data: locationsRaw = [] } = useGetLocationsQuery();
@@ -752,7 +753,7 @@ export default function DashboardOverview() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.headerRow}>
+      <div className={`${styles.headerRow} ${styles.animateIn} ${styles.delay1}`}>
         <div>
           <h1 className={styles.title}>Dashboard</h1>
           <p className={styles.subtitle}>
@@ -800,7 +801,19 @@ export default function DashboardOverview() {
         </div>
       )}
 
-      <div className={styles.aiAdvisorCard}>
+      <div className={`${styles.aiAdvisorCard} ${isAdvisorOpen ? styles.aiAdvisorCardOpen : ''}`}>
+        <button
+          type="button"
+          className={styles.aiAdvisorCloseBtn}
+          onClick={() => setIsAdvisorOpen(false)}
+          aria-label="Close AI Advisor"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
         <div className={styles.aiAdvisorHeader}>
           <div>
             <span className={styles.aiAdvisorEyebrow}>AI Business Advisor</span>
@@ -898,7 +911,7 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      <div className={styles.statsGrid}>
+      <div className={`${styles.statsGrid} ${styles.animateIn} ${styles.delay3}`}>
         <div className={styles.statCard}>
           <div className={styles.statHeader}>
             <h3 className={styles.statTitle}>Revenue</h3>
@@ -964,7 +977,7 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      <div className={styles.mainGrid}>
+      <div className={`${styles.mainGrid} ${styles.animateIn} ${styles.delay4}`}>
         <div className={styles.leftColumn}>
           <div className={styles.card}>
             <div className={styles.sectionTitle}>
@@ -1111,6 +1124,18 @@ export default function DashboardOverview() {
           </div>
         </div>
       </div>
+
+      <button
+        type="button"
+        className={styles.aiAdvisorFab}
+        onClick={() => setIsAdvisorOpen(!isAdvisorOpen)}
+        aria-label="Toggle AI Advisor"
+      >
+        {aiAdvisor.healthScore < 60 && <div className={styles.aiAdvisorFabBadge} />}
+        <svg className={styles.aiAdvisorFabIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </button>
     </div>
   );
 }
