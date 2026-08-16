@@ -137,6 +137,10 @@ export const Cart: React.FC<CartProps> = ({
         }),
       }).unwrap();
 
+      if (!sale?.id) {
+        throw new Error('Sale creation did not return a valid sale id.');
+      }
+
       const completedSale: Sale = await completeSale({
         id: sale.id,
         data: {

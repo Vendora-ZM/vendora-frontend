@@ -13,6 +13,12 @@ export interface PaginatedSalesResponse {
   meta: SalesMeta;
 }
 
+function unwrapApiData<T>(response: T | { data: T }): T {
+  return typeof response === 'object' && response !== null && 'data' in response
+    ? (response as { data: T }).data
+    : response;
+}
+
 export const salesApi = createApi({
   reducerPath: 'salesApi',
   baseQuery: createReauthBaseQuery('/api/proxy'),
@@ -39,6 +45,7 @@ export const salesApi = createApi({
 
     getSaleById: builder.query<Sale, string>({
       query: (id) => `/sales/${id}`,
+      transformResponse: (response: Sale | { data: Sale }) => unwrapApiData(response),
       providesTags: (_result, _error, id) => [{ type: 'Sale', id }],
     }),
 
@@ -48,6 +55,7 @@ export const salesApi = createApi({
         method: 'POST',
         body,
       }),
+      transformResponse: (response: Sale | { data: Sale }) => unwrapApiData(response),
       invalidatesTags: [{ type: 'Sale', id: 'LIST' }],
     }),
 
@@ -57,6 +65,7 @@ export const salesApi = createApi({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: Sale | { data: Sale }) => unwrapApiData(response),
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Sale', id },
         { type: 'Sale', id: 'LIST' },
