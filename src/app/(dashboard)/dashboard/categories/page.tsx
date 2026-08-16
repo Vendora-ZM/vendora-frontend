@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useCreateCategoryMutation, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
-import { CreateCategoryPayload } from '@/types/product';
+import { CreateCategoryPayload, type Category } from '@/types/product';
 import styles from './page.module.css';
 
 function formatDate(value: string) {
@@ -27,7 +27,7 @@ export default function CategoriesPage() {
   );
 
   const activeCount = useMemo(
-    () => categories.filter((category) => category.is_active).length,
+    () => categories.filter((category: Category) => category.is_active).length,
     [categories]
   );
 
@@ -168,7 +168,7 @@ export default function CategoriesPage() {
                     </td>
                   </tr>
                 ) : (
-                  sortedCategories.map((category) => (
+                  sortedCategories.map((category: Category) => (
                     <tr key={category.id}>
                       <td>
                         <div className={styles.nameCell}>

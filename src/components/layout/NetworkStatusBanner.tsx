@@ -88,18 +88,9 @@ export function NetworkStatusBanner() {
     };
   }, [connection, isOnline]);
 
-  useEffect(() => {
-    if (!status.visible) {
-      setDismissedFor(null);
-      return;
-    }
+  const isDismissed = dismissedFor === status.key;
 
-    if (dismissedFor && dismissedFor !== status.key) {
-      setDismissedFor(null);
-    }
-  }, [dismissedFor, status.key, status.visible]);
-
-  if (!status.visible || dismissedFor === status.key) return null;
+  if (!status.visible || isDismissed) return null;
 
   return (
     <div className={`${styles.banner} ${styles[status.tone]}`} role="status" aria-live="polite">

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useDeleteLocationMutation } from '@/lib/features/locations/locationsApi';
+import type { Location } from '@/types/location';
 import styles from './page.module.css';
 
 const PAGE_SIZE = 8;
@@ -106,7 +107,7 @@ export default function LocationsPage() {
                   </td>
                 </tr>
               ) : (
-                pageLocations.map((location) => (
+                pageLocations.map((location: Location) => (
                   <tr key={location.id}>
                     <td>
                       <div className={styles.locationCopy}>
@@ -164,7 +165,7 @@ export default function LocationsPage() {
               </button>
 
               <div className={styles.pageNumbers} aria-label="Pagination pages">
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page: number) => (
                   <button
                     key={page}
                     type="button"

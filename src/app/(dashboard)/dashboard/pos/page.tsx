@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Select } from '@/components/ui/Input';
 import { useAppSelector } from '@/lib/store';
 import { ProductGrid } from '@/components/pos/ProductGrid';
@@ -19,86 +19,65 @@ import styles from './page.module.css';
 
 type FlowStage = 'selection' | 'checkout';
 
-export default function PosPage() {
-  const [stage, setStage] = useState<FlowStage>('selection');
-  const [selectedSalesChannelId, setSelectedSalesChannelId] = useState<SalesChannelId | ''>('');
-  const [enabledSalesChannelIds, setEnabledSalesChannelIds] = useState<string[]>([]);
+function getInitialSalesChannels(storageKey: string, businessCategory: string) {
+  if (typeof window === 'undefined') {
+    return getRecommendedSalesChannels(businessCategory);
+  }
+
+  const stored = window.localStorage.getItem(storageKey);
+  if (stored) {
+    try {
+      return normalizeSalesChannels(JSON.parse(stored));
+    } catch {
+      // Ignore malformed local preferences and fall back to the recommended set below.
+    }
+  }
+
+  return getRecommendedSalesChannels(businessCategory);
+}
+
+function getInitialSelectedSalesChannelId(storageKey: string, enabledSalesChannels: SalesChannelId[]) {
+  if (typeof window !== 'undefined') {
+    const storedSelected = window.localStorage.getItem(`${storageKey}.selected`);
+    if (storedSelected && enabledSalesChannels.includes(storedSelected as SalesChannelId)) {
+      return storedSelected as SalesChannelId;
+    }
+  }
+
+  return enabledSalesChannels[0] ?? '';
+}
+
+function PosWorkspace({
+  businessId,
+  businessCategory,
+  paymentTypes,
+}: {
+  businessId: string;
+  businessCategory: string;
+  paymentTypes?: string[];
+}) {
   const { cart } = useAppSelector((s) => s.pos);
-  const { data: me } = useGetMeQuery();
-  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
-    skip: !me?.business_id,
-  });
-  const paymentTypes = business?.payment_types?.length ? business.payment_types : undefined;
-  const salesChannelStorageKey = `${SALES_CHANNEL_STORAGE_PREFIX}.${business?.id ?? me?.business_id ?? 'unknown'}`;
-  const selectedSalesChannelStorageKey = `${salesChannelStorageKey}.selected`;
-
-  useEffect(() => {
-    if (!business?.id) {
-      return;
-    }
-
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const stored = window.localStorage.getItem(salesChannelStorageKey);
-    const storedSelected = window.localStorage.getItem(selectedSalesChannelStorageKey);
-    let nextEnabled = getRecommendedSalesChannels(business.business_category);
-
-    if (stored) {
-      try {
-        nextEnabled = normalizeSalesChannels(JSON.parse(stored));
-      } catch {
-        // Ignore malformed local preferences and fall back to the recommended set below.
-      }
-    }
-
-    setEnabledSalesChannelIds(nextEnabled);
-    const nextSelected =
-      storedSelected && nextEnabled.includes(storedSelected)
-        ? (storedSelected as SalesChannelId)
-        : (nextEnabled[0] as SalesChannelId | undefined) ?? '';
-    setSelectedSalesChannelId(nextSelected);
-  }, [business?.business_category, business?.id, me?.business_id, salesChannelStorageKey, selectedSalesChannelStorageKey]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !business?.id) {
-      return;
-    }
-
-    if (enabledSalesChannelIds.length === 0) {
-      return;
-    }
-
-    window.localStorage.setItem(salesChannelStorageKey, JSON.stringify(enabledSalesChannelIds));
-  }, [business?.id, enabledSalesChannelIds, salesChannelStorageKey]);
-
-  useEffect(() => {
-    if (!enabledSalesChannelIds.length) {
-      return;
-    }
-
-    if (!selectedSalesChannelId || !enabledSalesChannelIds.includes(selectedSalesChannelId)) {
-      setSelectedSalesChannelId(enabledSalesChannelIds[0]);
-    }
-  }, [enabledSalesChannelIds, selectedSalesChannelId]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !business?.id) {
-      return;
-    }
-
-    if (!selectedSalesChannelId) {
-      return;
-    }
-
-    window.localStorage.setItem(selectedSalesChannelStorageKey, selectedSalesChannelId);
-  }, [business?.id, selectedSalesChannelId, selectedSalesChannelStorageKey]);
+  const [stage, setStage] = useState<FlowStage>('selection');
+  const salesChannelStorageKey = `${SALES_CHANNEL_STORAGE_PREFIX}.${businessId}`;
+  const [enabledSalesChannelIds] = useState<SalesChannelId[]>(() =>
+    getInitialSalesChannels(salesChannelStorageKey, businessCategory)
+  );
+  const [selectedSalesChannelId, setSelectedSalesChannelId] = useState<SalesChannelId | ''>(() =>
+    getInitialSelectedSalesChannelId(salesChannelStorageKey, enabledSalesChannelIds)
+  );
 
   const selectedSalesChannelOption = useMemo(() => {
     const fallbackId = (enabledSalesChannelIds[0] ?? 'walk_in') as SalesChannelId;
     return getSalesChannelOption((selectedSalesChannelId || fallbackId) as SalesChannelId);
   }, [enabledSalesChannelIds, selectedSalesChannelId]);
+
+  const handleSelectedChannelChange = (value: SalesChannelId) => {
+    setSelectedSalesChannelId(value);
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(`${salesChannelStorageKey}.selected`, value);
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -128,7 +107,7 @@ export default function PosPage() {
         <Select
           label="Channel shown on POS"
           value={selectedSalesChannelId || enabledSalesChannelIds[0] || ''}
-          onChange={(event) => setSelectedSalesChannelId(event.target.value as SalesChannelId)}
+          onChange={(event) => handleSelectedChannelChange(event.target.value as SalesChannelId)}
         >
           {enabledSalesChannelIds.map((channelId) => {
             const option = SALES_CHANNEL_OPTIONS.find((entry) => entry.id === channelId);
@@ -174,5 +153,36 @@ export default function PosPage() {
         </section>
       )}
     </div>
+  );
+}
+
+export default function PosPage() {
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+
+  if (!business?.id) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <div>
+            <h1 className={styles.title}>POS Checkout</h1>
+            <p className={styles.subtitle}>Loading your business and payment settings…</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const paymentTypes = business.payment_types?.length ? business.payment_types : undefined;
+
+  return (
+    <PosWorkspace
+      key={business.id}
+      businessId={business.id}
+      businessCategory={business.business_category}
+      paymentTypes={paymentTypes}
+    />
   );
 }

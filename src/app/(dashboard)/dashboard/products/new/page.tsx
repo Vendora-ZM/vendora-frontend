@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCreateProductMutation, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { Input, Textarea, Select } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { CreateProductPayload } from '@/types/product';
+import { CreateProductPayload, type Category } from '@/types/product';
 import styles from './page.module.css';
 
 interface FormState {
@@ -204,7 +203,7 @@ export default function NewProductPage() {
                   onChange={set('category_id')}
                 >
                   <option value="">— No Category —</option>
-                  {categories.map((cat) => (
+                  {categories.map((cat: Category) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </Select>

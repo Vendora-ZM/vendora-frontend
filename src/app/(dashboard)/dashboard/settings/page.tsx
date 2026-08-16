@@ -25,6 +25,7 @@ import {
 import {
   useDeleteAccountMutation,
   useGetAccountsQuery,
+  type Account,
 } from '@/lib/features/accounts/accountsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
@@ -45,6 +46,32 @@ const timezoneOptions = [
 
 const languageOptions = ['English', 'Swahili', 'French', 'Portuguese'];
 const SETTINGS_LANGUAGE_STORAGE_KEY = 'vendora.settings.language.v1';
+
+function getInitialLanguage() {
+  if (typeof window === 'undefined') {
+    return languageOptions[0];
+  }
+
+  const storedLanguage = window.localStorage.getItem(SETTINGS_LANGUAGE_STORAGE_KEY);
+  return storedLanguage && languageOptions.includes(storedLanguage) ? storedLanguage : languageOptions[0];
+}
+
+function getInitialSalesChannels(storageKey: string, businessCategory: string) {
+  if (typeof window === 'undefined') {
+    return getRecommendedSalesChannels(businessCategory);
+  }
+
+  const storedSalesChannels = window.localStorage.getItem(storageKey);
+  if (storedSalesChannels) {
+    try {
+      return normalizeSalesChannels(JSON.parse(storedSalesChannels));
+    } catch {
+      // Ignore malformed local preferences and fall back to the recommended set below.
+    }
+  }
+
+  return getRecommendedSalesChannels(businessCategory);
+}
 
 function isUnauthorizedError(error: unknown) {
   return Boolean(
@@ -125,8 +152,9 @@ function WorkspaceProfileCard({
   const [businessType, setBusinessType] = useState(initialBusinessType);
   const [paymentTypes, setPaymentTypes] = useState(initialPaymentTypes);
   const [paymentTypeDraft, setPaymentTypeDraft] = useState('');
+  const salesChannelStorageKey = `${SALES_CHANNEL_STORAGE_PREFIX}.${businessId}`;
   const [salesChannels, setSalesChannels] = useState<SalesChannelId[]>(() =>
-    getRecommendedSalesChannels(initialBusinessCategory)
+    getInitialSalesChannels(salesChannelStorageKey, initialBusinessCategory)
   );
   const [receiptShowLogo, setReceiptShowLogo] = useState(initialReceiptShowLogo);
   const [receiptHeaderText, setReceiptHeaderText] = useState(initialReceiptHeaderText);
@@ -147,7 +175,6 @@ function WorkspaceProfileCard({
     BILLING_PAYMENT_METHODS.find((method) => method.id === paymentMethodId) ?? BILLING_PAYMENT_METHODS[0];
   const selectedCategory = getBusinessCategory(businessCategory);
   const selectedHighlights = BUSINESS_HIGHLIGHTS[selectedCategory.value] ?? BUSINESS_HIGHLIGHTS.other;
-  const salesChannelStorageKey = `${SALES_CHANNEL_STORAGE_PREFIX}.${businessId}`;
   const expiresText = new Date(trialExpiresAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -174,37 +201,19 @@ function WorkspaceProfileCard({
     setPaymentTypes((current) => current.filter((entry) => entry !== label));
   };
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
+  const persistSalesChannels = (nextSalesChannels: SalesChannelId[]) => {
+    setSalesChannels(nextSalesChannels);
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(salesChannelStorageKey, JSON.stringify(nextSalesChannels));
     }
-
-    const storedSalesChannels = window.localStorage.getItem(salesChannelStorageKey);
-    if (storedSalesChannels) {
-      try {
-        setSalesChannels(normalizeSalesChannels(JSON.parse(storedSalesChannels)));
-        return;
-      } catch {
-        // Ignore malformed local preferences and fall back to the recommended set below.
-      }
-    }
-
-    setSalesChannels(getRecommendedSalesChannels(businessCategory));
-  }, [businessCategory, salesChannelStorageKey]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    window.localStorage.setItem(salesChannelStorageKey, JSON.stringify(salesChannels));
-  }, [salesChannelStorageKey, salesChannels]);
+  };
 
   const toggleSalesChannel = (channelId: SalesChannelId) => {
-    setSalesChannels((current) =>
-      current.includes(channelId)
-        ? current.filter((entry) => entry !== channelId)
-        : [...current, channelId]
+    persistSalesChannels(
+      salesChannels.includes(channelId)
+        ? salesChannels.filter((entry) => entry !== channelId)
+        : [...salesChannels, channelId]
     );
   };
 
@@ -241,6 +250,7 @@ function WorkspaceProfileCard({
       setReceiptHeaderText(updated.receipt_header_text);
       setReceiptFooterText(updated.receipt_footer_text);
       setBillingIsActive(updated.billing_is_active);
+      persistSalesChannels(getInitialSalesChannels(salesChannelStorageKey, updated.business_category));
       setStatusMessage('Workspace settings saved successfully.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to save workspace settings.';
@@ -296,7 +306,7 @@ function WorkspaceProfileCard({
       setNewPassword('');
       setConfirmNewPassword('');
       setPasswordMessage('Password updated. Please sign in again with your new password.');
-      await handleSignOut();
+      await onSignOut();
     } catch {
       setPasswordMessage('Unable to update your password right now. Please try again.');
     } finally {
@@ -442,6 +452,7 @@ function WorkspaceProfileCard({
                 const nextCategory = getBusinessCategory(event.target.value);
                 setBusinessCategory(nextCategory.value);
                 setBusinessType(nextCategory.types[0]);
+                persistSalesChannels(getInitialSalesChannels(salesChannelStorageKey, nextCategory.value));
               }}
               helpText="The main business group you operate in."
             >
@@ -816,7 +827,7 @@ function WorkspaceProfileCard({
           </div>
         </section>
 
-        {canManageAccounts ? (
+        {canDeleteCurrentAccount ? (
           <section className={styles.dangerCard}>
             <div>
               <span className={styles.dangerEyebrow}>Danger zone</span>
@@ -886,7 +897,7 @@ export default function SettingsPage() {
   const { data: business, error: businessError } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
   });
-  const [language, setLanguage] = useState(languageOptions[0]);
+  const [language, setLanguage] = useState(getInitialLanguage);
 
   useEffect(() => {
     const unauthorized = isUnauthorizedError(meError) || isUnauthorizedError(businessError);
@@ -897,24 +908,13 @@ export default function SettingsPage() {
     }
   }, [businessError, dispatch, meError, router]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
 
-    const storedLanguage = window.localStorage.getItem(SETTINGS_LANGUAGE_STORAGE_KEY);
-    if (storedLanguage && languageOptions.includes(storedLanguage)) {
-      setLanguage(storedLanguage);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(SETTINGS_LANGUAGE_STORAGE_KEY, value);
     }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    window.localStorage.setItem(SETTINGS_LANGUAGE_STORAGE_KEY, language);
-  }, [language]);
+  };
 
   const fullName = useMemo(
     () => `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || authState.userName || 'Signed-in user',
@@ -936,7 +936,7 @@ export default function SettingsPage() {
     skip: !me?.business_id || !canManageAccounts,
   });
   const currentMembershipId = useMemo(
-    () => accounts.find((account) => account.user_id === me?.id)?.membership_id ?? null,
+    () => accounts.find((account: Account) => account.user_id === me?.id)?.membership_id ?? null,
     [accounts, me?.id]
   );
   const canDeleteCurrentAccount = Boolean(canManageAccounts && currentMembershipId);
@@ -1055,7 +1055,7 @@ export default function SettingsPage() {
         canDeleteCurrentAccount={canDeleteCurrentAccount}
         isDeletingAccount={isDeletingAccount}
         onSignOut={handleSignOut}
-        onLanguageChange={setLanguage}
+        onLanguageChange={handleLanguageChange}
         onDeleteCurrentAccount={handleDeleteCurrentAccount}
       />
     </div>

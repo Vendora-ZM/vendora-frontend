@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { clearCart, removeFromCart, updateQuantity } from '@/lib/features/pos/posSlice';
 import { useCreateSaleMutation, useCompleteSaleMutation } from '@/lib/features/sales/salesApi';
@@ -68,22 +68,16 @@ export const Cart: React.FC<CartProps> = ({
   const total = subtotal + tax - discount;
   const tendered = parseFloat(amountTendered) || 0;
   const change = Math.max(0, tendered - total);
-  const selectedPaymentType =
-    paymentTypeOptions.find((option) => option.label === paymentTypeLabel) ?? paymentTypeOptions[0];
-  const method: PaymentMethod = selectedPaymentType?.method ?? 'cash';
-  const methodLabel = selectedPaymentType?.label ?? getPaymentTypeLabel(method, paymentTypes);
+  const activePaymentTypeLabel =
+    paymentTypeOptions.some((option) => option.label === paymentTypeLabel)
+      ? paymentTypeLabel
+      : paymentTypeOptions[0]?.label ?? '';
+  const activePaymentType =
+    paymentTypeOptions.find((option) => option.label === activePaymentTypeLabel) ?? paymentTypeOptions[0];
+  const method: PaymentMethod = activePaymentType?.method ?? 'cash';
+  const methodLabel = activePaymentType?.label ?? getPaymentTypeLabel(method, paymentTypes);
 
   const locationName = useMemo(() => locations[0]?.name ?? 'Primary location', [locations]);
-
-  useEffect(() => {
-    if (!paymentTypeOptions.length) {
-      return;
-    }
-
-    if (!paymentTypeOptions.some((option) => option.label === paymentTypeLabel)) {
-      setPaymentTypeLabel(paymentTypeOptions[0].label);
-    }
-  }, [paymentTypeLabel, paymentTypeOptions]);
 
   const handleGoToPayment = () => {
     if (cart.length === 0) return;
@@ -353,7 +347,7 @@ export const Cart: React.FC<CartProps> = ({
           <div className={styles.paymentSection}>
             <Select
               label="Payment Method"
-              value={paymentTypeLabel}
+              value={activePaymentTypeLabel}
               onChange={(e) => {
                 const nextLabel = e.target.value;
                 setPaymentTypeLabel(nextLabel);

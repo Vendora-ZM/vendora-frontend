@@ -11,7 +11,10 @@ import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetSaleByIdQuery } from '@/lib/features/sales/salesApi';
 import { getPaymentTypeLabel } from '@/lib/business/paymentTypes';
-import { SaleStatus } from '@/types/sale';
+import type { Account } from '@/lib/features/accounts/accountsApi';
+import type { Location } from '@/types/location';
+import type { Product } from '@/types/product';
+import { SaleStatus, type Sale, type SalePayment } from '@/types/sale';
 import styles from './page.module.css';
 
 function formatAmount(amount: number) {
@@ -62,15 +65,14 @@ export default function SaleReceiptPage() {
   const { data: products = [] } = useGetProductsQuery({});
   const { data: accounts = [] } = useGetAccountsQuery();
 
-  const productMap = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
+  const productMap = useMemo(() => new Map<string, Product>(products.map((product: Product) => [product.id, product])), [products]);
   const location = useMemo(
-    () => locations.find((entry) => entry.id === sale?.location_id) ?? null,
+    () => locations.find((entry: Location) => entry.id === sale?.location_id) ?? null,
     [locations, sale?.location_id],
   );
-  const employee = useMemo(() => {
-    if (!sale?.created_by) return null;
-    return accounts.find((account) => account.user_id === sale.created_by) ?? null;
-  }, [accounts, sale?.created_by]);
+  const employee = sale?.created_by
+    ? accounts.find((account: Account) => account.user_id === sale.created_by) ?? null
+    : null;
 
   const receiptDate = sale?.completed_at ?? sale?.created_at ?? '';
   const cashierName = employee
@@ -81,6 +83,7 @@ export default function SaleReceiptPage() {
   const receiptHeaderText = business?.receipt_header_text ?? 'Thanks for shopping with us.';
   const receiptFooterText =
     business?.receipt_footer_text ?? 'Please keep this receipt for returns or support.';
+  const receiptStatus = (sale?.status ?? 'draft') as SaleStatus;
 
   const downloadReceipt = () => {
     if (!sale) return;
@@ -88,19 +91,19 @@ export default function SaleReceiptPage() {
     const lines: string[] = [
       business?.name ?? 'Vendora',
       `Receipt: ${sale.sale_number}`,
-      `Status: ${STATUS_LABELS[sale.status]}`,
+      `Status: ${STATUS_LABELS[sale.status as SaleStatus]}`,
       `Date: ${receiptDate ? formatDateTime(receiptDate) : '—'}`,
       `Location: ${location?.name ?? sale?.location_id ?? 'Unknown location'}`,
       `Cashier: ${cashierName}`,
       '',
       'Items',
-      ...sale.items.map((item) => {
+      ...sale.items.map((item: Sale['items'][number]) => {
         const product = productMap.get(item.product_id);
         return `${product?.name ?? item.product_id} | Qty: ${parseQuantity(item.quantity)} | Unit: ${formatAmount(item.unit_price)} | Total: ${formatAmount(item.line_total)}`;
       }),
       '',
       'Payments',
-      ...sale.payments.map((payment) => `${getPaymentTypeLabel(payment.method, paymentTypes)} | ${payment.reference ?? '—'} | ${formatAmount(payment.amount)}`),
+      ...sale.payments.map((payment: SalePayment) => `${getPaymentTypeLabel(payment.method, paymentTypes)} | ${payment.reference ?? '—'} | ${formatAmount(payment.amount)}`),
       '',
       `Subtotal: ${formatAmount(sale.subtotal ?? 0)}`,
       `Tax: ${formatAmount(sale.tax_amount ?? 0)}`,
@@ -177,8 +180,8 @@ export default function SaleReceiptPage() {
               </div>
 
               <div className={styles.statusBlock}>
-                <span className={`${styles.statusPill} ${styles[sale?.status ?? 'draft'] ?? ''}`}>
-                  {sale ? STATUS_LABELS[sale.status] : 'Loading'}
+                <span className={`${styles.statusPill} ${styles[receiptStatus] ?? ''}`}>
+                  {sale ? STATUS_LABELS[receiptStatus] : 'Loading'}
                 </span>
                 <strong>{formatAmount(sale?.total_amount ?? 0)}</strong>
                 <small>Cashier: {cashierName}</small>
@@ -228,7 +231,7 @@ export default function SaleReceiptPage() {
                         </td>
                       </tr>
                     ) : sale?.items.length ? (
-                      sale.items.map((item) => {
+                      sale.items.map((item: Sale['items'][number]) => {
                         const product = productMap.get(item.product_id);
                         return (
                           <tr key={item.id}>
@@ -279,7 +282,7 @@ export default function SaleReceiptPage() {
                         </td>
                       </tr>
                     ) : sale?.payments.length ? (
-                      sale.payments.map((payment) => (
+                      sale.payments.map((payment: SalePayment) => (
                         <tr key={payment.id}>
                           <td>{getPaymentTypeLabel(payment.method, paymentTypes)}</td>
                           <td>{payment.reference ?? '—'}</td>

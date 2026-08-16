@@ -59,7 +59,7 @@ export default function EditLocationPage() {
   const locationId = Array.isArray(params.id) ? params.id[0] : params.id ?? '';
   const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery();
   const location = useMemo(
-    () => locations.find((entry) => entry.id === locationId) ?? null,
+    () => locations.find((entry: Location) => entry.id === locationId) ?? null,
     [locations, locationId]
   );
   const [form, setForm] = useState<FormState>(defaultForm);
@@ -71,6 +71,7 @@ export default function EditLocationPage() {
 
   useEffect(() => {
     if (location) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Populate the edit form when the location record loads.
       setForm(toFormState(location));
     }
   }, [location]);

@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { useAppSelector } from '@/lib/store';
 import { useGetInventoryTurnoverQuery } from '@/lib/features/analytics/analyticsApi';
 import { getDateRange } from '@/lib/utils/dateRange';
+import type { InventoryTurnoverRow } from '@/types/analytics';
 import styles from './AnalyticsWidgets.module.css';
 
 export const InventoryTurnoverTable: React.FC = () => {
@@ -33,7 +34,7 @@ export const InventoryTurnoverTable: React.FC = () => {
             ) : data.length === 0 ? (
               <tr><td colSpan={4} className={styles.empty}>No inventory data in this period.</td></tr>
             ) : (
-              data.map((row) => (
+              data.map((row: InventoryTurnoverRow) => (
                 <tr key={row.product_id}>
                   <td>
                     <div className={styles.productCell}>

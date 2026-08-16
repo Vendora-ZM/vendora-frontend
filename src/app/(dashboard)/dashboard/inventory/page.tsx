@@ -9,6 +9,8 @@ import { MovementsTable } from '@/components/inventory/MovementsTable';
 import { AdjustStockModal } from '@/components/inventory/AdjustStockModal';
 import { TransferStockModal } from '@/components/inventory/TransferStockModal';
 import { Product } from '@/types/product';
+import type { InventoryBalance, InventoryMovement } from '@/types/inventory';
+import type { Location } from '@/types/location';
 import styles from './inventory.module.css';
 
 type Tab = 'balances' | 'movements';
@@ -27,21 +29,21 @@ export default function InventoryPage() {
     [productsRaw]
   );
   const locationsMap = useMemo(
-    () => Object.fromEntries(locationsRaw.map((l) => [l.id, l.name])),
+    () => Object.fromEntries(locationsRaw.map((l: Location) => [l.id, l.name])),
     [locationsRaw]
   );
 
   // Summary stats
   const totalSkus = balances.length;
-  const lowStockCount = balances.filter((b) => parseFloat(b.quantity_available) <= 5).length;
-  const outOfStockCount = balances.filter((b) => parseFloat(b.quantity_available) <= 0).length;
+  const lowStockCount = balances.filter((b: InventoryBalance) => parseFloat(b.quantity_available) <= 5).length;
+  const outOfStockCount = balances.filter((b: InventoryBalance) => parseFloat(b.quantity_available) <= 0).length;
 
   const advancedInventory = useMemo(() => {
     const movementByProduct = new Map<string, number>();
     const movementByType = new Map<string, number>();
     const recentMovementProductIds = new Set<string>();
 
-    movements.forEach((movement) => {
+    movements.forEach((movement: InventoryMovement) => {
       const delta = Math.abs(parseFloat(movement.quantity_delta || '0'));
       movementByProduct.set(movement.product_id, (movementByProduct.get(movement.product_id) ?? 0) + delta);
       movementByType.set(movement.movement_type, (movementByType.get(movement.movement_type) ?? 0) + 1);
@@ -49,25 +51,28 @@ export default function InventoryPage() {
     });
 
     const lowStockBalances = balances
-      .map((balance) => {
+      .map((balance: InventoryBalance) => {
         const product = productsMap[balance.product_id];
         const available = Number.parseFloat(balance.quantity_available || '0');
         return product ? { product, available } : null;
       })
-      .filter((item): item is { product: Product; available: number } => item !== null)
-      .filter((item) => item.available <= 5)
-      .sort((a, b) => a.available - b.available)
+      .filter((item: { product: Product; available: number } | null): item is { product: Product; available: number } => item !== null)
+      .filter((item: { product: Product; available: number }) => item.available <= 5)
+      .sort((a: { product: Product; available: number }, b: { product: Product; available: number }) => a.available - b.available)
       .slice(0, 3);
 
     const quietStock = balances
-      .map((balance) => {
+      .map((balance: InventoryBalance) => {
         const product = productsMap[balance.product_id];
         const available = Number.parseFloat(balance.quantity_available || '0');
         return product ? { product, available, productId: balance.product_id } : null;
       })
-      .filter((item): item is { product: Product; available: number; productId: string } => item !== null)
-      .filter((item) => !recentMovementProductIds.has(item.productId) && item.available > 0)
-      .sort((a, b) => b.available - a.available)
+      .filter(
+        (item: { product: Product; available: number; productId: string } | null): item is { product: Product; available: number; productId: string } =>
+          item !== null
+      )
+      .filter((item: { product: Product; available: number; productId: string }) => !recentMovementProductIds.has(item.productId) && item.available > 0)
+      .sort((a: { product: Product; available: number; productId: string }, b: { product: Product; available: number; productId: string }) => b.available - a.available)
       .slice(0, 3);
 
     const mostActiveProductId = [...movementByProduct.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
@@ -75,8 +80,8 @@ export default function InventoryPage() {
     const mostActiveMovementCount = mostActiveProductId ? movementByProduct.get(mostActiveProductId) ?? 0 : 0;
 
     const movementTypeRows = [...movementByType.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([type, count]) => ({ type, count }))
+      .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+      .map(([type, count]: [string, number]) => ({ type, count }))
       .slice(0, 4);
 
     const aiSummary = (() => {
@@ -224,7 +229,7 @@ export default function InventoryPage() {
             <h3 className={styles.advancedPanelTitle}>Movement mix</h3>
             <div className={styles.movementMixList}>
               {advancedInventory.movementTypeRows.length > 0 ? (
-                advancedInventory.movementTypeRows.map((row) => (
+                advancedInventory.movementTypeRows.map((row: { type: string; count: number }) => (
                   <div key={row.type} className={styles.movementMixRow}>
                     <span>{row.type.replace(/_/g, ' ')}</span>
                     <strong>{row.count}</strong>
@@ -242,7 +247,7 @@ export default function InventoryPage() {
             <h3 className={styles.advancedPanelTitle}>Items to watch</h3>
             <div className={styles.watchList}>
               {advancedInventory.lowStockBalances.length > 0 ? (
-                advancedInventory.lowStockBalances.map((item) => (
+                advancedInventory.lowStockBalances.map((item: { product: Product; available: number }) => (
                   <div key={item.product.id} className={styles.watchItem}>
                     <strong>{item.product.name}</strong>
                     <span>{item.available} units available</span>
@@ -258,7 +263,7 @@ export default function InventoryPage() {
             <h3 className={styles.advancedPanelTitle}>Quiet stock</h3>
             <div className={styles.watchList}>
               {advancedInventory.quietStock.length > 0 ? (
-                advancedInventory.quietStock.map((item) => (
+                advancedInventory.quietStock.map((item: { product: Product; available: number; productId: string }) => (
                   <div key={item.product.id} className={styles.watchItem}>
                     <strong>{item.product.name}</strong>
                     <span>{item.available} units on hand, no recent movement</span>

@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
@@ -14,7 +16,8 @@ import { useAdjustStockMutation } from '@/lib/features/inventory/inventoryApi';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Textarea, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { CreateProductPayload, UpdateProductPayload } from '@/types/product';
+import { CreateProductPayload, UpdateProductPayload, type Category } from '@/types/product';
+import type { Location } from '@/types/location';
 import styles from './ProductFormModal.module.css';
 
 interface FormState {
@@ -202,7 +205,7 @@ export const ProductFormModal: React.FC = () => {
             onChange={set('category_id')}
           >
             <option value="">— No Category —</option>
-            {categories.map((cat) => (
+            {categories.map((cat: Category) => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </Select>
@@ -328,7 +331,7 @@ export const ProductFormModal: React.FC = () => {
                 onChange={set('initial_location_id')}
               >
                 <option value="">— Select Location —</option>
-                {locations.map((loc) => (
+                {locations.map((loc: Location) => (
                   <option key={loc.id} value={loc.id}>{loc.name}</option>
                 ))}
               </Select>
@@ -371,3 +374,5 @@ export const ProductFormModal: React.FC = () => {
     </Modal>
   );
 };
+
+/* eslint-enable react-hooks/set-state-in-effect */

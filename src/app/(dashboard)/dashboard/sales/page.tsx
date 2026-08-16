@@ -10,6 +10,8 @@ import { useGetCategoriesQuery, useGetProductsQuery } from '@/lib/features/produ
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { getPaymentTypeLabel } from '@/lib/business/paymentTypes';
+import type { Account } from '@/lib/features/accounts/accountsApi';
+import type { Category, Product } from '@/types/product';
 import { Sale, SaleStatus } from '@/types/sale';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -136,14 +138,14 @@ export default function SalesPage() {
   const sales = pageQuery.data?.data ?? [];
   const total = pageQuery.data?.meta?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const reportSales = reportQuery.data?.data ?? [];
+  const reportSales = useMemo(() => reportQuery.data?.data ?? [], [reportQuery.data?.data]);
 
-  const productMap = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
-  const categoryMap = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
+  const productMap = useMemo(() => new Map<string, Product>(products.map((product: Product) => [product.id, product])), [products]);
+  const categoryMap = useMemo(() => new Map<string, Category>(categories.map((category: Category) => [category.id, category])), [categories]);
   const employeeMap = useMemo(
     () =>
-      new Map(
-        accounts.map((account) => [
+      new Map<string, string>(
+        accounts.map((account: Account) => [
           account.user_id,
           formatEmployeeName(account.first_name, account.last_name, account.email),
         ]),
@@ -152,13 +154,13 @@ export default function SalesPage() {
   );
 
   const summary = useMemo(() => {
-    const completedSales = reportSales.filter((sale) => sale.status === 'completed');
-    const refundedSales = reportSales.filter((sale) => sale.status === 'refunded');
-    const paymentCount = reportSales.reduce((sum, sale) => sum + sale.payments.length, 0);
-    const revenue = reportSales.reduce((sum, sale) => sum + (sale.total_amount ?? 0), 0);
+    const completedSales = reportSales.filter((sale: Sale) => sale.status === 'completed');
+    const refundedSales = reportSales.filter((sale: Sale) => sale.status === 'refunded');
+    const paymentCount = reportSales.reduce((sum: number, sale: Sale) => sum + sale.payments.length, 0);
+    const revenue = reportSales.reduce((sum: number, sale: Sale) => sum + (sale.total_amount ?? 0), 0);
     const itemsSold = reportSales.reduce(
-      (sum, sale) =>
-        sum + sale.items.reduce((saleTotal, item) => saleTotal + parseQuantity(item.quantity), 0),
+      (sum: number, sale: Sale) =>
+        sum + sale.items.reduce((saleTotal: number, item) => saleTotal + parseQuantity(item.quantity), 0),
       0,
     );
     const averageTicket = completedSales.length > 0 ? revenue / completedSales.length : 0;
@@ -186,8 +188,8 @@ export default function SalesPage() {
 
   const itemRows = useMemo(() => {
     const map = new Map<string, AggregateRow>();
-    reportSales.forEach((sale) => {
-      sale.items.forEach((item) => {
+    reportSales.forEach((sale: Sale) => {
+      sale.items.forEach((item: Sale['items'][number]) => {
         const product = productMap.get(item.product_id);
         const name = product?.name ?? `Product ${item.product_id.slice(0, 8)}`;
         const categoryName = product?.category_id ? categoryMap.get(product.category_id)?.name ?? 'Uncategorized' : 'Uncategorized';
@@ -205,13 +207,13 @@ export default function SalesPage() {
         map.set(item.product_id, existing);
       });
     });
-    return [...map.values()].sort((a, b) => b.amount - a.amount).slice(0, 6);
+    return [...map.values()].sort((a: AggregateRow, b: AggregateRow) => b.amount - a.amount).slice(0, 6);
   }, [reportSales, productMap, categoryMap]);
 
   const categoryRows = useMemo(() => {
     const map = new Map<string, AggregateRow>();
-    reportSales.forEach((sale) => {
-      sale.items.forEach((item) => {
+    reportSales.forEach((sale: Sale) => {
+      sale.items.forEach((item: Sale['items'][number]) => {
         const product = productMap.get(item.product_id);
         const categoryId = product?.category_id ?? 'uncategorized';
         const category = product?.category_id ? categoryMap.get(product.category_id) : null;
@@ -229,12 +231,12 @@ export default function SalesPage() {
         map.set(categoryId, existing);
       });
     });
-    return [...map.values()].sort((a, b) => b.amount - a.amount).slice(0, 6);
+    return [...map.values()].sort((a: AggregateRow, b: AggregateRow) => b.amount - a.amount).slice(0, 6);
   }, [reportSales, productMap, categoryMap]);
 
   const employeeRows = useMemo(() => {
     const map = new Map<string, AggregateRow>();
-    reportSales.forEach((sale) => {
+    reportSales.forEach((sale: Sale) => {
       const employeeId = sale.created_by ?? 'unassigned';
       const label = sale.created_by ? employeeMap.get(sale.created_by) ?? `User ${sale.created_by.slice(0, 8)}` : 'Unassigned';
       const existing = map.get(employeeId) ?? {
@@ -246,16 +248,16 @@ export default function SalesPage() {
       };
       existing.count += 1;
       existing.amount += sale.total_amount ?? 0;
-      existing.units += sale.items.reduce((sum, item) => sum + parseQuantity(item.quantity), 0);
+      existing.units += sale.items.reduce((sum: number, item: Sale['items'][number]) => sum + parseQuantity(item.quantity), 0);
       map.set(employeeId, existing);
     });
-    return [...map.values()].sort((a, b) => b.amount - a.amount).slice(0, 6);
+    return [...map.values()].sort((a: AggregateRow, b: AggregateRow) => b.amount - a.amount).slice(0, 6);
   }, [reportSales, employeeMap]);
 
   const paymentRows = useMemo(() => {
     const map = new Map<string, AggregateRow>();
-    reportSales.forEach((sale) => {
-      sale.payments.forEach((payment) => {
+    reportSales.forEach((sale: Sale) => {
+      sale.payments.forEach((payment: Sale['payments'][number]) => {
         const label = getPaymentTypeLabel(payment.method, business?.payment_types);
         const existing = map.get(payment.method) ?? {
           id: payment.method,
@@ -269,7 +271,7 @@ export default function SalesPage() {
         map.set(payment.method, existing);
       });
     });
-    return [...map.values()].sort((a, b) => b.amount - a.amount);
+    return [...map.values()].sort((a: AggregateRow, b: AggregateRow) => b.amount - a.amount);
   }, [business?.payment_types, reportSales]);
 
   const receiptRows = useMemo(() => reportSales.slice(0, 8), [reportSales]);
@@ -388,7 +390,7 @@ export default function SalesPage() {
           </div>
         </div>
 
-        {pageQuery.error && (
+        {Boolean(pageQuery.error) && (
           <div className={styles.errorState}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
@@ -527,7 +529,7 @@ export default function SalesPage() {
                     </div>
                   ))
                 ) : receiptRows.length > 0 ? (
-                  receiptRows.map((sale) => {
+                  receiptRows.map((sale: Sale) => {
                     const employee = sale.created_by ? employeeMap.get(sale.created_by) ?? sale.created_by : 'Unknown user';
                     return (
                       <div key={sale.id} className={styles.receiptRow}>
@@ -574,7 +576,7 @@ export default function SalesPage() {
                     </div>
                   ))
                 ) : employeeRows.length > 0 ? (
-                  employeeRows.map((row) => (
+                  employeeRows.map((row: AggregateRow) => (
                     <div key={row.id} className={styles.metricRow}>
                       <div className={styles.cellStack}>
                         <strong>{row.label}</strong>
@@ -607,7 +609,7 @@ export default function SalesPage() {
                     </div>
                   ))
                 ) : paymentRows.length > 0 ? (
-                  paymentRows.map((row) => (
+                  paymentRows.map((row: AggregateRow) => (
                     <div key={row.id} className={styles.metricRow}>
                       <div className={styles.cellStack}>
                         <strong>{row.label.replace(/_/g, ' ')}</strong>
@@ -682,7 +684,7 @@ export default function SalesPage() {
                         <td><div className={styles.skeleton} style={{ width: '90px' }} /></td>
                       </tr>
                     ))
-                  : sales.map((sale) => {
+                  : sales.map((sale: Sale) => {
                       const statusClass = styles[sale.status as keyof typeof styles] ?? styles.draft;
                       return (
                         <tr key={sale.id} style={{ opacity: pageQuery.isFetching ? 0.6 : 1, transition: 'opacity 0.2s' }}>
@@ -701,7 +703,7 @@ export default function SalesPage() {
                       );
                     })}
 
-                {!pageQuery.isLoading && !pageQuery.error && sales.length === 0 && (
+                {!pageQuery.isLoading && !Boolean(pageQuery.error) && sales.length === 0 && (
                   <tr>
                     <td colSpan={5}>
                       <div className={styles.emptyState}>
@@ -715,7 +717,7 @@ export default function SalesPage() {
             </table>
           </div>
 
-          {!pageQuery.isLoading && !pageQuery.error && total > 0 && (
+          {!pageQuery.isLoading && !Boolean(pageQuery.error) && total > 0 && (
             <div className={styles.pagination}>
               <div className={styles.paginationSummary}>
                 <span className={styles.paginationInfo}>

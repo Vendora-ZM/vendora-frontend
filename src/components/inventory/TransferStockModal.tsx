@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { closeTransferModal } from '@/lib/features/inventory/inventorySlice';
 import { useTransferStockMutation } from '@/lib/features/inventory/inventoryApi';
@@ -9,6 +9,7 @@ import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import type { Product } from '@/types/product';
 
 export const TransferStockModal: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -25,17 +26,12 @@ export const TransferStockModal: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const product = products.find(p => p.id === selectedProductId);
+  const product = products.find((p: Product) => p.id === selectedProductId);
 
-  useEffect(() => {
-    if (isTransferModalOpen) {
-      setFromLocationId(locations[0]?.id || '');
-      setToLocationId(locations.length > 1 ? locations[1].id : '');
-      setQuantity('');
-      setNotes('');
-      setError(null);
-    }
-  }, [isTransferModalOpen, locations]);
+  const defaultFromLocationId = locations[0]?.id || '';
+  const defaultToLocationId = locations.length > 1 ? locations[1].id : '';
+  const effectiveFromLocationId = fromLocationId || defaultFromLocationId;
+  const effectiveToLocationId = toLocationId || defaultToLocationId;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,14 +55,15 @@ export const TransferStockModal: React.FC = () => {
     try {
       await transferStock({
         product_id: selectedProductId,
-        from_location_id: fromLocationId,
-        to_location_id: toLocationId,
+        from_location_id: effectiveFromLocationId,
+        to_location_id: effectiveToLocationId,
         quantity: quantity,
         notes: notes || undefined,
       }).unwrap();
       dispatch(closeTransferModal());
-    } catch (err: any) {
-      setError(err?.data?.message || 'Failed to transfer stock. Please try again.');
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      setError(message || 'Failed to transfer stock. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -92,25 +89,25 @@ export const TransferStockModal: React.FC = () => {
 
         <Select
           label="From Location"
-          value={fromLocationId}
+          value={effectiveFromLocationId}
           onChange={(e) => setFromLocationId(e.target.value)}
           disabled={isSubmitting}
           required
         >
-          {locations.map(loc => (
+          {locations.map((loc: { id: string; name: string }) => (
             <option key={loc.id} value={loc.id}>{loc.name}</option>
           ))}
         </Select>
 
         <Select
           label="To Location"
-          value={toLocationId}
+          value={effectiveToLocationId}
           onChange={(e) => setToLocationId(e.target.value)}
           disabled={isSubmitting}
           required
         >
           <option value="" disabled>Select destination...</option>
-          {locations.map(loc => (
+          {locations.map((loc: { id: string; name: string }) => (
             <option key={loc.id} value={loc.id}>{loc.name}</option>
           ))}
         </Select>

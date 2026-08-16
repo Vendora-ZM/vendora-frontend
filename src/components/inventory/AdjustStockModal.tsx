@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { closeAdjustModal } from '@/lib/features/inventory/inventorySlice';
 import { useAdjustStockMutation } from '@/lib/features/inventory/inventoryApi';
@@ -9,6 +9,7 @@ import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import type { Product } from '@/types/product';
 
 export const AdjustStockModal: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -24,16 +25,9 @@ export const AdjustStockModal: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const product = products.find(p => p.id === selectedProductId);
+  const product = products.find((p: Product) => p.id === selectedProductId);
 
-  useEffect(() => {
-    if (isAdjustModalOpen) {
-      setLocationId(locations[0]?.id || '');
-      setQuantityDelta('');
-      setNotes('');
-      setError(null);
-    }
-  }, [isAdjustModalOpen, locations]);
+  const selectedLocationId = locationId || locations[0]?.id || '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,13 +47,14 @@ export const AdjustStockModal: React.FC = () => {
     try {
       await adjustStock({
         product_id: selectedProductId,
-        location_id: locationId,
+        location_id: selectedLocationId,
         quantity_delta: quantityDelta,
         notes: notes || undefined,
       }).unwrap();
       dispatch(closeAdjustModal());
-    } catch (err: any) {
-      setError(err?.data?.message || 'Failed to adjust stock. Please try again.');
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      setError(message || 'Failed to adjust stock. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -85,12 +80,12 @@ export const AdjustStockModal: React.FC = () => {
 
         <Select
           label="Location"
-          value={locationId}
+          value={selectedLocationId}
           onChange={(e) => setLocationId(e.target.value)}
           disabled={isSubmitting}
           required
         >
-          {locations.map(loc => (
+          {locations.map((loc: { id: string; name: string }) => (
             <option key={loc.id} value={loc.id}>{loc.name}</option>
           ))}
         </Select>

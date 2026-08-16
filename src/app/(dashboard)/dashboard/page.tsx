@@ -14,8 +14,12 @@ import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { logout } from '@/lib/features/auth/authSlice';
 import { setNotifications, type NotificationItem } from '@/lib/features/notifications/notificationsSlice';
 import { getDateRange } from '@/lib/utils/dateRange';
+import type { Customer } from '@/types/customer';
+import type { Location } from '@/types/location';
+import type { InventoryBalance } from '@/types/inventory';
+import type { SalesTrendPoint, TopProductRow } from '@/types/analytics';
 import { Product } from '@/types/product';
-import { Sale, SaleStatus } from '@/types/sale';
+import { Sale, SaleStatus, type SalePayment } from '@/types/sale';
 import styles from './page.module.css';
 
 const DATE_PRESETS: { value: DateRangePreset; label: string }[] = [
@@ -31,6 +35,17 @@ const STATUS_LABELS: Record<SaleStatus, string> = {
   refunded: 'Refunded',
   cancelled: 'Cancelled',
 };
+
+const ADVISOR_PROMPTS = [
+  'How can I increase profits?',
+  'Why are sales dropping?',
+  'Which products should I discontinue?',
+  'Predict next month’s sales.',
+  'Suggest reorder quantities.',
+  'Recommend price increases.',
+  'Identify slow-moving stock.',
+  'Benchmark performance.',
+];
 
 function formatCurrency(amount: number) {
   return `K${(amount / 100).toLocaleString('en-US', {
@@ -95,18 +110,8 @@ export default function DashboardOverview() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { dateRangePreset, locationId } = useAppSelector((s) => s.analytics);
-  const advisorPrompts = [
-    'How can I increase profits?',
-    'Why are sales dropping?',
-    'Which products should I discontinue?',
-    'Predict next month’s sales.',
-    'Suggest reorder quantities.',
-    'Recommend price increases.',
-    'Identify slow-moving stock.',
-    'Benchmark performance.',
-  ];
-  const [selectedPrompt, setSelectedPrompt] = useState(advisorPrompts[0]);
-  const [questionDraft, setQuestionDraft] = useState(advisorPrompts[0]);
+  const [selectedPrompt, setSelectedPrompt] = useState(ADVISOR_PROMPTS[0]);
+  const [questionDraft, setQuestionDraft] = useState(ADVISOR_PROMPTS[0]);
   const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
 
   const { data: locationsRaw = [] } = useGetLocationsQuery();
@@ -143,24 +148,24 @@ export default function DashboardOverview() {
   const customersMap = useMemo(
     () =>
       Object.fromEntries(
-        customersRaw.map((customer) => [customer.id, customer])
+        customersRaw.map((customer: Customer) => [customer.id, customer])
       ),
     [customersRaw]
   );
 
-  const selectedLocation = locationsRaw.find((location) => location.id === locationId);
+  const selectedLocation = locationsRaw.find((location: Location) => location.id === locationId);
   const selectedPeriod = DATE_PRESETS.find((preset) => preset.value === dateRangePreset)?.label ?? 'Selected period';
 
-  const totalRevenue = salesTrends.reduce((sum, row) => sum + row.revenue, 0);
-  const totalCost = salesTrends.reduce((sum, row) => sum + row.cost, 0);
-  const totalRefunds = salesTrends.reduce((sum, row) => sum + row.refund_amount, 0);
+  const totalRevenue = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.revenue, 0);
+  const totalCost = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.cost, 0);
+  const totalRefunds = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.refund_amount, 0);
   const totalProfit = totalRevenue - totalCost - totalRefunds;
-  const totalSalesCount = salesTrends.reduce((sum, row) => sum + row.sale_count, 0);
+  const totalSalesCount = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.sale_count, 0);
   const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   const inventoryValue = useMemo(
     () =>
-      balances.reduce((sum, balance) => {
+      balances.reduce((sum: number, balance: InventoryBalance) => {
         const product = productsMap[balance.product_id];
         const quantityOnHand = Number(balance.quantity_on_hand || 0);
         const costPrice = product?.cost_price ?? 0;
@@ -178,8 +183,8 @@ export default function DashboardOverview() {
 
   const employeeMap = useMemo(
     () =>
-      new Map(
-        accounts.map((account) => [
+      new Map<string, string>(
+        accounts.map((account: { user_id: string; first_name: string; last_name: string; email: string }) => [
           account.user_id,
           `${account.first_name} ${account.last_name}`.trim() || account.email,
         ])
@@ -215,7 +220,7 @@ export default function DashboardOverview() {
         totalCompleted += sale.total_amount ?? 0;
       }
 
-      sale.payments.forEach((payment) => {
+      sale.payments.forEach((payment: SalePayment) => {
         paymentTotals.set(payment.method, (paymentTotals.get(payment.method) ?? 0) + (payment.amount ?? 0));
       });
 
@@ -248,7 +253,7 @@ export default function DashboardOverview() {
 
   const lowStockAlerts = useMemo(() => {
     return balances
-      .map((balance) => {
+      .map((balance: InventoryBalance) => {
         const product = productsMap[balance.product_id];
         const available = Number(balance.quantity_available || 0);
 
@@ -259,9 +264,9 @@ export default function DashboardOverview() {
             }
           : null;
       })
-      .filter((item): item is { product: Product; available: number } => item !== null)
-      .filter((item) => item.available <= 5)
-      .sort((a, b) => a.available - b.available)
+      .filter((item: { product: Product; available: number } | null): item is { product: Product; available: number } => item !== null)
+      .filter((item: { product: Product; available: number }) => item.available <= 5)
+      .sort((a: { product: Product; available: number }, b: { product: Product; available: number }) => a.available - b.available)
       .slice(0, 3);
   }, [balances, productsMap]);
 
@@ -269,14 +274,14 @@ export default function DashboardOverview() {
     return [...salesTrends]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(-7)
-      .map((point) => ({
+      .map((point: SalesTrendPoint) => ({
         label: new Date(point.date).toLocaleDateString('en-US', { weekday: 'short' }),
         value: point.revenue / 100,
         revenue: point.revenue,
       }));
   }, [salesTrends]);
 
-  const graphMax = Math.max(...graphData.map((point) => point.value), 1);
+  const graphMax = Math.max(...graphData.map((point: { label: string; value: number; revenue: number }) => point.value), 1);
   const aiAdvisor = useMemo(() => {
     const midpoint = Math.max(1, Math.ceil(graphData.length / 2));
     const earlyPeriodRevenue = graphData.slice(0, midpoint).reduce((sum, point) => sum + point.revenue, 0);
@@ -426,15 +431,15 @@ export default function DashboardOverview() {
         'Benchmark performance.',
       ],
     };
-  }, [formatCurrency, graphData, lowStockAlerts, profitMargin, recentSalesSummary, topProducts]);
+  }, [graphData, lowStockAlerts, profitMargin, recentSalesSummary, topProducts, totalRevenue]);
 
   const advisorResponse = useMemo(() => {
     const topSeller = topProducts[0];
     const urgentStock = lowStockAlerts[0];
     const secondStock = lowStockAlerts[1];
     const slowMoving = [...topProducts]
-      .filter((product) => Number(product.quantity_sold ?? 0) <= 3)
-      .sort((a, b) => Number(a.quantity_sold ?? 0) - Number(b.quantity_sold ?? 0))
+      .filter((product: TopProductRow) => Number(product.quantity_sold ?? 0) <= 3)
+      .sort((a: TopProductRow, b: TopProductRow) => Number(a.quantity_sold ?? 0) - Number(b.quantity_sold ?? 0))
       .slice(0, 3);
     const salesTrendLabel =
       graphData.length > 1
@@ -485,7 +490,7 @@ export default function DashboardOverview() {
             ? `Start by reviewing ${slowMoving[0].product_name}. It has very little recent movement, so it is a candidate for discontinuation, deeper discounting, or a smaller reorder size.`
             : 'No strongly slow-moving products are obvious yet. The advisor would normally look for items with weak sales, low repeat demand, and space pressure.',
         bullets: slowMoving.length > 0
-          ? slowMoving.map((product) => `${product.product_name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
+          ? slowMoving.map((product: TopProductRow) => `${product.product_name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
           : ['Watch for products that have not moved in several weeks.', 'Look at items with repeated stock sitting on the shelf.'],
         actions: ['Review slow movers', 'Discount old stock', 'Pause reorders'],
       };
@@ -628,7 +633,7 @@ export default function DashboardOverview() {
             ? `${slowMoving[0].product_name} is the clearest slow-moving item right now. It deserves either a smaller reorder, a promotion, or a pause on replenishment.`
             : 'No obvious slow movers are standing out yet. As more days of sales accumulate, this panel will become more precise.',
         bullets: slowMoving.length > 0
-          ? slowMoving.map((product) => `${product.product_name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
+          ? slowMoving.map((product: TopProductRow) => `${product.product_name} has only ${Number(product.quantity_sold ?? 0).toLocaleString()} recent units sold.`)
           : ['Use this panel to catch items sitting too long.', 'Review items with frequent stock but weak turnover.'],
         actions: ['Promote stock', 'Reduce reorder', 'Review shelf space'],
       };
@@ -638,11 +643,11 @@ export default function DashboardOverview() {
       return {
         answer:
           graphData.length > 1
-            ? `Overall, this period looks ${salesTrendLabel} with ${profitMargin.toFixed(1)}% margin and ${summary.totalSales.toLocaleString()} sales in view.`
+            ? `Overall, this period looks ${salesTrendLabel} with ${profitMargin.toFixed(1)}% margin and ${totalSalesCount.toLocaleString()} sales in view.`
             : 'There is not enough data for a full benchmark yet, but the advisor will compare sales, margin, and stock as the dataset grows.',
         bullets: [
           `Profit margin is ${profitMargin.toFixed(1)}%.`,
-          `${summary.totalSales.toLocaleString()} sales are loaded in the current view.`,
+          `${totalSalesCount.toLocaleString()} sales are loaded in the current view.`,
           `${balances.length.toLocaleString()} stock records are helping power the inventory side of the benchmark.`,
         ],
         actions: ['Open report', 'Compare periods', 'Track trends'],
@@ -651,10 +656,10 @@ export default function DashboardOverview() {
 
     return {
       answer:
-        selectedPrompt === advisorPrompts[0]
+        selectedPrompt === ADVISOR_PROMPTS[0]
           ? aiAdvisor.summary
           : `I can answer questions about profits, sales trends, reorder timing, pricing, slow movers, and benchmark performance. Try rephrasing "${selectedPrompt}" using one of those topics.`,
-      bullets: aiAdvisor.insights.map((insight) => insight.text).slice(0, 3),
+      bullets: aiAdvisor.insights.map((insight: { title: string; text: string; tone: 'positive' | 'warning' | 'neutral' }) => insight.text).slice(0, 3),
       actions: aiAdvisor.prompts.slice(0, 3),
     };
   }, [
@@ -664,11 +669,10 @@ export default function DashboardOverview() {
     balances.length,
     graphData,
     lowStockAlerts,
-    productsRaw,
     profitMargin,
     salesTrends.length,
     selectedPrompt,
-    summary.totalSales,
+    totalSalesCount,
     topProducts,
     recentSalesSummary,
     totalRefunds,
@@ -722,7 +726,7 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     const nextNotifications: NotificationItem[] = [
-      ...lowStockAlerts.map((item) => ({
+      ...lowStockAlerts.map((item: { product: Product; available: number }) => ({
         id: `low-stock-${item.product.id}`,
         title: item.available <= 2 ? 'Critical low stock' : 'Low stock alert',
         message: `${item.product.name} is down to ${item.available} unit${item.available === 1 ? '' : 's'} available.`,
@@ -780,7 +784,7 @@ export default function DashboardOverview() {
               onChange={(e) => dispatch(setLocationId(e.target.value || undefined))}
             >
               <option value="">All locations</option>
-              {locationsRaw.map((location) => (
+              {locationsRaw.map((location: Location) => (
                 <option key={location.id} value={location.id}>
                   {location.name}
                 </option>
@@ -823,7 +827,7 @@ export default function DashboardOverview() {
           </div>
 
           <div className={styles.aiPromptPills}>
-            {advisorPrompts.map((prompt) => (
+            {ADVISOR_PROMPTS.map((prompt) => (
               <button
                 key={prompt}
                 type="button"
@@ -858,14 +862,14 @@ export default function DashboardOverview() {
             <div className={styles.aiAnswerLabel}>Vendora says</div>
             <p className={styles.aiAnswerText}>{advisorResponse.answer}</p>
             <div className={styles.aiAnswerBullets}>
-              {advisorResponse.bullets.map((bullet) => (
+              {advisorResponse.bullets.map((bullet: string) => (
                 <div key={bullet} className={styles.aiAnswerBullet}>
                   {bullet}
                 </div>
               ))}
             </div>
             <div className={styles.aiAnswerActions}>
-              {advisorResponse.actions.map((action) => (
+              {advisorResponse.actions.map((action: string) => (
                 <span key={action} className={styles.aiAnswerAction}>
                   {action}
                 </span>
@@ -875,7 +879,7 @@ export default function DashboardOverview() {
         </div>
 
         <div className={styles.aiInsightGrid}>
-          {aiAdvisor.insights.map((insight) => (
+          {aiAdvisor.insights.map((insight: { title: string; text: string; tone: 'positive' | 'warning' | 'neutral' }) => (
             <article key={insight.title} className={styles.aiInsightCard}>
               <span
                 className={`${styles.aiInsightTone} ${
@@ -973,7 +977,7 @@ export default function DashboardOverview() {
                   {isLoading ? 'Loading revenue data…' : 'No revenue data available for this period.'}
                 </div>
               ) : (
-                graphData.map((point) => (
+                graphData.map((point: { label: string; value: number; revenue: number }) => (
                   <div key={`${point.label}-${point.revenue}`} className={styles.barCol}>
                     <div className={styles.barWrapper}>
                       <div
@@ -1016,7 +1020,7 @@ export default function DashboardOverview() {
                       </td>
                     </tr>
                   ) : (
-                    recentSales.map((sale) => {
+                    recentSales.map((sale: Sale) => {
                       const statusClass = styles[sale.status as keyof typeof styles] ?? styles.processing;
                       const customer = sale.customer_id ? customersMap[sale.customer_id] : undefined;
 
@@ -1052,7 +1056,7 @@ export default function DashboardOverview() {
                   {isLoading ? 'Loading stock alerts…' : 'No urgent stock alerts right now.'}
                 </div>
               ) : (
-                lowStockAlerts.map((item) => {
+                lowStockAlerts.map((item: { product: Product; available: number }) => {
                   const isCritical = item.available <= 2;
                   return (
                     <div
@@ -1091,7 +1095,7 @@ export default function DashboardOverview() {
                   <span className={styles.emptyState}>No product sales in this period.</span>
                 </li>
               ) : (
-                topProducts.map((product) => (
+                topProducts.map((product: TopProductRow) => (
                   <li key={product.product_id} className={styles.productItem}>
                     <div className={styles.productInfo}>
                       <span className={styles.productName}>{product.product_name}</span>

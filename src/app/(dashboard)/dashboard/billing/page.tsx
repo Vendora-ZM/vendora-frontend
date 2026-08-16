@@ -8,6 +8,7 @@ import {
   useGetBillingEventsQuery,
   useGetBusinessQuery,
   useUpdateBusinessMutation,
+  type BillingEventResponse,
 } from '@/lib/features/business/businessApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { logout } from '@/lib/features/auth/authSlice';
@@ -303,7 +304,7 @@ function BillingWorkspace({
 
             <div className={styles.historyList}>
               {billingEvents.length > 0 ? (
-                billingEvents.map((event) => (
+                billingEvents.map((event: BillingEventResponse) => (
                   <article key={event.id} className={styles.historyItem}>
                     <div className={styles.historyTop}>
                       <strong>{event.title}</strong>

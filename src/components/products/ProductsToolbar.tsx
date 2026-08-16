@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { setSearchQuery, setSelectedCategory } from '@/lib/features/products/productsSlice';
 import { useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { Button } from '@/components/ui/Button';
+import type { Category } from '@/types/product';
 import styles from './ProductsToolbar.module.css';
 
 export const ProductsToolbar: React.FC = () => {
@@ -62,7 +63,7 @@ export const ProductsToolbar: React.FC = () => {
           aria-label="Filter by category"
         >
           <option value="">All Categories</option>
-          {categories.map((cat) => (
+          {categories.map((cat: Category) => (
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>

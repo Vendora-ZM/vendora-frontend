@@ -8,6 +8,7 @@ import { ProductsTable } from '@/components/products/ProductsTable';
 import { ProductFormModal } from '@/components/products/ProductFormModal';
 import { DeleteProductModal } from '@/components/products/DeleteProductModal';
 import { AdjustStockModal } from '@/components/inventory/AdjustStockModal';
+import type { Category } from '@/types/product';
 import styles from './page.module.css';
 
 export default function ProductsPage() {
@@ -22,7 +23,7 @@ export default function ProductsPage() {
 
   // Build a quick lookup map: category id → name
   const categoryMap = useMemo(
-    () => Object.fromEntries(categories.map((c) => [c.id, c.name])),
+    () => Object.fromEntries(categories.map((c: Category) => [c.id, c.name])),
     [categories]
   );
 

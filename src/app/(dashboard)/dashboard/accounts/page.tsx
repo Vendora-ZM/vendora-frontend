@@ -17,8 +17,11 @@ import {
   useGetRolesQuery,
   useResendInvitationMutation,
   useUpdateRoleMutation,
+  type Account,
+  type Invitation,
   type Role,
 } from '@/lib/features/accounts/accountsApi';
+import type { Location } from '@/types/location';
 import styles from './page.module.css';
 
 const PAGE_SIZE = 8;
@@ -134,7 +137,7 @@ export default function AccountsPage() {
   const [resendInvitation, { isLoading: resendingInvitation }] = useResendInvitationMutation();
 
   const selectedRole = useMemo(
-    () => roles.find((role) => role.id === selectedRoleId) ?? null,
+    () => roles.find((role: Role) => role.id === selectedRoleId) ?? null,
     [roles, selectedRoleId]
   );
   const companyName = business?.name ?? me?.business_id ?? 'Merchant Store';
@@ -146,15 +149,15 @@ export default function AccountsPage() {
   const signedInRole = me?.role_name ?? 'Team member';
   const signedInInitial = signedInName ? signedInName[0].toUpperCase() : 'M';
 
-  const pendingInvitations = invitations.filter((invitation) => !invitation.accepted_at && !invitation.revoked_at).length;
+  const pendingInvitations = invitations.filter((invitation: Invitation) => !invitation.accepted_at && !invitation.revoked_at).length;
   const locationNameMap = useMemo(
-    () => Object.fromEntries(locations.map((location) => [location.id, location.name])),
+    () => Object.fromEntries(locations.map((location: Location) => [location.id, location.name])),
     [locations]
   );
   const filteredAccounts = useMemo(() => {
     const term = accountSearch.trim().toLowerCase();
 
-    return accounts.filter((account) => {
+    return accounts.filter((account: Account) => {
       const matchesSearch =
         term.length === 0 ||
         [
@@ -166,7 +169,7 @@ export default function AccountsPage() {
           ...account.location_names,
         ]
           .filter(Boolean)
-          .some((value) => value.toLowerCase().includes(term));
+          .some((value: string) => value.toLowerCase().includes(term));
 
       const matchesStatus =
         accountStatusFilter === 'all' ||
@@ -229,7 +232,7 @@ export default function AccountsPage() {
   const handleSelectAllLocations = () => {
     setInviteForm((current) => ({
       ...current,
-      locationIds: locations.map((location) => location.id),
+      locationIds: locations.map((location: Location) => location.id),
     }));
   };
 
@@ -465,7 +468,7 @@ export default function AccountsPage() {
                 }}
               >
                 <option value="all">All roles</option>
-                {roles.map((role) => (
+                {roles.map((role: Role) => (
                   <option key={role.id} value={role.id}>
                     {role.name}
                   </option>
@@ -503,7 +506,7 @@ export default function AccountsPage() {
                       </td>
                     </tr>
                   ) : (
-                    pagedAccounts.map((account) => (
+                    pagedAccounts.map((account: Account) => (
                       <tr key={account.membership_id} className={account.user_id === me?.id ? styles.currentRow : ''}>
                         <td>
                           <div className={styles.accountCopy}>
@@ -525,7 +528,7 @@ export default function AccountsPage() {
                         <td>
                           <div className={styles.locationPills}>
                               {(account.location_names ?? []).length > 0 ? (
-                                (account.location_names ?? []).map((locationName) => (
+                                (account.location_names ?? []).map((locationName: string) => (
                                   <span key={locationName} className={styles.pill}>{locationName}</span>
                                 ))
                             ) : (
@@ -567,7 +570,7 @@ export default function AccountsPage() {
                     Previous
                   </Button>
                   <div className={styles.pageNumbers} aria-label="Pagination pages">
-                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page: number) => (
                       <button
                         key={page}
                         type="button"
@@ -681,7 +684,7 @@ export default function AccountsPage() {
                   required
                 >
                   <option value="">Choose a role</option>
-                  {roles.map((role) => (
+                  {roles.map((role: Role) => (
                     <option key={role.id} value={role.id}>
                       {role.name}{role.is_system ? ' (system)' : ''}
                     </option>
@@ -703,7 +706,7 @@ export default function AccountsPage() {
                     {locations.length === 0 ? (
                       <p className={styles.muted}>Create at least one location before inviting users.</p>
                     ) : (
-                      locations.map((location) => (
+                      locations.map((location: Location) => (
                         <label key={location.id} className={styles.checkboxItem}>
                           <input
                             type="checkbox"
@@ -747,7 +750,7 @@ export default function AccountsPage() {
               ) : roles.length === 0 ? (
                 <p className={styles.emptyCell}>No roles found.</p>
               ) : (
-                roles.map((role) => (
+                roles.map((role: Role) => (
                   <button
                     key={role.id}
                     type="button"
@@ -816,7 +819,7 @@ export default function AccountsPage() {
                   </div>
 
                   <div className={styles.checkboxGrid}>
-                    {permissions.map((permission) => (
+                    {permissions.map((permission: { code: string; description?: string | null }) => (
                       <label key={permission.code} className={styles.checkboxItem}>
                         <input
                           type="checkbox"
@@ -884,7 +887,7 @@ export default function AccountsPage() {
                       </td>
                     </tr>
                   ) : (
-                    invitations.map((invitation) => {
+                    invitations.map((invitation: Invitation) => {
                       const status = invitation.revoked_at
                         ? 'Revoked'
                         : invitation.accepted_at
@@ -909,7 +912,7 @@ export default function AccountsPage() {
                           <td>
                             <div className={styles.locationPills}>
                               {invitation.location_ids.length > 0 ? (
-                                invitation.location_ids.map((locationId) => (
+                                invitation.location_ids.map((locationId: string) => (
                                   <span key={locationId} className={styles.pill}>{locationNameMap[locationId] ?? locationId}</span>
                                 ))
                               ) : (

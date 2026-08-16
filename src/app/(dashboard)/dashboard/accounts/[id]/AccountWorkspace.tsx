@@ -6,6 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import {
+  type Account,
+  type Invitation,
+  type Role,
   useDeleteAccountMutation,
   useGetAccountsQuery,
   useGetInvitationsQuery,
@@ -18,6 +21,7 @@ import { useLogoutMutation } from '@/lib/features/auth/authApi';
 import { logout } from '@/lib/features/auth/authSlice';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
+import type { Location } from '@/types/location';
 import styles from './page.module.css';
 
 function formatDate(value?: string | null) {
@@ -202,22 +206,22 @@ export function AccountWorkspace() {
   const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
 
   const account = useMemo(
-    () => accounts.find((entry) => entry.membership_id === accountId) ?? null,
+    () => accounts.find((entry: Account) => entry.membership_id === accountId) ?? null,
     [accountId, accounts]
   );
 
   const role = useMemo(
-    () => roles.find((entry) => entry.id === account?.role_id) ?? null,
+    () => roles.find((entry: Role) => entry.id === account?.role_id) ?? null,
     [account?.role_id, roles]
   );
 
   const accountLocations = useMemo(
-    () => locations.filter((location) => account?.location_ids.includes(location.id)),
+    () => locations.filter((location: Location) => account?.location_ids.includes(location.id)),
     [account?.location_ids, locations]
   );
 
   const relatedInvitations = useMemo(
-    () => invitations.filter((invitation) => invitation.email.toLowerCase() === account?.email?.toLowerCase()),
+    () => invitations.filter((invitation: Invitation) => invitation.email.toLowerCase() === account?.email?.toLowerCase()),
     [account?.email, invitations]
   );
   const companyName = business?.name ?? 'Merchant Store';
@@ -417,7 +421,7 @@ export function AccountWorkspace() {
 
             <div className={styles.invitationList}>
               {relatedInvitations.length ? (
-                relatedInvitations.map((invitation) => {
+                relatedInvitations.map((invitation: Invitation) => {
                   const status = invitation.revoked_at
                     ? 'Revoked'
                     : invitation.accepted_at

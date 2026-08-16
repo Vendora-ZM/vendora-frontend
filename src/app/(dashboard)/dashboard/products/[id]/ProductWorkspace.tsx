@@ -15,6 +15,9 @@ import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetBalancesQuery, useGetMovementsQuery } from '@/lib/features/inventory/inventoryApi';
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
 import { Product, UpdateProductPayload } from '@/types/product';
+import type { Category } from '@/types/product';
+import type { Location } from '@/types/location';
+import type { InventoryBalance, InventoryMovement } from '@/types/inventory';
 import { Sale, SaleStatus } from '@/types/sale';
 import styles from './page.module.css';
 
@@ -80,7 +83,7 @@ function ProductDetailsEditor({ product }: { product: Product }) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const categoryMap = useMemo(
-    () => Object.fromEntries(categories.map((category) => [category.id, category.name])),
+    () => Object.fromEntries(categories.map((category: Category) => [category.id, category.name])),
     [categories]
   );
 
@@ -203,7 +206,7 @@ function ProductDetailsEditor({ product }: { product: Product }) {
           onChange={set('category_id')}
         >
           <option value="">— No Category —</option>
-          {categories.map((cat) => (
+          {categories.map((cat: Category) => (
             <option key={cat.id} value={cat.id}>
               {cat.name}
             </option>
@@ -349,37 +352,37 @@ export function ProductWorkspace() {
   );
 
   const locationMap = useMemo(
-    () => Object.fromEntries(locations.map((location) => [location.id, location.name])),
+    () => Object.fromEntries(locations.map((location: Location) => [location.id, location.name])),
     [locations]
   );
 
   const balancesByLocation = useMemo(
-    () => balances.slice().sort((a, b) => Number(b.quantity_available) - Number(a.quantity_available)),
+    () => balances.slice().sort((a: InventoryBalance, b: InventoryBalance) => Number(b.quantity_available) - Number(a.quantity_available)),
     [balances]
   );
 
   const movementRows = useMemo(
-    () => movements.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    () => movements.slice().sort((a: InventoryMovement, b: InventoryMovement) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
     [movements]
   );
 
   const matchingSales = useMemo(() => {
     const rows = salesResponse?.data ?? [];
     return rows
-      .map((sale) => {
+      .map((sale: Sale) => {
         const item = sale.items.find((row) => row.product_id === productId);
         return item ? { sale, item } : null;
       })
-      .filter((row): row is { sale: Sale; item: Sale['items'][number] } => Boolean(row))
-      .sort((a, b) => new Date(b.sale.created_at).getTime() - new Date(a.sale.created_at).getTime());
+      .filter((row: { sale: Sale; item: Sale['items'][number] } | null): row is { sale: Sale; item: Sale['items'][number] } => Boolean(row))
+      .sort((a: { sale: Sale; item: Sale['items'][number] }, b: { sale: Sale; item: Sale['items'][number] }) => new Date(b.sale.created_at).getTime() - new Date(a.sale.created_at).getTime());
   }, [productId, salesResponse]);
 
   const totals = useMemo(() => ({
-    onHand: balances.reduce((sum, row) => sum + Number(row.quantity_on_hand || 0), 0),
-    reserved: balances.reduce((sum, row) => sum + Number(row.quantity_reserved || 0), 0),
-    available: balances.reduce((sum, row) => sum + Number(row.quantity_available || 0), 0),
-    soldQuantity: matchingSales.reduce((sum, row) => sum + Number(row.item.quantity || 0), 0),
-    revenue: matchingSales.reduce((sum, row) => sum + Number(row.item.line_total || 0), 0),
+    onHand: balances.reduce((sum: number, row: InventoryBalance) => sum + Number(row.quantity_on_hand || 0), 0),
+    reserved: balances.reduce((sum: number, row: InventoryBalance) => sum + Number(row.quantity_reserved || 0), 0),
+    available: balances.reduce((sum: number, row: InventoryBalance) => sum + Number(row.quantity_available || 0), 0),
+    soldQuantity: matchingSales.reduce((sum: number, row: { sale: Sale; item: Sale['items'][number] }) => sum + Number(row.item.quantity || 0), 0),
+    revenue: matchingSales.reduce((sum: number, row: { sale: Sale; item: Sale['items'][number] }) => sum + Number(row.item.line_total || 0), 0),
   }), [balances, matchingSales]);
 
   if (productLoading) {
@@ -521,7 +524,7 @@ export function ProductWorkspace() {
                   <td colSpan={5} className={styles.emptyCell}>No inventory balances found for this product.</td>
                 </tr>
               ) : (
-                balancesByLocation.map((balance) => (
+                balancesByLocation.map((balance: InventoryBalance) => (
                   <tr key={balance.id}>
                     <td>{locationMap[balance.location_id] ?? 'Unknown Location'}</td>
                     <td>{Number(balance.quantity_on_hand || 0)}</td>
@@ -572,7 +575,7 @@ export function ProductWorkspace() {
                   <td colSpan={5} className={styles.emptyCell}>No recent sales found for this product.</td>
                 </tr>
               ) : (
-                matchingSales.map(({ sale, item }) => (
+                matchingSales.map(({ sale, item }: { sale: Sale; item: Sale['items'][number] }) => (
                   <tr key={sale.id}>
                     <td>
                       <div className={styles.cellCopy}>
@@ -624,7 +627,7 @@ export function ProductWorkspace() {
                   <td colSpan={5} className={styles.emptyCell}>No inventory activity yet for this product.</td>
                 </tr>
               ) : (
-                movementRows.map((movement) => (
+                movementRows.map((movement: InventoryMovement) => (
                   <tr key={movement.id}>
                     <td>{formatDateTime(movement.created_at)}</td>
                     <td>{locationMap[movement.location_id] ?? 'Unknown Location'}</td>

@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { useAppSelector } from '@/lib/store';
 import { useGetSalesTrendsQuery } from '@/lib/features/analytics/analyticsApi';
 import { getDateRange } from '@/lib/utils/dateRange';
+import type { SalesTrendPoint } from '@/types/analytics';
 import {
   AreaChart,
   Area,
@@ -23,7 +24,7 @@ export const SalesTrendChart: React.FC = () => {
   const { data = [], isLoading } = useGetSalesTrendsQuery({ from, to, location_id: locationId });
 
   const chartData = useMemo(() => {
-    return data.map((d) => ({
+    return data.map((d: SalesTrendPoint) => ({
       date: new Date(d.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
       Revenue: d.revenue / 100,
       Cost: d.cost / 100,
@@ -59,7 +60,10 @@ export const SalesTrendChart: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
               <Tooltip
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                formatter={(value: any) => `K${Number(value).toFixed(2)}`}
+                formatter={(value) => {
+                  const amount = Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
+                  return `K${amount.toFixed(2)}`;
+                }}
               />
               <Legend verticalAlign="top" height={36} />
               <Area type="monotone" dataKey="Revenue" stroke="#1A84DD" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />

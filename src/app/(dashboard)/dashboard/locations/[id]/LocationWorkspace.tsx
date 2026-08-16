@@ -22,6 +22,8 @@ import { useGetCustomersQuery } from '@/lib/features/customers/customersApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { DateRangePreset } from '@/lib/features/analytics/analyticsSlice';
 import { getDateRange } from '@/lib/utils/dateRange';
+import type { Location } from '@/types/location';
+import type { SalesTrendPoint, TopProductRow, InventoryTurnoverRow } from '@/types/analytics';
 import { Product } from '@/types/product';
 import { Customer } from '@/types/customer';
 import { Sale, SaleStatus } from '@/types/sale';
@@ -78,7 +80,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
   const { data: me } = useGetMeQuery();
   const { data: customersRaw = [] } = useGetCustomersQuery({});
   const selectedLocation = useMemo(
-    () => locations.find((location) => location.id === locationId) ?? null,
+    () => locations.find((location: Location) => location.id === locationId) ?? null,
     [locations, locationId]
   );
   const canManageLocations = Boolean(me?.permissions?.includes('locations.manage'));
@@ -109,23 +111,23 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
   const chartData = useMemo(() => {
     return salesTrends
       .slice()
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map((row) => ({
+      .sort((a: SalesTrendPoint, b: SalesTrendPoint) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((row: SalesTrendPoint) => ({
         date: formatDate(row.date),
         revenue: row.revenue / 100,
         profit: (row.revenue - row.cost - row.refund_amount) / 100,
       }));
   }, [salesTrends]);
 
-  const totalRevenue = salesTrends.reduce((sum, row) => sum + row.revenue, 0);
-  const totalCost = salesTrends.reduce((sum, row) => sum + row.cost, 0);
-  const totalRefunds = salesTrends.reduce((sum, row) => sum + row.refund_amount, 0);
+  const totalRevenue = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.revenue, 0);
+  const totalCost = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.cost, 0);
+  const totalRefunds = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.refund_amount, 0);
   const totalProfit = totalRevenue - totalCost - totalRefunds;
-  const totalSales = salesTrends.reduce((sum, row) => sum + row.sale_count, 0);
-  const totalRefundCount = salesTrends.reduce((sum, row) => sum + row.refund_count, 0);
+  const totalSales = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.sale_count, 0);
+  const totalRefundCount = salesTrends.reduce((sum: number, row: SalesTrendPoint) => sum + row.refund_count, 0);
 
   const inventoryValue = useMemo(() => {
-    return balances.reduce((sum, balance) => {
+    return balances.reduce((sum: number, balance: { product_id: string; quantity_on_hand?: number | string }) => {
       const product = productsMap[balance.product_id];
       const quantityOnHand = Number(balance.quantity_on_hand || 0);
       const costPrice = product?.cost_price ?? 0;
@@ -133,7 +135,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
     }, 0);
   }, [balances, productsMap]);
 
-  const lowStockCount = balances.filter((balance) => Number(balance.quantity_available) <= 5).length;
+  const lowStockCount = balances.filter((balance: { quantity_available?: number | string }) => Number(balance.quantity_available) <= 5).length;
 
   const recentSales = useMemo(() => {
     const rows = recentSalesResponse?.data ?? [];
@@ -147,7 +149,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
       if (!sale.customer_id) continue;
 
       const current = customerMap.get(sale.customer_id) ?? {
-        customer: customersRaw.find((customer) => customer.id === sale.customer_id),
+        customer: customersRaw.find((customer: Customer) => customer.id === sale.customer_id),
         sales: 0,
         spend: 0,
         lastOrder: sale.completed_at ?? sale.created_at,
@@ -163,7 +165,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
       customerMap.set(sale.customer_id, current);
     }
 
-    return [...customerMap.values()].sort((a, b) => b.spend - a.spend);
+    return [...customerMap.values()].sort((a: { customer: Customer | undefined; sales: number; spend: number; lastOrder: string }, b: { customer: Customer | undefined; sales: number; spend: number; lastOrder: string }) => b.spend - a.spend);
   }, [customersRaw, recentSales]);
 
   const isLoading =
@@ -397,7 +399,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                         </td>
                       </tr>
                     ) : (
-                      topProducts.map((row) => (
+                      topProducts.map((row: TopProductRow) => (
                         <tr key={row.product_id}>
                           <td>
                             <div className={styles.productCell}>
@@ -443,7 +445,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                         </td>
                       </tr>
                     ) : (
-                      recentSales.map((sale) => (
+                      recentSales.map((sale: Sale) => (
                         <tr key={sale.id}>
                           <td>
                             <div className={styles.saleCell}>
@@ -495,7 +497,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                       </td>
                     </tr>
                   ) : (
-                    turnoverRows.map((row) => (
+                    turnoverRows.map((row: InventoryTurnoverRow) => (
                       <tr key={row.product_id}>
                         <td>
                           <div className={styles.productCell}>
@@ -545,7 +547,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                     </td>
                   </tr>
                 ) : (
-                  topProducts.map((row) => (
+                  topProducts.map((row: TopProductRow) => (
                     <tr key={row.product_id}>
                       <td>
                         <div className={styles.productCell}>
@@ -593,7 +595,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                     </td>
                   </tr>
                 ) : (
-                  recentSales.map((sale) => (
+                  recentSales.map((sale: Sale) => (
                     <tr key={sale.id}>
                       <td>
                         <div className={styles.saleCell}>
@@ -649,9 +651,9 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                     </td>
                   </tr>
                 ) : (
-                  balances.map((balance) => {
+                  balances.map((balance: { product_id: string; quantity_on_hand?: number | string; quantity_available?: number | string }) => {
                     const product = productsMap[balance.product_id];
-                    const turnoverRow = turnoverRows.find((row) => row.product_id === balance.product_id);
+                    const turnoverRow = turnoverRows.find((row: InventoryTurnoverRow) => row.product_id === balance.product_id);
                     return (
                       <tr key={balance.product_id}>
                         <td>
@@ -703,7 +705,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                     </td>
                   </tr>
                 ) : (
-                  customerSummaries.map((row) => (
+                  customerSummaries.map((row: { customer: Customer | undefined; sales: number; spend: number; lastOrder: string }) => (
                     <tr key={row.customer?.id ?? row.lastOrder}>
                       <td>
                         <div className={styles.productCell}>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { setSearchQuery, openCreateModal } from '@/lib/features/customers/customersSlice';
 import { Button } from '@/components/ui/Button';

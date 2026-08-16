@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { closeFormModal } from '@/lib/features/customers/customersSlice';
@@ -272,3 +274,5 @@ export const CustomerFormModal: React.FC = () => {
     </Modal>
   );
 };
+
+/* eslint-enable react-hooks/set-state-in-effect */

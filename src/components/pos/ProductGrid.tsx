@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useGetProductsQuery, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { useAppDispatch } from '@/lib/store';
 import { addToCart } from '@/lib/features/pos/posSlice';
-import { Product } from '@/types/product';
+import { Product, type Category } from '@/types/product';
 import styles from './ProductGrid.module.css';
 
 export const ProductGrid: React.FC = () => {
@@ -47,7 +47,7 @@ export const ProductGrid: React.FC = () => {
           >
             All
           </button>
-          {categories.map((cat) => (
+          {categories.map((cat: Category) => (
             <button
               key={cat.id}
               className={`${styles.categoryChip} ${selectedCategoryId === cat.id ? styles.activeChip : ''}`}
@@ -66,7 +66,7 @@ export const ProductGrid: React.FC = () => {
           <div className={styles.emptyState}>No products found.</div>
         ) : (
           <div className={styles.grid}>
-            {products.map((product) => (
+            {products.map((product: Product) => (
               <button
                 key={product.id}
                 className={styles.productCard}

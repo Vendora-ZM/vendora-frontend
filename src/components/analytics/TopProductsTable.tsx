@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { useAppSelector } from '@/lib/store';
 import { useGetTopProductsQuery } from '@/lib/features/analytics/analyticsApi';
 import { getDateRange } from '@/lib/utils/dateRange';
+import type { TopProductRow } from '@/types/analytics';
 import styles from './AnalyticsWidgets.module.css';
 
 export const TopProductsTable: React.FC = () => {
@@ -32,7 +33,7 @@ export const TopProductsTable: React.FC = () => {
             ) : data.length === 0 ? (
               <tr><td colSpan={3} className={styles.empty}>No sales in this period.</td></tr>
             ) : (
-              data.map((row) => (
+              data.map((row: TopProductRow) => (
                 <tr key={row.product_id}>
                   <td>
                     <div className={styles.productCell}>

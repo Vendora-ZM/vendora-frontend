@@ -12,6 +12,9 @@ import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetBalancesQuery } from '@/lib/features/inventory/inventoryApi';
 import { useGetProductsQuery, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { Product } from '@/types/product';
+import type { Category } from '@/types/product';
+import type { Location } from '@/types/location';
+import type { InventoryBalance } from '@/types/inventory';
 import styles from './page.module.css';
 
 const PAGE_SIZE = 8;
@@ -28,19 +31,19 @@ export default function LocationProductsPage() {
   const { data: categories = [] } = useGetCategoriesQuery();
 
   const selectedLocation = useMemo(
-    () => locations.find((location) => location.id === locationId) ?? null,
+    () => locations.find((location: Location) => location.id === locationId) ?? null,
     [locations, locationId]
   );
   const [currentPage, setCurrentPage] = useState(1);
 
   const stockedProductIds = useMemo(
-    () => new Set(balances.map((balance) => balance.product_id)),
+    () => new Set(balances.map((balance: InventoryBalance) => balance.product_id)),
     [balances]
   );
 
   const locationProducts = useMemo(() => {
     const filtered = productsRaw.filter((product: Product) => stockedProductIds.has(product.id));
-    return filtered.sort((a, b) => a.name.localeCompare(b.name));
+    return filtered.sort((a: Product, b: Product) => a.name.localeCompare(b.name));
   }, [productsRaw, stockedProductIds]);
 
   const totalPages = Math.max(1, Math.ceil(locationProducts.length / PAGE_SIZE));
@@ -55,7 +58,7 @@ export default function LocationProductsPage() {
   const endItem = Math.min(safeCurrentPage * PAGE_SIZE, locationProducts.length);
 
   const categoryMap = useMemo(
-    () => Object.fromEntries(categories.map((category) => [category.id, category.name])),
+    () => Object.fromEntries(categories.map((category: Category) => [category.id, category.name])),
     [categories]
   );
 
@@ -133,7 +136,7 @@ export default function LocationProductsPage() {
                     </button>
 
                     <div className={styles.pageNumbers} aria-label="Location products pages">
-                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page: number) => (
                         <button
                           key={page}
                           type="button"
