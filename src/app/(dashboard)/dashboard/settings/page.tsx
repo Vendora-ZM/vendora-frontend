@@ -82,6 +82,28 @@ function isUnauthorizedError(error: unknown) {
   );
 }
 
+function getErrorMessage(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return null;
+  }
+
+  if ('data' in error && error.data && typeof error.data === 'object') {
+    const payload = error.data as { message?: unknown; error?: unknown };
+    if (typeof payload.message === 'string' && payload.message.trim()) {
+      return payload.message;
+    }
+    if (typeof payload.error === 'string' && payload.error.trim()) {
+      return payload.error;
+    }
+  }
+
+  if ('error' in error && typeof (error as { error?: unknown }).error === 'string') {
+    return (error as { error: string }).error;
+  }
+
+  return null;
+}
+
 function WorkspaceProfileCard({
   businessId,
   initialName,
@@ -908,6 +930,10 @@ export default function SettingsPage() {
     }
   }, [businessError, dispatch, meError, router]);
 
+  const loadError = isUnauthorizedError(meError) || isUnauthorizedError(businessError)
+    ? null
+    : getErrorMessage(meError) ?? getErrorMessage(businessError);
+
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
 
@@ -984,6 +1010,25 @@ export default function SettingsPage() {
   };
 
   if (!business) {
+    if (loadError) {
+      return (
+        <div className={styles.page}>
+          <div className={styles.hero}>
+            <div>
+              <span className={styles.eyebrow}>Settings</span>
+              <h1 className={styles.title}>We could not load workspace settings.</h1>
+              <p className={styles.subtitle}>
+                {loadError} Please check the backend connection and refresh the page.
+              </p>
+            </div>
+          </div>
+          <div className={styles.notice}>
+            The company profile will appear here again once the business endpoint responds.
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className={styles.page}>
         <div className={styles.hero}>
