@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DashboardNotificationsMenu } from '@/components/layout/DashboardNotificationsMenu';
@@ -37,8 +37,6 @@ export default function DashboardLayout({
   const { data: business, error: businessError } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !sessionReady || !me?.business_id,
   });
-  const pathname = usePathname();
-
   useEffect(() => {
     let cancelled = false;
 
@@ -125,8 +123,7 @@ export default function DashboardLayout({
         : null,
     [business]
   );
-  const isPosRoute = pathname?.startsWith('/dashboard/pos') ?? false;
-  const showBillingGate = Boolean(isPosRoute && trialState?.isExpired && !trialState?.billingIsActive);
+  const showBillingGate = false;
   const userName = useMemo(
     () => `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || authState.userName || 'Signed-in user',
     [authState.userName, me]
