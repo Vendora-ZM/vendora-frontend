@@ -30,6 +30,28 @@ function isUnauthorizedError(error: unknown) {
   );
 }
 
+function getErrorMessage(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return null;
+  }
+
+  if ('data' in error && error.data && typeof error.data === 'object') {
+    const payload = error.data as { message?: unknown; error?: unknown };
+    if (typeof payload.message === 'string' && payload.message.trim()) {
+      return payload.message;
+    }
+    if (typeof payload.error === 'string' && payload.error.trim()) {
+      return payload.error;
+    }
+  }
+
+  if ('error' in error && typeof (error as { error?: unknown }).error === 'string') {
+    return (error as { error: string }).error;
+  }
+
+  return null;
+}
+
 function BillingWorkspace({
   businessId,
   companyName,
@@ -350,10 +372,35 @@ export default function BillingPage() {
     }
   }, [businessError, dispatch, meError, router]);
 
+  const loadError = isUnauthorizedError(meError) || isUnauthorizedError(businessError)
+    ? null
+    : getErrorMessage(meError) ?? getErrorMessage(businessError);
+
   const companyName = business?.name ?? authState.businessName ?? 'Merchant Store';
   const planId = business?.billing_plan_id ?? 'growth';
   const paymentMethodId = business?.billing_payment_method_id ?? 'lipila_mobile_money';
   const applyToAllLocations = business?.billing_apply_to_all_locations ?? true;
+
+  if (loadError) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.hero}>
+          <div>
+            <span className={styles.eyebrow}>Billing</span>
+            <h1 className={styles.title}>We could not load billing right now.</h1>
+            <p className={styles.subtitle}>
+              {loadError}
+              {' '}
+              Check the backend connection and refresh the page.
+            </p>
+          </div>
+        </div>
+        <div className={styles.notice}>
+          Billing stays available once the business profile endpoint responds again.
+        </div>
+      </div>
+    );
+  }
 
   if (!business) {
     return (
