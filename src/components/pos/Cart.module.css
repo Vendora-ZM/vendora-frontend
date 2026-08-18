@@ -312,13 +312,51 @@
 }
 
 .errorBanner {
+  margin: 0 20px;
+  padding: 14px 16px;
+  border-radius: 12px;
   background: #FEF2F2;
-  color: #EF4444;
-  padding: 12px 16px;
-  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.16);
+  color: #991B1B;
   font-size: 0.9rem;
   font-weight: 500;
-  margin: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.errorBannerLocked {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(255, 255, 255, 0.98));
+}
+
+.errorCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.errorCopy strong {
+  color: #7F1D1D;
+  font-size: 0.95rem;
+}
+
+.errorCopy span {
+  line-height: 1.45;
+}
+
+.errorLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+  font-weight: 700;
+  color: #fff;
+  background: #DC2626;
 }
 
 .paymentSummary {
@@ -538,5 +576,11 @@
 
   .errorBanner {
     margin: 0 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .errorLink {
+    width: 100%;
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { clearCart, removeFromCart, updateQuantity } from '@/lib/features/pos/posSlice';
 import { useCreateSaleMutation, useCompleteSaleMutation } from '@/lib/features/sales/salesApi';
@@ -9,6 +10,7 @@ import { PaymentMethod, Sale } from '@/types/sale';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import { buildPaymentTypeOptions, getPaymentTypeLabel } from '@/lib/business/paymentTypes';
+import { isBillingAccessError } from '@/lib/errors/apiError';
 import styles from './Cart.module.css';
 
 type CheckoutStage = 2 | 3 | 4;
@@ -51,6 +53,7 @@ export const Cart: React.FC<CartProps> = ({
   const [reference, setReference] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasBillingLockError, setHasBillingLockError] = useState(false);
   const [completion, setCompletion] = useState<SaleSummary | null>(null);
 
   const [createSale] = useCreateSaleMutation();
@@ -83,6 +86,7 @@ export const Cart: React.FC<CartProps> = ({
     if (cart.length === 0) return;
     setStage(3);
     setError(null);
+    setHasBillingLockError(false);
     if (method === 'cash') {
       setAmountTendered(total.toFixed(2));
     }
@@ -96,6 +100,7 @@ export const Cart: React.FC<CartProps> = ({
     setAmountTendered('');
     setReference('');
     setError(null);
+    setHasBillingLockError(false);
     onStartNewSale?.();
   };
 
@@ -114,6 +119,7 @@ export const Cart: React.FC<CartProps> = ({
 
     setIsProcessing(true);
     setError(null);
+    setHasBillingLockError(false);
 
     try {
       const locationId = locations[0].id;
@@ -173,7 +179,13 @@ export const Cart: React.FC<CartProps> = ({
       setReference('');
     } catch (err: unknown) {
       const errorObject = err as { data?: { message?: string; error?: string }; message?: string };
-      setError(errorObject?.data?.message || errorObject?.data?.error || errorObject?.message || 'Failed to process payment.');
+      const billingLocked = isBillingAccessError(err);
+      setHasBillingLockError(billingLocked);
+      setError(
+        billingLocked
+          ? 'Billing is required to use the POS. Open Billing to restore checkout access.'
+          : errorObject?.data?.message || errorObject?.data?.error || errorObject?.message || 'Failed to process payment.'
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -346,7 +358,19 @@ export const Cart: React.FC<CartProps> = ({
             </div>
           </div>
 
-          {error && <div className={styles.errorBanner}>{error}</div>}
+          {error ? (
+            <div className={`${styles.errorBanner} ${hasBillingLockError ? styles.errorBannerLocked : ''}`}>
+              <div className={styles.errorCopy}>
+                <strong>{hasBillingLockError ? 'Billing required' : 'Checkout error'}</strong>
+                <span>{error}</span>
+              </div>
+              {hasBillingLockError ? (
+                <Link href="/dashboard/billing" className={styles.errorLink}>
+                  Open Billing
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className={styles.paymentSection}>
             <Select

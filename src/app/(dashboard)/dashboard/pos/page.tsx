@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import { useAppSelector } from '@/lib/store';
 import { ProductGrid } from '@/components/pos/ProductGrid';
 import { Cart } from '@/components/pos/Cart';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { getApiErrorDetails, getFriendlyErrorMessage, isBillingAccessError } from '@/lib/errors/apiError';
 import {
   SALES_CHANNEL_OPTIONS,
   SALES_CHANNEL_STORAGE_PREFIX,
@@ -156,13 +160,84 @@ function PosWorkspace({
   );
 }
 
+function PosStatusCard({
+  eyebrow,
+  title,
+  description,
+  actions,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  actions: React.ReactNode;
+}) {
+  return (
+    <div className={styles.stateShell}>
+      <div className={styles.stateCard}>
+        <span className={styles.stateBadge}>{eyebrow}</span>
+        <h2 className={styles.stateTitle}>{title}</h2>
+        <p className={styles.stateText}>{description}</p>
+        <div className={styles.stateActions}>{actions}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function PosPage() {
-  const { data: me } = useGetMeQuery();
-  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+  const router = useRouter();
+  const { data: me, error: meError, isLoading: isMeLoading } = useGetMeQuery();
+  const {
+    data: business,
+    error: businessError,
+    isLoading: isBusinessLoading,
+    refetch: refetchBusiness,
+  } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
   });
+  const businessErrorDetails = useMemo(() => getApiErrorDetails(businessError), [businessError]);
+  const businessErrorMessage = useMemo(
+    () => getFriendlyErrorMessage(businessError, 'We could not load the POS right now. Please try again.'),
+    [businessError]
+  );
+  const meErrorMessage = useMemo(
+    () => getFriendlyErrorMessage(meError, 'We could not load your account right now. Please try again.'),
+    [meError]
+  );
 
-  if (!business?.id) {
+  if (isMeLoading || (!me && !meError)) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <div>
+            <h1 className={styles.title}>POS Checkout</h1>
+            <p className={styles.subtitle}>Loading your account and business settings…</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (meError) {
+    return (
+      <PosStatusCard
+        eyebrow="Account error"
+        title="We could not load your account"
+        description={meErrorMessage}
+        actions={
+          <>
+            <Button type="button" size="lg" variant="primary" onClick={() => router.refresh()}>
+              Try again
+            </Button>
+            <Link href="/dashboard" className={styles.secondaryLink}>
+              Go back to dashboard
+            </Link>
+          </>
+        }
+      />
+    );
+  }
+
+  if (isBusinessLoading || (!business?.id && !businessErrorDetails)) {
     return (
       <div className={styles.page}>
         <div className={styles.header}>
@@ -172,6 +247,49 @@ export default function PosPage() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (businessErrorDetails) {
+    if (isBillingAccessError(businessError)) {
+      return (
+        <PosStatusCard
+          eyebrow="Billing locked"
+          title="Billing is required to use the POS"
+          description={
+            businessErrorMessage ||
+            'Your account needs billing enabled before sales can continue. Open Billing to restore POS access.'
+          }
+          actions={
+            <>
+              <Button type="button" size="lg" variant="primary" onClick={() => router.push('/dashboard/billing')}>
+                Open Billing
+              </Button>
+              <Button type="button" size="lg" variant="outline" onClick={() => refetchBusiness()}>
+                Try again
+              </Button>
+            </>
+          }
+        />
+      );
+    }
+
+    return (
+      <PosStatusCard
+        eyebrow="Load error"
+        title="We could not load the POS"
+        description={businessErrorMessage}
+        actions={
+          <>
+            <Button type="button" size="lg" variant="primary" onClick={() => refetchBusiness()}>
+              Try again
+            </Button>
+            <Link href="/dashboard" className={styles.secondaryLink}>
+              Go back to dashboard
+            </Link>
+          </>
+        }
+      />
     );
   }
 
