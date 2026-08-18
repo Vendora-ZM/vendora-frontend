@@ -954,53 +954,6 @@ export default function DashboardOverview() {
         </div>
       )}
 
-      <section className={styles.quickActionsSection} aria-labelledby="dashboard-quick-actions">
-        <div className={styles.quickActionsHeader}>
-          <div>
-            <span className={styles.quickActionsEyebrow}>Quick Actions</span>
-            <h2 id="dashboard-quick-actions" className={styles.quickActionsTitle}>
-              The fastest ways to move around the business.
-            </h2>
-          </div>
-          <p className={styles.quickActionsText}>
-            Give merchants one-tap access to the tasks they use most, without hunting through the sidebar.
-          </p>
-        </div>
-
-        <div className={styles.quickActionsGrid}>
-          {quickActions.map((action) => {
-            const content = (
-              <>
-                <div className={`${styles.quickActionIcon} ${getQuickActionToneClass(action.tone)}`}>
-                  <QuickActionIcon icon={action.icon} />
-                </div>
-                <div className={styles.quickActionBody}>
-                  <div className={styles.quickActionTopRow}>
-                    <h3 className={styles.quickActionTitle}>{action.title}</h3>
-                    <span className={styles.quickActionBadge}>{action.badge}</span>
-                  </div>
-                  <p className={styles.quickActionDescription}>{action.description}</p>
-                </div>
-              </>
-            );
-
-            if (action.href) {
-              return (
-                <Link key={action.title} href={action.href} className={styles.quickActionCard}>
-                  {content}
-                </Link>
-              );
-            }
-
-            return (
-              <button key={action.title} type="button" className={styles.quickActionCard} onClick={action.onClick}>
-                {content}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
       <div className={`${styles.aiAdvisorCard} ${isAdvisorOpen ? styles.aiAdvisorCardOpen : ''}`}>
         <button
           type="button"
@@ -1176,6 +1129,53 @@ export default function DashboardOverview() {
           <span className={`${styles.statTrend} ${styles.negative}`}>Live customer count</span>
         </div>
       </div>
+
+      <section className={styles.quickActionsSection} aria-labelledby="dashboard-quick-actions">
+        <div className={styles.quickActionsHeader}>
+          <div>
+            <span className={styles.quickActionsEyebrow}>Quick Actions</span>
+            <h2 id="dashboard-quick-actions" className={styles.quickActionsTitle}>
+              The fastest ways to move around the business.
+            </h2>
+          </div>
+          <p className={styles.quickActionsText}>
+            Give merchants one-tap access to the tasks they use most, without hunting through the sidebar.
+          </p>
+        </div>
+
+        <div className={styles.quickActionsGrid}>
+          {quickActions.map((action) => {
+            const content = (
+              <>
+                <div className={`${styles.quickActionIcon} ${getQuickActionToneClass(action.tone)}`}>
+                  <QuickActionIcon icon={action.icon} />
+                </div>
+                <div className={styles.quickActionBody}>
+                  <div className={styles.quickActionTopRow}>
+                    <h3 className={styles.quickActionTitle}>{action.title}</h3>
+                    <span className={styles.quickActionBadge}>{action.badge}</span>
+                  </div>
+                  <p className={styles.quickActionDescription}>{action.description}</p>
+                </div>
+              </>
+            );
+
+            if (action.href) {
+              return (
+                <Link key={action.title} href={action.href} className={styles.quickActionCard}>
+                  {content}
+                </Link>
+              );
+            }
+
+            return (
+              <button key={action.title} type="button" className={styles.quickActionCard} onClick={action.onClick}>
+                {content}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className={`${styles.mainGrid} ${styles.animateIn} ${styles.delay4}`}>
         <div className={styles.leftColumn}>
