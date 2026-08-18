@@ -293,13 +293,34 @@ export default function PosPage() {
     );
   }
 
-  const paymentTypes = business.payment_types?.length ? business.payment_types : undefined;
+  const currentBusiness = business;
+  if (!currentBusiness) {
+    return (
+      <PosStatusCard
+        eyebrow="Load error"
+        title="We could not load the POS"
+        description="The business details were not available. Please try again."
+        actions={
+          <>
+            <Button type="button" size="lg" variant="primary" onClick={() => router.refresh()}>
+              Try again
+            </Button>
+            <Link href="/dashboard" className={styles.secondaryLink}>
+              Go back to dashboard
+            </Link>
+          </>
+        }
+      />
+    );
+  }
+
+  const paymentTypes = currentBusiness.payment_types?.length ? currentBusiness.payment_types : undefined;
 
   return (
     <PosWorkspace
-      key={business.id}
-      businessId={business.id}
-      businessCategory={business.business_category}
+      key={currentBusiness.id}
+      businessId={currentBusiness.id}
+      businessCategory={currentBusiness.business_category}
       paymentTypes={paymentTypes}
     />
   );
