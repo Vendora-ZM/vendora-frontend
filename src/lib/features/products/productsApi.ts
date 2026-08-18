@@ -8,6 +8,7 @@ import {
   ListProductsParams,
   PaginatedProductsResponse,
 } from '@/types/product';
+import { PaginatedListResponse } from '@/types/pagination';
 import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export const productsApi = createApi({
@@ -96,6 +97,25 @@ export const productsApi = createApi({
       providesTags: [{ type: 'Category', id: 'LIST' }],
     }),
 
+    getPaginatedCategories: builder.query<
+      PaginatedListResponse<Category>,
+      ListProductsParams & { limit: number; offset: number }
+    >({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params.limit) queryParams.set('limit', String(params.limit));
+        if (params.offset) queryParams.set('offset', String(params.offset));
+        return `/categories/paginated?${queryParams.toString()}`;
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: 'Category' as const, id })),
+              { type: 'Category', id: 'LIST' },
+            ]
+          : [{ type: 'Category', id: 'LIST' }],
+    }),
+
     createCategory: builder.mutation<Category, CreateCategoryPayload>({
       query: (body) => ({
         url: '/categories',
@@ -116,6 +136,7 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useGetCategoriesQuery,
+  useGetPaginatedCategoriesQuery,
   useCreateCategoryMutation,
 } = productsApi;
 

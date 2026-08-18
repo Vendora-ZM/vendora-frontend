@@ -7,6 +7,7 @@ import {
   GetBalancesParams,
   GetMovementsParams,
 } from '@/types/inventory';
+import { PaginatedListResponse } from '@/types/pagination';
 import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export const inventoryApi = createApi({
@@ -32,6 +33,27 @@ export const inventoryApi = createApi({
           : [{ type: 'Inventory', id: 'LIST' }],
     }),
 
+    getPaginatedBalances: builder.query<
+      PaginatedListResponse<InventoryBalance>,
+      GetBalancesParams & { limit: number; offset: number }
+    >({
+      query: (params) => {
+        const qs = new URLSearchParams();
+        if (params.location_id) qs.set('location_id', params.location_id);
+        if (params.product_id) qs.set('product_id', params.product_id);
+        qs.set('limit', String(params.limit));
+        qs.set('offset', String(params.offset));
+        return `/inventory/balances/paginated${qs.toString() ? `?${qs.toString()}` : ''}`;
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ product_id }) => ({ type: 'Inventory' as const, id: product_id })),
+              { type: 'Inventory', id: 'LIST' },
+            ]
+          : [{ type: 'Inventory', id: 'LIST' }],
+    }),
+
     getMovements: builder.query<InventoryMovement[], GetMovementsParams>({
       query: (params = {}) => {
         const qs = new URLSearchParams();
@@ -47,6 +69,27 @@ export const inventoryApi = createApi({
         result
           ? [
               ...result.map(({ id }) => ({ type: 'Movement' as const, id })),
+              { type: 'Movement', id: 'LIST' },
+            ]
+          : [{ type: 'Movement', id: 'LIST' }],
+    }),
+
+    getPaginatedMovements: builder.query<
+      PaginatedListResponse<InventoryMovement>,
+      GetMovementsParams & { limit: number; offset: number }
+    >({
+      query: (params) => {
+        const qs = new URLSearchParams();
+        if (params.location_id) qs.set('location_id', params.location_id);
+        if (params.product_id) qs.set('product_id', params.product_id);
+        qs.set('limit', String(params.limit));
+        qs.set('offset', String(params.offset));
+        return `/inventory/movements/paginated${qs.toString() ? `?${qs.toString()}` : ''}`;
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: 'Movement' as const, id })),
               { type: 'Movement', id: 'LIST' },
             ]
           : [{ type: 'Movement', id: 'LIST' }],
@@ -82,7 +125,9 @@ export const inventoryApi = createApi({
 
 export const {
   useGetBalancesQuery,
+  useGetPaginatedBalancesQuery,
   useGetMovementsQuery,
+  useGetPaginatedMovementsQuery,
   useAdjustStockMutation,
   useTransferStockMutation,
 } = inventoryApi;

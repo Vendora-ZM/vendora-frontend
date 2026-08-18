@@ -1,7 +1,12 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useGetBalancesQuery, useGetMovementsQuery } from '@/lib/features/inventory/inventoryApi';
+import {
+  useGetBalancesQuery,
+  useGetMovementsQuery,
+  useGetPaginatedBalancesQuery,
+  useGetPaginatedMovementsQuery,
+} from '@/lib/features/inventory/inventoryApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { BalancesTable } from '@/components/inventory/BalancesTable';
@@ -26,6 +31,20 @@ export default function InventoryPage() {
   const { data: movements = [], isLoading: movementsLoading } = useGetMovementsQuery({ limit: 100 });
   const { data: productsRaw = [] } = useGetProductsQuery({});
   const { data: locationsRaw = [] } = useGetLocationsQuery();
+  const {
+    data: paginatedBalancesResponse,
+    isLoading: paginatedBalancesLoading,
+  } = useGetPaginatedBalancesQuery({
+    limit: balancePageSize,
+    offset: (balancePage - 1) * balancePageSize,
+  });
+  const {
+    data: paginatedMovementsResponse,
+    isLoading: paginatedMovementsLoading,
+  } = useGetPaginatedMovementsQuery({
+    limit: movementPageSize,
+    offset: (movementPage - 1) * movementPageSize,
+  });
 
   // Build lookup maps for fast rendering
   const productsMap = useMemo(
@@ -43,8 +62,14 @@ export default function InventoryPage() {
     [movements]
   );
 
-  const balanceTotalPages = Math.max(1, Math.ceil(sortedBalances.length / balancePageSize));
-  const movementTotalPages = Math.max(1, Math.ceil(sortedMovements.length / movementPageSize));
+  const paginatedBalances = paginatedBalancesResponse?.data ?? [];
+  const paginatedMovements = paginatedMovementsResponse?.data ?? [];
+  const balanceTotal = paginatedBalancesResponse?.meta.total ?? sortedBalances.length;
+  const movementTotal = paginatedMovementsResponse?.meta.total ?? sortedMovements.length;
+  const balanceTotalPages = Math.max(1, paginatedBalancesResponse?.meta.total_pages ?? Math.ceil(balanceTotal / balancePageSize));
+  const movementTotalPages = Math.max(1, paginatedMovementsResponse?.meta.total_pages ?? Math.ceil(movementTotal / movementPageSize));
+  const balancesTableLoading = balancesLoading || paginatedBalancesLoading;
+  const movementsTableLoading = movementsLoading || paginatedMovementsLoading;
 
   useEffect(() => {
     setBalancePage((page) => Math.min(page, balanceTotalPages));
@@ -53,16 +78,6 @@ export default function InventoryPage() {
   useEffect(() => {
     setMovementPage((page) => Math.min(page, movementTotalPages));
   }, [movementTotalPages]);
-
-  const paginatedBalances = useMemo(
-    () => sortedBalances.slice((balancePage - 1) * balancePageSize, balancePage * balancePageSize),
-    [balancePage, sortedBalances]
-  );
-
-  const paginatedMovements = useMemo(
-    () => sortedMovements.slice((movementPage - 1) * movementPageSize, movementPage * movementPageSize),
-    [movementPage, sortedMovements]
-  );
 
   // Summary stats
   const totalSkus = balances.length;
@@ -332,13 +347,13 @@ export default function InventoryPage() {
               balances={paginatedBalances}
               products={productsMap}
               locations={locationsMap}
-              isLoading={balancesLoading}
+              isLoading={balancesTableLoading}
             />
-            {!balancesLoading && sortedBalances.length > 0 ? (
+            {!balancesTableLoading && balanceTotal > 0 ? (
               <div className={styles.paginationFooter}>
                 <div className={styles.paginationSummary}>
-                  Showing {Math.min((balancePage - 1) * balancePageSize + 1, sortedBalances.length)}-
-                  {Math.min(balancePage * balancePageSize, sortedBalances.length)} of {sortedBalances.length}
+                  Showing {Math.min((balancePage - 1) * balancePageSize + 1, balanceTotal)}-
+                  {Math.min(balancePage * balancePageSize, balanceTotal)} of {balanceTotal}
                 </div>
                 <div className={styles.paginationControls}>
                   <button
@@ -380,13 +395,13 @@ export default function InventoryPage() {
               movements={paginatedMovements}
               products={productsMap}
               locations={locationsMap}
-              isLoading={movementsLoading}
+              isLoading={movementsTableLoading}
             />
-            {!movementsLoading && sortedMovements.length > 0 ? (
+            {!movementsTableLoading && movementTotal > 0 ? (
               <div className={styles.paginationFooter}>
                 <div className={styles.paginationSummary}>
-                  Showing {Math.min((movementPage - 1) * movementPageSize + 1, sortedMovements.length)}-
-                  {Math.min(movementPage * movementPageSize, sortedMovements.length)} of {sortedMovements.length}
+                  Showing {Math.min((movementPage - 1) * movementPageSize + 1, movementTotal)}-
+                  {Math.min(movementPage * movementPageSize, movementTotal)} of {movementTotal}
                 </div>
                 <div className={styles.paginationControls}>
                   <button

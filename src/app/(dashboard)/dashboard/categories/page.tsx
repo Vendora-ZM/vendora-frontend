@@ -1,7 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { useCreateCategoryMutation, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
+import React, { useEffect, useState } from 'react';
+import {
+  useCreateCategoryMutation,
+  useGetCategoriesQuery,
+  useGetPaginatedCategoriesQuery,
+} from '@/lib/features/products/productsApi';
 import { CreateCategoryPayload, type Category } from '@/types/product';
 import styles from './page.module.css';
 
@@ -14,7 +18,12 @@ function formatDate(value: string) {
 }
 
 export default function CategoriesPage() {
-  const { data: categories = [], isLoading, isError, refetch } = useGetCategoriesQuery();
+  const {
+    data: categories = [],
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+    refetch,
+  } = useGetCategoriesQuery();
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
   const [currentPage, setCurrentPage] = useState(1);
   const [name, setName] = useState('');
@@ -23,27 +32,26 @@ export default function CategoriesPage() {
   const [formSuccess, setFormSuccess] = useState('');
   const pageSize = 8;
 
-  const sortedCategories = useMemo(
-    () => [...categories].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)),
-    [categories]
-  );
+  const {
+    data: paginatedCategoriesResponse,
+    isLoading: paginatedLoading,
+    isError: paginatedError,
+    refetch: refetchPaginatedCategories,
+  } = useGetPaginatedCategoriesQuery({
+    limit: pageSize,
+    offset: (currentPage - 1) * pageSize,
+  });
 
-  const totalCategories = sortedCategories.length;
-  const totalPages = Math.max(1, Math.ceil(totalCategories / pageSize));
+  const paginatedCategories = paginatedCategoriesResponse?.data ?? [];
+  const totalCategories = categories.length;
+  const totalPages = Math.max(1, paginatedCategoriesResponse?.meta.total_pages ?? Math.ceil(totalCategories / pageSize));
+  const isLoading = categoriesLoading || paginatedLoading;
+  const isError = categoriesError || paginatedError;
+  const activeCount = categories.filter((category: Category) => category.is_active).length;
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
   }, [totalPages]);
-
-  const paginatedCategories = useMemo(
-    () => sortedCategories.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-    [currentPage, sortedCategories]
-  );
-
-  const activeCount = useMemo(
-    () => categories.filter((category: Category) => category.is_active).length,
-    [categories]
-  );
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -66,6 +74,8 @@ export default function CategoriesPage() {
       setDescription('');
       setFormSuccess('Category created successfully.');
       setCurrentPage(1);
+      void refetch();
+      void refetchPaginatedCategories();
     } catch (error) {
       const message =
         typeof error === 'object' && error !== null && 'data' in error
@@ -130,7 +140,7 @@ export default function CategoriesPage() {
                       Loading categories…
                     </td>
                   </tr>
-                ) : sortedCategories.length === 0 ? (
+                ) : paginatedCategories.length === 0 ? (
                   <tr>
                     <td colSpan={4} className={styles.emptyCell}>
                       No categories yet. Add your first one using the form.
@@ -159,7 +169,7 @@ export default function CategoriesPage() {
             </table>
           </div>
 
-          {!isLoading && !isError && sortedCategories.length > 0 ? (
+          {!isLoading && !isError && totalCategories > 0 ? (
             <div className={styles.paginationFooter}>
               <div className={styles.paginationSummary}>
                 Showing {Math.min((currentPage - 1) * pageSize + 1, totalCategories)}-
@@ -211,7 +221,15 @@ export default function CategoriesPage() {
               <h2>Create category</h2>
               <p>Add a new category for your product catalog.</p>
             </div>
-            <button type="button" className={styles.linkButton} onClick={() => refetch()} disabled={isLoading}>
+            <button
+              type="button"
+              className={styles.linkButton}
+              onClick={() => {
+                void refetch();
+                void refetchPaginatedCategories();
+              }}
+              disabled={isLoading}
+            >
               Refresh
             </button>
           </div>

@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppSelector } from '@/lib/store';
-import { useGetCustomersQuery } from '@/lib/features/customers/customersApi';
+import {
+  useGetCustomersQuery,
+  useGetPaginatedCustomersQuery,
+} from '@/lib/features/customers/customersApi';
 import { CustomersToolbar } from '@/components/customers/CustomersToolbar';
 import { CustomersTable } from '@/components/customers/CustomersTable';
 import { CustomerFormModal } from '@/components/customers/CustomerFormModal';
@@ -14,12 +17,29 @@ export default function CustomersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  const { data: customers = [], isLoading, isError } = useGetCustomersQuery({
+  const {
+    data: customers = [],
+    isLoading: customersLoading,
+    isError: customersError,
+  } = useGetCustomersQuery({
     search: searchQuery || undefined,
   });
 
+  const {
+    data: paginatedCustomersResponse,
+    isLoading: paginatedLoading,
+    isError: paginatedError,
+  } = useGetPaginatedCustomersQuery({
+    search: searchQuery || undefined,
+    limit: pageSize,
+    offset: (currentPage - 1) * pageSize,
+  });
+
+  const paginatedCustomers = paginatedCustomersResponse?.data ?? [];
   const totalCustomers = customers.length;
-  const totalPages = Math.max(1, Math.ceil(totalCustomers / pageSize));
+  const totalPages = Math.max(1, paginatedCustomersResponse?.meta.total_pages ?? Math.ceil(totalCustomers / pageSize));
+  const isLoading = customersLoading || paginatedLoading;
+  const isError = customersError || paginatedError;
 
   useEffect(() => {
     setCurrentPage(1);
@@ -28,11 +48,6 @@ export default function CustomersPage() {
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
   }, [totalPages]);
-
-  const paginatedCustomers = useMemo(
-    () => customers.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-    [currentPage, customers]
-  );
 
   const paginationFooter = !isLoading && totalCustomers > 0 ? (
     <div className={styles.paginationFooter}>

@@ -1,5 +1,11 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { Customer, CreateCustomerPayload, UpdateCustomerPayload, ListCustomersParams } from '@/types/customer';
+import {
+  Customer,
+  CreateCustomerPayload,
+  UpdateCustomerPayload,
+  ListCustomersParams,
+} from '@/types/customer';
+import { PaginatedListResponse } from '@/types/pagination';
 import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export const customersApi = createApi({
@@ -18,6 +24,23 @@ export const customersApi = createApi({
       providesTags: (result) =>
         result
           ? [...result.map(({ id }) => ({ type: 'Customer' as const, id })), { type: 'Customer', id: 'LIST' }]
+          : [{ type: 'Customer', id: 'LIST' }],
+    }),
+
+    getPaginatedCustomers: builder.query<
+      PaginatedListResponse<Customer>,
+      ListCustomersParams & { limit: number; offset: number }
+    >({
+      query: (params) => {
+        const qs = new URLSearchParams();
+        if (params.search) qs.set('search', params.search);
+        qs.set('limit', String(params.limit));
+        qs.set('offset', String(params.offset));
+        return `/customers/paginated?${qs.toString()}`;
+      },
+      providesTags: (result) =>
+        result
+          ? [...result.data.map(({ id }) => ({ type: 'Customer' as const, id })), { type: 'Customer', id: 'LIST' }]
           : [{ type: 'Customer', id: 'LIST' }],
     }),
 
@@ -59,6 +82,7 @@ export const customersApi = createApi({
 
 export const {
   useGetCustomersQuery,
+  useGetPaginatedCustomersQuery,
   useGetCustomerByIdQuery,
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
