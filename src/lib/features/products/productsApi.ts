@@ -6,6 +6,7 @@ import {
   CreateProductPayload,
   UpdateProductPayload,
   ListProductsParams,
+  PaginatedProductsResponse,
 } from '@/types/product';
 import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
@@ -28,6 +29,27 @@ export const productsApi = createApi({
         result
           ? [
               ...result.map(({ id }) => ({ type: 'Product' as const, id })),
+              { type: 'Product', id: 'LIST' },
+            ]
+          : [{ type: 'Product', id: 'LIST' }],
+    }),
+
+    getPaginatedProducts: builder.query<
+      PaginatedProductsResponse,
+      ListProductsParams & { limit: number; offset: number }
+    >({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params.search) queryParams.set('search', params.search);
+        if (params.category_id) queryParams.set('category_id', params.category_id);
+        queryParams.set('limit', String(params.limit));
+        queryParams.set('offset', String(params.offset));
+        return `/products/paginated?${queryParams.toString()}`;
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: 'Product' as const, id })),
               { type: 'Product', id: 'LIST' },
             ]
           : [{ type: 'Product', id: 'LIST' }],
@@ -88,6 +110,7 @@ export const productsApi = createApi({
 
 export const {
   useGetProductsQuery,
+  useGetPaginatedProductsQuery,
   useGetProductByIdQuery,
   useCreateProductMutation,
   useUpdateProductMutation,

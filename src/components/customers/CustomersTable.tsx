@@ -9,6 +9,7 @@ import styles from './CustomersTable.module.css';
 interface CustomersTableProps {
   customers: Customer[];
   isLoading: boolean;
+  footer?: React.ReactNode;
 }
 
 function SkeletonRow() {
@@ -37,7 +38,7 @@ function EmptyState() {
   );
 }
 
-export const CustomersTable: React.FC<CustomersTableProps> = ({ customers, isLoading }) => {
+export const CustomersTable: React.FC<CustomersTableProps> = ({ customers, isLoading, footer }) => {
   const dispatch = useAppDispatch();
 
   return (
@@ -104,6 +105,7 @@ export const CustomersTable: React.FC<CustomersTableProps> = ({ customers, isLoa
           }
         </tbody>
       </table>
+      {footer ? <div className={styles.footer}>{footer}</div> : null}
     </div>
   );
 };

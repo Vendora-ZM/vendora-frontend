@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useGetBalancesQuery, useGetMovementsQuery } from '@/lib/features/inventory/inventoryApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
@@ -17,6 +17,10 @@ type Tab = 'balances' | 'movements';
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<Tab>('balances');
+  const [balancePage, setBalancePage] = useState(1);
+  const [movementPage, setMovementPage] = useState(1);
+  const balancePageSize = 10;
+  const movementPageSize = 10;
 
   const { data: balances = [], isLoading: balancesLoading } = useGetBalancesQuery({});
   const { data: movements = [], isLoading: movementsLoading } = useGetMovementsQuery({ limit: 100 });
@@ -31,6 +35,33 @@ export default function InventoryPage() {
   const locationsMap = useMemo(
     () => Object.fromEntries(locationsRaw.map((l: Location) => [l.id, l.name])),
     [locationsRaw]
+  );
+
+  const sortedBalances = useMemo(() => [...balances], [balances]);
+  const sortedMovements = useMemo(
+    () => [...movements].sort((a: InventoryMovement, b: InventoryMovement) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    [movements]
+  );
+
+  const balanceTotalPages = Math.max(1, Math.ceil(sortedBalances.length / balancePageSize));
+  const movementTotalPages = Math.max(1, Math.ceil(sortedMovements.length / movementPageSize));
+
+  useEffect(() => {
+    setBalancePage((page) => Math.min(page, balanceTotalPages));
+  }, [balanceTotalPages]);
+
+  useEffect(() => {
+    setMovementPage((page) => Math.min(page, movementTotalPages));
+  }, [movementTotalPages]);
+
+  const paginatedBalances = useMemo(
+    () => sortedBalances.slice((balancePage - 1) * balancePageSize, balancePage * balancePageSize),
+    [balancePage, sortedBalances]
+  );
+
+  const paginatedMovements = useMemo(
+    () => sortedMovements.slice((movementPage - 1) * movementPageSize, movementPage * movementPageSize),
+    [movementPage, sortedMovements]
   );
 
   // Summary stats
@@ -296,19 +327,101 @@ export default function InventoryPage() {
       {/* Table */}
       <div className={styles.tableContainer}>
         {activeTab === 'balances' ? (
-          <BalancesTable
-            balances={balances}
-            products={productsMap}
-            locations={locationsMap}
-            isLoading={balancesLoading}
-          />
+          <>
+            <BalancesTable
+              balances={paginatedBalances}
+              products={productsMap}
+              locations={locationsMap}
+              isLoading={balancesLoading}
+            />
+            {!balancesLoading && sortedBalances.length > 0 ? (
+              <div className={styles.paginationFooter}>
+                <div className={styles.paginationSummary}>
+                  Showing {Math.min((balancePage - 1) * balancePageSize + 1, sortedBalances.length)}-
+                  {Math.min(balancePage * balancePageSize, sortedBalances.length)} of {sortedBalances.length}
+                </div>
+                <div className={styles.paginationControls}>
+                  <button
+                    type="button"
+                    className={styles.paginationButton}
+                    onClick={() => setBalancePage((page) => Math.max(1, page - 1))}
+                    disabled={balancePage <= 1}
+                  >
+                    Previous
+                  </button>
+                  <div className={styles.paginationPages} aria-label="Inventory balance pages">
+                    {Array.from({ length: balanceTotalPages }, (_, index) => index + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        className={`${styles.paginationButton} ${page === balancePage ? styles.paginationButtonActive : ''}`}
+                        onClick={() => setBalancePage(page)}
+                        aria-current={page === balancePage ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.paginationButton}
+                    onClick={() => setBalancePage((page) => Math.min(balanceTotalPages, page + 1))}
+                    disabled={balancePage >= balanceTotalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </>
         ) : (
-          <MovementsTable
-            movements={movements}
-            products={productsMap}
-            locations={locationsMap}
-            isLoading={movementsLoading}
-          />
+          <>
+            <MovementsTable
+              movements={paginatedMovements}
+              products={productsMap}
+              locations={locationsMap}
+              isLoading={movementsLoading}
+            />
+            {!movementsLoading && sortedMovements.length > 0 ? (
+              <div className={styles.paginationFooter}>
+                <div className={styles.paginationSummary}>
+                  Showing {Math.min((movementPage - 1) * movementPageSize + 1, sortedMovements.length)}-
+                  {Math.min(movementPage * movementPageSize, sortedMovements.length)} of {sortedMovements.length}
+                </div>
+                <div className={styles.paginationControls}>
+                  <button
+                    type="button"
+                    className={styles.paginationButton}
+                    onClick={() => setMovementPage((page) => Math.max(1, page - 1))}
+                    disabled={movementPage <= 1}
+                  >
+                    Previous
+                  </button>
+                  <div className={styles.paginationPages} aria-label="Inventory movement pages">
+                    {Array.from({ length: movementTotalPages }, (_, index) => index + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        className={`${styles.paginationButton} ${page === movementPage ? styles.paginationButtonActive : ''}`}
+                        onClick={() => setMovementPage(page)}
+                        aria-current={page === movementPage ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.paginationButton}
+                    onClick={() => setMovementPage((page) => Math.min(movementTotalPages, page + 1))}
+                    disabled={movementPage >= movementTotalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
 

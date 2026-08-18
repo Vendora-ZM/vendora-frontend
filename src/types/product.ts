@@ -61,4 +61,18 @@ export interface UpdateProductPayload {
 export interface ListProductsParams {
   search?: string;
   category_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface PaginatedProductsMeta {
+  total: number;
+  limit: number;
+  offset: number;
+  total_pages?: number;
+}
+
+export interface PaginatedProductsResponse {
+  data: Product[];
+  meta: PaginatedProductsMeta;
 }

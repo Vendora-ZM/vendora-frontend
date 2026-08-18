@@ -119,6 +119,12 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
+.footer {
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(140, 144, 152, 0.1);
+  background: var(--color-white);
+}
+
 /* Skeleton loader */
 .skeletonRow td {
   padding: 24px;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useCreateCategoryMutation, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { CreateCategoryPayload, type Category } from '@/types/product';
 import styles from './page.module.css';
@@ -16,14 +16,28 @@ function formatDate(value: string) {
 export default function CategoriesPage() {
   const { data: categories = [], isLoading, isError, refetch } = useGetCategoriesQuery();
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
+  const [currentPage, setCurrentPage] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+  const pageSize = 8;
 
   const sortedCategories = useMemo(
     () => [...categories].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)),
     [categories]
+  );
+
+  const totalCategories = sortedCategories.length;
+  const totalPages = Math.max(1, Math.ceil(totalCategories / pageSize));
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const paginatedCategories = useMemo(
+    () => sortedCategories.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [currentPage, sortedCategories]
   );
 
   const activeCount = useMemo(
@@ -51,6 +65,7 @@ export default function CategoriesPage() {
       setName('');
       setDescription('');
       setFormSuccess('Category created successfully.');
+      setCurrentPage(1);
     } catch (error) {
       const message =
         typeof error === 'object' && error !== null && 'data' in error
@@ -84,6 +99,112 @@ export default function CategoriesPage() {
       </div>
 
       <div className={styles.grid}>
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div>
+              <h2>Category list</h2>
+              <p>{isLoading ? 'Loading categories…' : `${totalCategories} categories total`}</p>
+            </div>
+          </div>
+
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isError ? (
+                  <tr>
+                    <td colSpan={4} className={styles.emptyCell}>
+                      Failed to load categories. Please try again.
+                    </td>
+                  </tr>
+                ) : isLoading ? (
+                  <tr>
+                    <td colSpan={4} className={styles.emptyCell}>
+                      Loading categories…
+                    </td>
+                  </tr>
+                ) : sortedCategories.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className={styles.emptyCell}>
+                      No categories yet. Add your first one using the form.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedCategories.map((category: Category) => (
+                    <tr key={category.id}>
+                      <td>
+                        <div className={styles.nameCell}>
+                          <strong>{category.name}</strong>
+                          <span>{category.id}</span>
+                        </div>
+                      </td>
+                      <td>{category.description || 'No description'}</td>
+                      <td>
+                        <span className={`${styles.statusPill} ${category.is_active ? styles.active : styles.inactive}`}>
+                          {category.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td>{formatDate(category.created_at)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {!isLoading && !isError && sortedCategories.length > 0 ? (
+            <div className={styles.paginationFooter}>
+              <div className={styles.paginationSummary}>
+                Showing {Math.min((currentPage - 1) * pageSize + 1, totalCategories)}-
+                {Math.min(currentPage * pageSize, totalCategories)} of {totalCategories}
+              </div>
+
+              <div className={styles.paginationControls}>
+                <button
+                  type="button"
+                  className={styles.paginationButton}
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  Previous
+                </button>
+
+                <div className={styles.paginationPages} aria-label="Category pages">
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      className={`${styles.paginationButton} ${
+                        page === currentPage ? styles.paginationButtonActive : ''
+                      }`}
+                      onClick={() => setCurrentPage(page)}
+                      aria-current={page === currentPage ? 'page' : undefined}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.paginationButton}
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </section>
+
         <section className={styles.card}>
           <div className={styles.cardHeader}>
             <div>
@@ -128,67 +249,6 @@ export default function CategoriesPage() {
               {isCreating ? 'Saving…' : 'Add category'}
             </button>
           </form>
-        </section>
-
-        <section className={styles.card}>
-          <div className={styles.cardHeader}>
-            <div>
-              <h2>Category list</h2>
-              <p>{isLoading ? 'Loading categories…' : `${categories.length} categories total`}</p>
-            </div>
-          </div>
-
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isError ? (
-                  <tr>
-                    <td colSpan={4} className={styles.emptyCell}>
-                      Failed to load categories. Please try again.
-                    </td>
-                  </tr>
-                ) : isLoading ? (
-                  <tr>
-                    <td colSpan={4} className={styles.emptyCell}>
-                      Loading categories…
-                    </td>
-                  </tr>
-                ) : sortedCategories.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className={styles.emptyCell}>
-                      No categories yet. Add your first one using the form.
-                    </td>
-                  </tr>
-                ) : (
-                  sortedCategories.map((category: Category) => (
-                    <tr key={category.id}>
-                      <td>
-                        <div className={styles.nameCell}>
-                          <strong>{category.name}</strong>
-                          <span>{category.id}</span>
-                        </div>
-                      </td>
-                      <td>{category.description || 'No description'}</td>
-                      <td>
-                        <span className={`${styles.statusPill} ${category.is_active ? styles.active : styles.inactive}`}>
-                          {category.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td>{formatDate(category.created_at)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
         </section>
       </div>
     </div>
