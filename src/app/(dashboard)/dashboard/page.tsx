@@ -90,6 +90,17 @@ function matchesQuestion(question: string, keywords: string[]) {
   return keywords.some((keyword) => normalized.includes(keyword));
 }
 
+function getLocalDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatTrendLabel(date: Date) {
+  return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+}
+
 type RecentSalesSummary = {
   totalDiscount: number;
   totalTax: number;
@@ -425,17 +436,38 @@ export default function DashboardOverview() {
   );
 
   const graphData = useMemo(() => {
-    return [...salesTrends]
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-7)
-      .map((point: SalesTrendPoint) => ({
-        label: new Date(point.date).toLocaleDateString('en-US', { weekday: 'short' }),
-        value: point.revenue / 100,
-        revenue: point.revenue,
-      }));
+    const endDate = new Date();
+    endDate.setHours(0, 0, 0, 0);
+
+    const totalsByDay = new Map<string, { revenue: number; profit: number }>();
+
+    salesTrends.forEach((point: SalesTrendPoint) => {
+      const day = new Date(point.date);
+      const key = getLocalDateKey(day);
+      const existing = totalsByDay.get(key) ?? { revenue: 0, profit: 0 };
+      const revenue = point.revenue ?? 0;
+      const profit = revenue - (point.cost ?? 0) - (point.refund_amount ?? 0);
+      existing.revenue += revenue;
+      existing.profit += profit;
+      totalsByDay.set(key, existing);
+    });
+
+    return Array.from({ length: 7 }, (_value, index) => {
+      const date = new Date(endDate);
+      date.setDate(endDate.getDate() - (6 - index));
+      const key = getLocalDateKey(date);
+      const totals = totalsByDay.get(key) ?? { revenue: 0, profit: 0 };
+
+      return {
+        dateKey: key,
+        label: formatTrendLabel(date),
+        revenue: totals.revenue,
+        profit: totals.profit,
+      };
+    });
   }, [salesTrends]);
 
-  const graphMax = Math.max(...graphData.map((point: { label: string; value: number; revenue: number }) => point.value), 1);
+  const graphMax = graphData.reduce((max, point) => Math.max(max, point.revenue, point.profit), 1);
   const aiAdvisor = useMemo(() => {
     const midpoint = Math.max(1, Math.ceil(graphData.length / 2));
     const earlyPeriodRevenue = graphData.slice(0, midpoint).reduce((sum, point) => sum + point.revenue, 0);
@@ -1182,7 +1214,17 @@ export default function DashboardOverview() {
           <div className={styles.card}>
             <div className={styles.sectionTitle}>
               Revenue Trend
-              <span className={styles.sectionHint}>Last 7 days in the selected range</span>
+              <span className={styles.sectionHint}>Last 7 calendar days with revenue and profit</span>
+            </div>
+            <div className={styles.graphLegend} aria-label="Chart legend">
+              <span className={styles.legendItem}>
+                <span className={`${styles.legendSwatch} ${styles.legendRevenue}`} />
+                Revenue
+              </span>
+              <span className={styles.legendItem}>
+                <span className={`${styles.legendSwatch} ${styles.legendProfit}`} />
+                Profit
+              </span>
             </div>
             <div className={styles.graphContainer}>
               {graphData.length === 0 ? (
@@ -1190,14 +1232,30 @@ export default function DashboardOverview() {
                   {isLoading ? 'Loading revenue data…' : 'No revenue data available for this period.'}
                 </div>
               ) : (
-                graphData.map((point: { label: string; value: number; revenue: number }) => (
-                  <div key={`${point.label}-${point.revenue}`} className={styles.barCol}>
-                    <div className={styles.barWrapper}>
-                      <div
-                        className={styles.barFill}
-                        style={{ height: `${Math.max((point.value / graphMax) * 100, 4)}%` }}
-                      />
-                      <span className={styles.barValue}>{formatCurrency(point.revenue)}</span>
+                graphData.map((point: { dateKey: string; label: string; revenue: number; profit: number }) => (
+                  <div key={point.dateKey} className={styles.barCol}>
+                    <div className={styles.barGroup}>
+                      <div className={styles.barSeries}>
+                        <div className={styles.barTrack}>
+                          <div
+                            className={`${styles.barFill} ${styles.barFillRevenue}`}
+                            style={{ height: `${Math.max((point.revenue / graphMax) * 100, point.revenue > 0 ? 4 : 0)}%` }}
+                          />
+                          <span className={styles.barValue}>{formatCurrency(point.revenue)}</span>
+                        </div>
+                        <span className={styles.barSeriesLabel}>Revenue</span>
+                      </div>
+
+                      <div className={styles.barSeries}>
+                        <div className={styles.barTrack}>
+                          <div
+                            className={`${styles.barFill} ${styles.barFillProfit}`}
+                            style={{ height: `${Math.max((point.profit / graphMax) * 100, point.profit > 0 ? 4 : 0)}%` }}
+                          />
+                          <span className={styles.barValue}>{formatCurrency(point.profit)}</span>
+                        </div>
+                        <span className={styles.barSeriesLabel}>Profit</span>
+                      </div>
                     </div>
                     <span className={styles.barLabel}>{point.label}</span>
                   </div>

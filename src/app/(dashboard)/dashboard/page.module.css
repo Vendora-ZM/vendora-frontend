@@ -260,13 +260,44 @@
   color: var(--color-grey);
 }
 
+.graphLegend {
+  padding: 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-grey);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.legendSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.legendRevenue {
+  background: linear-gradient(180deg, #1a84dd, #0b5fbf);
+}
+
+.legendProfit {
+  background: linear-gradient(180deg, #f59e0b, #f97316);
+}
+
 /* Revenue Graph Mockup */
 .graphContainer {
   padding: 24px;
-  height: 300px;
+  height: 320px;
   display: flex;
-  align-items: flex-end;
-  gap: 16px;
+  align-items: stretch;
+  gap: 12px;
   justify-content: space-between;
 }
 
@@ -280,11 +311,30 @@
   height: 100%;
 }
 
-.barWrapper {
+.barGroup {
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.barSeries {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.barTrack {
+  width: 100%;
+  min-height: 220px;
   background: #f4f5f7;
-  border-radius: 4px;
+  border-radius: 12px;
   position: relative;
   overflow: hidden;
 }
@@ -294,10 +344,19 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  background: var(--gradient-blue);
+  background: linear-gradient(180deg, #1a84dd, #0b5fbf);
   border-radius: 6px 6px 0 0;
   transition: height 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 -4px 12px rgba(26, 132, 221, 0.2);
+}
+
+.barFillRevenue {
+  background: linear-gradient(180deg, #1a84dd, #0b5fbf);
+}
+
+.barFillProfit {
+  background: linear-gradient(180deg, #f59e0b, #f97316);
+  box-shadow: 0 -4px 12px rgba(245, 124, 0, 0.18);
 }
 
 .barValue {
@@ -312,9 +371,16 @@
   white-space: nowrap;
 }
 
+.barSeriesLabel {
+  font-size: 0.7rem;
+  color: var(--color-grey);
+  font-weight: 600;
+}
+
 .barLabel {
   font-size: 0.75rem;
   color: var(--color-grey);
+  text-align: center;
 }
 
 /* Alerts Section */
@@ -1152,8 +1218,14 @@
 
   .graphContainer {
     padding: 16px;
-    height: 200px;
-    gap: 8px;
+    height: 260px;
+    gap: 10px;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .graphLegend {
+    padding: 0 16px;
   }
 
   .sectionTitle {
@@ -1172,6 +1244,15 @@
 
   .alertsContainer {
     padding: 12px 16px;
+  }
+
+  .barCol {
+    min-width: 132px;
+    flex: 0 0 132px;
+  }
+
+  .barTrack {
+    min-height: 180px;
   }
 
   .aiAdvisorCard {
@@ -1220,5 +1301,14 @@
 
   .quickActionsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .barCol {
+    min-width: 108px;
+    flex-basis: 108px;
+  }
+
+  .barTrack {
+    min-height: 160px;
   }
 }
