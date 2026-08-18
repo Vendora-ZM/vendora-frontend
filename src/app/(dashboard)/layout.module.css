@@ -147,6 +147,39 @@
 
 /* ─── Tablet ────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
+  .topHeader {
+    height: auto;
+    min-height: 64px;
+    padding: 10px 24px;
+    align-items: center;
+  }
+
+  .headerRight {
+    flex-shrink: 1;
+    max-width: 100%;
+  }
+
+  .profile {
+    max-width: min(100%, 320px);
+  }
+
+  .profileCopy {
+    gap: 1px;
+  }
+
+  .identityLabel,
+  .emailLine {
+    display: none;
+  }
+
+  .companyName {
+    font-size: 0.95rem;
+  }
+
+  .userLine {
+    font-size: 0.75rem;
+  }
+
   .content {
     padding: 24px;
   }
