@@ -485,15 +485,70 @@
   font-weight: 500;
 }
 
+.aiAdvisorFab {
+  position: fixed;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background: var(--gradient-blue);
+  color: #fff;
+  border: none;
+  box-shadow: 0 14px 32px rgba(26, 132, 221, 0.42);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+}
+
+.aiAdvisorFab:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 18px 38px rgba(26, 132, 221, 0.5);
+}
+
+.aiAdvisorFab:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.85),
+    0 0 0 8px rgba(26, 132, 221, 0.35),
+    0 18px 38px rgba(26, 132, 221, 0.5);
+}
+
+.aiAdvisorFabIcon {
+  width: 28px;
+  height: 28px;
+  animation: pulseFab 2s infinite ease-in-out;
+}
+
+@keyframes pulseFab {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.aiAdvisorFabBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
 .aiAdvisorCard {
   position: fixed;
-  bottom: 104px; /* Above FAB */
-  right: 24px;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px);
   width: 420px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 140px);
   overflow-y: auto;
-  z-index: 100;
+  z-index: 1190;
   display: grid;
   gap: 18px;
   padding: 24px;
@@ -902,54 +957,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
-
-/* AI Advisor FAB & Floating Panel */
-.aiAdvisorFab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 64px;
-  height: 64px;
-  border-radius: 32px;
-  background: var(--gradient-blue);
-  color: #fff;
-  border: none;
-  box-shadow: 0 10px 24px rgba(26, 132, 221, 0.4);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
-}
-
-.aiAdvisorFab:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 14px 32px rgba(26, 132, 221, 0.5);
-}
-
-.aiAdvisorFabIcon {
-  width: 28px;
-  height: 28px;
-  animation: pulseFab 2s infinite ease-in-out;
-}
-
-@keyframes pulseFab {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-.aiAdvisorFabBadge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 14px;
-  height: 14px;
-  background: #EF4444;
-  border-radius: 50%;
-  border: 2px solid #fff;
-}
   .controls {
     width: 100%;
     justify-content: flex-start;
@@ -992,6 +999,11 @@
   }
 
   .aiAdvisorCard {
+    width: calc(100vw - 24px);
+    right: 12px;
+    bottom: 92px;
+    max-width: none;
+    max-height: calc(100vh - 120px);
     padding: 18px;
   }
 
