@@ -1,7 +1,8 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   background: var(--color-white);
   border-radius: 12px;
   border: 1px solid rgba(140, 144, 152, 0.15);
@@ -90,6 +91,7 @@
 
 .gridWrapper {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 16px;
   background: #F4F5F7;
