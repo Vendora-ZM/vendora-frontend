@@ -10,7 +10,7 @@ import { ProductGrid } from '@/components/pos/ProductGrid';
 import { Cart } from '@/components/pos/Cart';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
-import { getApiErrorDetails, getFriendlyErrorMessage, isBillingAccessError } from '@/lib/errors/apiError';
+import { getApiErrorDetails, getFriendlyErrorMessage } from '@/lib/errors/apiError';
 import {
   SALES_CHANNEL_OPTIONS,
   SALES_CHANNEL_STORAGE_PREFIX,
@@ -251,29 +251,6 @@ export default function PosPage() {
   }
 
   if (businessErrorDetails) {
-    if (isBillingAccessError(businessError)) {
-      return (
-        <PosStatusCard
-          eyebrow="Billing locked"
-          title="Billing is required to use the POS"
-          description={
-            businessErrorMessage ||
-            'Your account needs billing enabled before sales can continue. Open Billing to restore POS access.'
-          }
-          actions={
-            <>
-              <Button type="button" size="lg" variant="primary" onClick={() => router.push('/dashboard/billing')}>
-                Open Billing
-              </Button>
-              <Button type="button" size="lg" variant="outline" onClick={() => refetchBusiness()}>
-                Try again
-              </Button>
-            </>
-          }
-        />
-      );
-    }
-
     return (
       <PosStatusCard
         eyebrow="Load error"

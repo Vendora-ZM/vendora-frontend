@@ -77,10 +77,6 @@ export function isBillingAccessError(error: unknown) {
 }
 
 export function getFriendlyErrorMessage(error: unknown, fallback: string) {
-  if (isBillingAccessError(error)) {
-    return 'Billing is required to use the POS. Open Billing to restore checkout access.';
-  }
-
   const details = getApiErrorDetails(error);
   return details?.message ?? fallback;
 }
