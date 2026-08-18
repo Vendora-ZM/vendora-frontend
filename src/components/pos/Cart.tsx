@@ -36,6 +36,19 @@ function formatAmount(amount: number) {
   return `K${amount.toFixed(2)}`;
 }
 
+function parseQuantityInput(value: string) {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return Math.max(0, Math.floor(parsed));
+}
+
 export const Cart: React.FC<CartProps> = ({
   initialStage = 2,
   paymentTypes,
@@ -273,14 +286,31 @@ export const Cart: React.FC<CartProps> = ({
                           className={styles.qtyBtn}
                           onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity - 1 }))}
                           disabled={isProcessing}
+                          aria-label={`Decrease quantity for ${item.name}`}
                         >
                           -
                         </button>
-                        <span className={styles.qtyValue}>{item.cartQuantity}</span>
+                        <input
+                          className={styles.qtyInput}
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={item.cartQuantity}
+                          onChange={(event) => {
+                            const nextQuantity = parseQuantityInput(event.target.value);
+                            if (nextQuantity !== null) {
+                              dispatch(updateQuantity({ id: item.id, quantity: nextQuantity }));
+                            }
+                          }}
+                          disabled={isProcessing}
+                          aria-label={`Quantity for ${item.name}`}
+                          inputMode="numeric"
+                        />
                         <button
                           className={styles.qtyBtn}
                           onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity + 1 }))}
                           disabled={isProcessing}
+                          aria-label={`Increase quantity for ${item.name}`}
                         >
                           +
                         </button>
