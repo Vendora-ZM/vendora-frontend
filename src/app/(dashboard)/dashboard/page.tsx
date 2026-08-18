@@ -106,6 +106,93 @@ type RecentSalesSummary = {
     | null;
 };
 
+type QuickActionTone = 'blue' | 'amber' | 'emerald' | 'slate';
+
+type QuickAction = {
+  title: string;
+  description: string;
+  badge: string;
+  tone: QuickActionTone;
+  href?: string;
+  onClick?: () => void;
+  icon: 'sale' | 'product' | 'sales' | 'inventory' | 'customers' | 'locations' | 'advisor';
+};
+
+function QuickActionIcon({ icon }: { icon: QuickAction['icon'] }) {
+  switch (icon) {
+    case 'sale':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 7h16" />
+          <path d="M6 7v12h12V7" />
+          <path d="M9 11h6" />
+          <path d="M10 15h4" />
+        </svg>
+      );
+    case 'product':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z" />
+          <path d="M12 3v18" />
+          <path d="M4 7.5 12 12l8-4.5" />
+        </svg>
+      );
+    case 'sales':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 17 9 11 13 15 21 7" />
+          <polyline points="14 7 21 7 21 14" />
+        </svg>
+      );
+    case 'inventory':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 7.5 12 3l9 4.5-9 4.5z" />
+          <path d="M3 7.5v9L12 21l9-4.5v-9" />
+          <path d="M12 12v9" />
+        </svg>
+      );
+    case 'customers':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        </svg>
+      );
+    case 'locations':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 21s6-4.5 6-11a6 6 0 0 0-12 0c0 6.5 6 11 6 11z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </svg>
+      );
+    case 'advisor':
+    default:
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3a4 4 0 0 0-4 4v2H6a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1l2 3h6l2-3h1a3 3 0 0 0 3-3v-2a3 3 0 0 0-3-3h-2V7a4 4 0 0 0-4-4z" />
+          <path d="M9 11h.01" />
+          <path d="M15 11h.01" />
+        </svg>
+      );
+  }
+}
+
+function getQuickActionToneClass(tone: QuickActionTone) {
+  switch (tone) {
+    case 'blue':
+      return styles.quickActionToneBlue;
+    case 'amber':
+      return styles.quickActionToneAmber;
+    case 'emerald':
+      return styles.quickActionToneEmerald;
+    case 'slate':
+    default:
+      return styles.quickActionToneSlate;
+  }
+}
+
 export default function DashboardOverview() {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -270,6 +357,71 @@ export default function DashboardOverview() {
       .sort((a: { product: Product; available: number }, b: { product: Product; available: number }) => a.available - b.available)
       .slice(0, 3);
   }, [balances, productsMap]);
+
+  const quickActions = useMemo<QuickAction[]>(
+    () => [
+      {
+        title: 'New Sale',
+        description: 'Open the POS and start checking out the next customer.',
+        badge: 'Fast track',
+        tone: 'blue',
+        href: '/dashboard/pos',
+        icon: 'sale',
+      },
+      {
+        title: 'Add Product',
+        description: 'Create a new catalog item or restock a fresh product.',
+        badge: productsRaw.length > 0 ? `${productsRaw.length.toLocaleString()} products` : 'Start here',
+        tone: 'emerald',
+        href: '/dashboard/products/new',
+        icon: 'product',
+      },
+      {
+        title: 'View Sales',
+        description: 'Check receipts, totals, and the latest transaction history.',
+        badge: 'Reports',
+        tone: 'slate',
+        href: '/dashboard/sales',
+        icon: 'sales',
+      },
+      {
+        title: lowStockAlerts.length > 0 ? 'Review Low Stock' : 'Inventory',
+        description:
+          lowStockAlerts.length > 0
+            ? `${lowStockAlerts.length.toLocaleString()} item${lowStockAlerts.length === 1 ? '' : 's'} need attention right now.`
+            : 'Open the inventory workspace and check stock movement.',
+        badge: lowStockAlerts.length > 0 ? 'Needs attention' : 'Healthy',
+        tone: lowStockAlerts.length > 0 ? 'amber' : 'slate',
+        href: '/dashboard/inventory#advanced-inventory',
+        icon: 'inventory',
+      },
+      {
+        title: 'Customers',
+        description: 'Open the customer workspace and manage merchant relationships.',
+        badge: `${customersRaw.length.toLocaleString()} records`,
+        tone: 'blue',
+        href: '/dashboard/customers',
+        icon: 'customers',
+      },
+      {
+        title: 'Locations',
+        description: 'Jump into branches and location-level performance views.',
+        badge: 'Branches',
+        tone: 'slate',
+        href: '/dashboard/locations',
+        icon: 'locations',
+      },
+      {
+        title: 'AI Advisor',
+        description: 'Get a quick business readout from the live dashboard data.',
+        badge: 'Open',
+        tone: 'emerald',
+        onClick: () => setIsAdvisorOpen(true),
+        icon: 'advisor',
+      },
+    ],
+    [customersRaw.length, lowStockAlerts.length, productsRaw.length]
+  );
 
   const graphData = useMemo(() => {
     return [...salesTrends]
@@ -800,6 +952,53 @@ export default function DashboardOverview() {
           Some dashboard data could not be loaded. The rest of the dashboard is still live.
         </div>
       )}
+
+      <section className={styles.quickActionsSection} aria-labelledby="dashboard-quick-actions">
+        <div className={styles.quickActionsHeader}>
+          <div>
+            <span className={styles.quickActionsEyebrow}>Quick Actions</span>
+            <h2 id="dashboard-quick-actions" className={styles.quickActionsTitle}>
+              The fastest ways to move around the business.
+            </h2>
+          </div>
+          <p className={styles.quickActionsText}>
+            Give merchants one-tap access to the tasks they use most, without hunting through the sidebar.
+          </p>
+        </div>
+
+        <div className={styles.quickActionsGrid}>
+          {quickActions.map((action) => {
+            const content = (
+              <>
+                <div className={`${styles.quickActionIcon} ${getQuickActionToneClass(action.tone)}`}>
+                  <QuickActionIcon icon={action.icon} />
+                </div>
+                <div className={styles.quickActionBody}>
+                  <div className={styles.quickActionTopRow}>
+                    <h3 className={styles.quickActionTitle}>{action.title}</h3>
+                    <span className={styles.quickActionBadge}>{action.badge}</span>
+                  </div>
+                  <p className={styles.quickActionDescription}>{action.description}</p>
+                </div>
+              </>
+            );
+
+            if (action.href) {
+              return (
+                <Link key={action.title} href={action.href} className={styles.quickActionCard}>
+                  {content}
+                </Link>
+              );
+            }
+
+            return (
+              <button key={action.title} type="button" className={styles.quickActionCard} onClick={action.onClick}>
+                {content}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className={`${styles.aiAdvisorCard} ${isAdvisorOpen ? styles.aiAdvisorCardOpen : ''}`}>
         <button
