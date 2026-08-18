@@ -106,26 +106,10 @@
   text-align: right;
 }
 
-.identityLabel {
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #7c8797;
-  line-height: 1;
-}
-
-.companyName {
+.accountName {
   font-weight: 700;
   color: var(--color-primary-navy);
   line-height: 1.1;
-  overflow-wrap: anywhere;
-}
-
-.userLine {
-  font-size: 0.8125rem;
-  color: var(--color-grey);
-  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 
@@ -167,17 +151,8 @@
     gap: 1px;
   }
 
-  .identityLabel,
-  .emailLine {
-    display: none;
-  }
-
-  .companyName {
+  .accountName {
     font-size: 0.95rem;
-  }
-
-  .userLine {
-    font-size: 0.75rem;
   }
 
   .content {
@@ -203,7 +178,16 @@
   }
 
   .profileCopy {
-    display: none;
+    display: flex;
+    gap: 1px;
+  }
+
+  .accountName {
+    font-size: 0.9rem;
+  }
+
+  .emailLine {
+    font-size: 0.7rem;
   }
 
   .content {

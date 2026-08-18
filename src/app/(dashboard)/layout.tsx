@@ -110,7 +110,6 @@ export default function DashboardLayout({
     }
   }, [businessError, dispatch, meError, router]);
 
-  const companyName = business?.name ?? authState.businessName ?? 'Merchant Store';
   const trialState = useMemo(
     () =>
       business
@@ -128,7 +127,6 @@ export default function DashboardLayout({
     () => `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || authState.userName || 'Signed-in user',
     [authState.userName, me]
   );
-  const roleName = me?.role_name ?? authState.roleName ?? 'Team member';
   const email = me?.email ?? authState.email ?? '';
   const avatarInitials = useMemo(() => {
     const parts = (userName || '').split(' ').filter(Boolean);
@@ -186,12 +184,7 @@ export default function DashboardLayout({
             <div className={styles.profile}>
               <div className={styles.avatar}>{avatarInitials}</div>
               <div className={styles.profileCopy}>
-                <span className={styles.identityLabel}>Business</span>
-                <span className={styles.companyName}>{companyName}</span>
-                <span className={styles.identityLabel}>Signed in account</span>
-                <span className={styles.userLine}>
-                  {userName} · {roleName}
-                </span>
+                <span className={styles.accountName}>{userName}</span>
                 {email ? <span className={styles.emailLine}>{email}</span> : null}
               </div>
             </div>
