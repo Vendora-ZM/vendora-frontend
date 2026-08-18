@@ -227,10 +227,8 @@ export default function DashboardOverview() {
     limit: 5,
   });
   const { data: salesResponse, isLoading: salesLoading, error: salesError } = useGetSalesQuery({
-    start_date: from,
-    end_date: to,
     location_id: locationId,
-    limit: 10,
+    limit: 5,
     offset: 0,
   });
   const { data: balances = [], isLoading: balancesLoading, error: balancesError } = useGetBalancesQuery({
@@ -277,7 +275,7 @@ export default function DashboardOverview() {
   const recentSales = useMemo(() => {
     const rows = salesResponse?.data ?? [];
     return [...rows]
-      .sort((a: Sale, b: Sale) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .sort((a: Sale, b: Sale) => new Date((b.completed_at ?? b.created_at)).getTime() - new Date((a.completed_at ?? a.created_at)).getTime())
       .slice(0, 5);
   }, [salesResponse]);
 
@@ -1284,10 +1282,18 @@ export default function DashboardOverview() {
                         <div className={styles.tableLoading}>Loading recent sales…</div>
                       </td>
                     </tr>
+                  ) : salesError ? (
+                    <tr>
+                      <td colSpan={5}>
+                        <div className={styles.emptyState}>
+                          We couldn’t load recent activity right now. Please try again in a moment.
+                        </div>
+                      </td>
+                    </tr>
                   ) : recentSales.length === 0 ? (
                     <tr>
                       <td colSpan={5}>
-                        <div className={styles.emptyState}>No sales found for the selected filters.</div>
+                        <div className={styles.emptyState}>No recent sales found yet.</div>
                       </td>
                     </tr>
                   ) : (
