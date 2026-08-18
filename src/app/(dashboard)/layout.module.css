@@ -54,6 +54,7 @@
   align-items: center;
   gap: 10px;
   margin-left: auto;
+  min-width: 0;
 }
 
 .searchInput {
@@ -79,6 +80,8 @@
   gap: 12px;
   cursor: pointer;
   flex-shrink: 0;
+  min-width: 0;
+  max-width: min(100%, 420px);
 }
 
 .avatar {
@@ -99,6 +102,8 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  align-items: flex-end;
+  text-align: right;
 }
 
 .identityLabel {
@@ -114,21 +119,22 @@
   font-weight: 700;
   color: var(--color-primary-navy);
   line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 
 .userLine {
   font-size: 0.8125rem;
   color: var(--color-grey);
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .emailLine {
   font-size: 0.75rem;
   color: #8b95a5;
   line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .content {
