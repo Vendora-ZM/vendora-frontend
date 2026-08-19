@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
@@ -9,7 +10,6 @@ import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppSelector } from '@/lib/store';
 import {
-  useCreateInvitationMutation,
   useCreateRoleMutation,
   useGetAccountsQuery,
   useGetInvitationsQuery,
@@ -34,16 +34,6 @@ type RoleFormState = {
   permissions: string[];
 };
 
-type InviteFormState = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  roleId: string;
-  promoCode: string;
-  locationIds: string[];
-};
-
 function formatDate(value?: string | null) {
   if (!value) return 'Never';
   return new Date(value).toLocaleDateString('en-US', {
@@ -64,10 +54,6 @@ function formatDateTime(value?: string | null) {
   });
 }
 
-function unique(values: string[]) {
-  return Array.from(new Set(values));
-}
-
 function toggleValue(values: string[], value: string) {
   return values.includes(value) ? values.filter((entry) => entry !== value) : [...values, value];
 }
@@ -76,14 +62,8 @@ function roleBadge(role: Role) {
   return role.is_system ? 'System role' : 'Custom role';
 }
 
-function createInvitePromoCode(businessName: string, firstName: string, lastName: string) {
-  const source = `${businessName} ${firstName} ${lastName}`.trim().toUpperCase();
-  const letters = source.replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'VENDORA';
-  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `VND-${letters}-${random}`;
-}
-
 export default function AccountsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('accounts');
   const [currentPage, setCurrentPage] = useState(1);
   const [accountSearch, setAccountSearch] = useState('');
@@ -94,15 +74,6 @@ export default function AccountsPage() {
     name: '',
     description: '',
     permissions: [],
-  });
-  const [inviteForm, setInviteForm] = useState<InviteFormState>({
-    email: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    roleId: '',
-    promoCode: '',
-    locationIds: [],
   });
   const [statusMessage, setStatusMessage] = useState('');
 
@@ -133,7 +104,6 @@ export default function AccountsPage() {
 
   const [createRole, { isLoading: creatingRole }] = useCreateRoleMutation();
   const [updateRole, { isLoading: updatingRole }] = useUpdateRoleMutation();
-  const [createInvitation, { isLoading: creatingInvitation }] = useCreateInvitationMutation();
   const [resendInvitation, { isLoading: resendingInvitation }] = useResendInvitationMutation();
 
   const selectedRole = useMemo(
@@ -215,27 +185,6 @@ export default function AccountsPage() {
     });
   };
 
-  const handleInviteLocationToggle = (locationId: string) => {
-    setInviteForm((current) => ({
-      ...current,
-      locationIds: unique(toggleValue(current.locationIds, locationId)),
-    }));
-  };
-
-  const handleGeneratePromoCode = () => {
-    setInviteForm((current) => ({
-      ...current,
-      promoCode: createInvitePromoCode(companyName, current.firstName, current.lastName),
-    }));
-  };
-
-  const handleSelectAllLocations = () => {
-    setInviteForm((current) => ({
-      ...current,
-      locationIds: locations.map((location: Location) => location.id),
-    }));
-  };
-
   const handleCreateOrUpdateRole = async (event: React.FormEvent) => {
     event.preventDefault();
     setStatusMessage('');
@@ -263,38 +212,6 @@ export default function AccountsPage() {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to save role.';
-      setStatusMessage(message);
-    }
-  };
-
-  const handleInviteSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setStatusMessage('');
-
-    try {
-      await createInvitation({
-        email: inviteForm.email,
-        first_name: inviteForm.firstName,
-        last_name: inviteForm.lastName,
-        phone: inviteForm.phone || null,
-        role_id: inviteForm.roleId,
-        promo_code: inviteForm.promoCode || null,
-        location_ids: inviteForm.locationIds,
-      }).unwrap();
-
-      setInviteForm({
-        email: '',
-        firstName: '',
-        lastName: '',
-        phone: '',
-        roleId: '',
-        promoCode: '',
-        locationIds: [],
-      });
-      setStatusMessage('Invitation sent successfully.');
-      setActiveTab('invitations');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to send invitation.';
       setStatusMessage(message);
     }
   };
@@ -346,6 +263,14 @@ export default function AccountsPage() {
           <p className={styles.subtitle}>
             Manage employees, roles, permissions, and location access from one focused workspace.
           </p>
+          <div className={styles.headerActions}>
+            <Button type="button" size="lg" variant="primary" onClick={() => router.push('/dashboard/accounts/invite')}>
+              Add employee
+            </Button>
+            <Button type="button" size="lg" variant="outline" onClick={() => router.push('/dashboard/loyalty/invite')}>
+              Invite to Vendora
+            </Button>
+          </div>
         </div>
 
         <div className={styles.headerStats}>
@@ -496,7 +421,7 @@ export default function AccountsPage() {
                   ) : accounts.length === 0 ? (
                     <tr>
                       <td className={styles.emptyCell} colSpan={6}>
-                        No employees yet. Create an invitation on the right to add a new team member.
+                        No employees yet. Use Add employee to create a new team member.
                       </td>
                     </tr>
                   ) : filteredAccounts.length === 0 ? (
@@ -599,131 +524,31 @@ export default function AccountsPage() {
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h2>Invite to Vendora</h2>
-                  <p>Send a branded invitation email, attach an optional promo code, and assign role access.</p>
+                  <h2>Quick actions</h2>
+                  <p>Jump to the employee invite page or the loyalty referral page.</p>
                 </div>
               </div>
 
-              <form className={styles.form} onSubmit={handleInviteSubmit}>
-                <div className={styles.inviteRewardCard}>
+              <div className={styles.quickActionList}>
+                <div className={styles.quickActionCard}>
                   <div>
-                    <span className={styles.detailLabel}>Invite reward</span>
-                    <p className={styles.helperText}>
-                      Every accepted invite earns your business one free extra month. Ts & Cs apply.
-                    </p>
+                    <strong>Add employee</strong>
+                    <p>Invite a team member to this business with role and location access.</p>
                   </div>
-                  <div className={styles.promoSummary}>
-                    <span className={styles.promoBadge}>Optional promo code</span>
-                    <span className={styles.promoHint}>
-                      Generate one if you want to track who shared the invite and give the new signup a code to enter.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.sectionNote}>
-                  Invite to Vendora creates an employee account for the business. The company profile above stays
-                  separate from the signed-in account and the person you invite.
-                </div>
-
-                <div className={styles.formGrid}>
-                  <Input
-                    id="invite-first-name"
-                    label="First name"
-                    value={inviteForm.firstName}
-                    onChange={(event) => setInviteForm((current) => ({ ...current, firstName: event.target.value }))}
-                    required
-                  />
-                  <Input
-                    id="invite-last-name"
-                    label="Last name"
-                    value={inviteForm.lastName}
-                    onChange={(event) => setInviteForm((current) => ({ ...current, lastName: event.target.value }))}
-                    required
-                  />
-                </div>
-
-                <Input
-                  id="invite-email"
-                  label="Email"
-                  type="email"
-                  value={inviteForm.email}
-                  onChange={(event) => setInviteForm((current) => ({ ...current, email: event.target.value }))}
-                  required
-                />
-
-                <Input
-                  id="invite-phone"
-                  label="Phone"
-                  type="tel"
-                  value={inviteForm.phone}
-                  onChange={(event) => setInviteForm((current) => ({ ...current, phone: event.target.value }))}
-                  helpText="Optional."
-                />
-
-                <Input
-                  id="invite-promo-code"
-                  label="Promo code"
-                  value={inviteForm.promoCode}
-                  onChange={(event) => setInviteForm((current) => ({ ...current, promoCode: event.target.value }))}
-                  helpText="Optional. The invited person can enter this on signup."
-                />
-                <div className={styles.promoActions}>
-                  <Button type="button" variant="outline" size="sm" onClick={handleGeneratePromoCode}>
-                    Generate promo code
+                  <Button type="button" variant="primary" size="sm" onClick={() => router.push('/dashboard/accounts/invite')}>
+                    Add employee
                   </Button>
-                  <span className={styles.promoActionHint}>
-                    Handy if you want a campaign code that can be shared by email, chat, or social media.
-                  </span>
                 </div>
-
-                <Select
-                  id="invite-role"
-                  label="Role"
-                  value={inviteForm.roleId}
-                  onChange={(event) => setInviteForm((current) => ({ ...current, roleId: event.target.value }))}
-                  required
-                >
-                  <option value="">Choose a role</option>
-                  {roles.map((role: Role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.name}{role.is_system ? ' (system)' : ''}
-                    </option>
-                  ))}
-                </Select>
-
-                <div className={styles.multiSelectCard}>
-                  <div className={styles.multiSelectHeader}>
-                    <div>
-                      <label className={styles.label}>Location access</label>
-                      <p className={styles.helperText}>Select one or more locations this account can access.</p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={handleSelectAllLocations} disabled={locationsLoading || locations.length === 0}>
-                      Select all
-                    </Button>
+                <div className={styles.quickActionCard}>
+                  <div>
+                    <strong>Invite to Vendora</strong>
+                    <p>Open the loyalty page for business referral signups and promo sharing.</p>
                   </div>
-
-                  <div className={styles.checkboxGrid}>
-                    {locations.length === 0 ? (
-                      <p className={styles.muted}>Create at least one location before inviting users.</p>
-                    ) : (
-                      locations.map((location: Location) => (
-                        <label key={location.id} className={styles.checkboxItem}>
-                          <input
-                            type="checkbox"
-                            checked={inviteForm.locationIds.includes(location.id)}
-                            onChange={() => handleInviteLocationToggle(location.id)}
-                          />
-                          <span>{location.name}</span>
-                        </label>
-                      ))
-                    )}
-                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={() => router.push('/dashboard/loyalty/invite')}>
+                    Open loyalty page
+                  </Button>
                 </div>
-
-                <Button type="submit" disabled={creatingInvitation || !inviteForm.locationIds.length}>
-                  {creatingInvitation ? 'Sending invite…' : 'Send invitation'}
-                </Button>
-              </form>
+              </div>
             </section>
           </aside>
         </div>
@@ -854,13 +679,13 @@ export default function AccountsPage() {
           <section className={styles.card}>
             <div className={styles.cardHeader}>
               <div>
-                  <h2>Invitations</h2>
-                  <p>Track who has been invited, when it expires, and whether it has been accepted.</p>
-                </div>
+                <h2>Employee invites</h2>
+                <p>Track employee invitations, when they expire, and whether they have been accepted.</p>
               </div>
+            </div>
 
             <div className={styles.sectionNote}>
-              Invitations belong to people joining the business. They are not business settings.
+              These invitations belong to employees joining the business. Loyalty referrals live on the Vendora page.
             </div>
 
             <div className={styles.tableWrapper}>
@@ -883,7 +708,7 @@ export default function AccountsPage() {
                   ) : invitations.length === 0 ? (
                     <tr>
                       <td className={styles.emptyCell} colSpan={6}>
-                        No invitations yet. Use the invite form to add a new account.
+                        No invitations yet. Use Add employee to create a new team member.
                       </td>
                     </tr>
                   ) : (

@@ -120,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         <div className={styles.footer}>
           {canManageAccounts ? (
-            <Link href="/dashboard/accounts" className={`${styles.link} ${styles.ctaLink}`} onClick={onClose}>
+            <Link href="/dashboard/loyalty/invite" className={`${styles.link} ${styles.ctaLink}`} onClick={onClose}>
               Invite to Vendora
             </Link>
           ) : null}

@@ -36,6 +36,13 @@
   width: min(100%, 460px);
 }
 
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
 .contextStrip {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -526,6 +533,36 @@
   line-height: 1.45;
 }
 
+.quickActionList {
+  display: grid;
+  gap: 12px;
+  padding: 0 22px 22px;
+}
+
+.quickActionCard {
+  border: 1px solid rgba(6, 41, 107, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(6, 41, 107, 0.04), rgba(245, 158, 11, 0.04));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.quickActionCard strong {
+  display: block;
+  color: var(--color-primary-navy);
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.quickActionCard p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -692,6 +729,10 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .headerActions {
+    width: 100%;
+  }
+
   .formGrid {
     grid-template-columns: 1fr;
   }
@@ -737,5 +778,10 @@
 
   .paginationControls {
     width: 100%;
+  }
+
+  .quickActionCard {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
