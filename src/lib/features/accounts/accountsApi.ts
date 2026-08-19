@@ -49,6 +49,13 @@ export interface Invitation {
   created_at: string;
 }
 
+export interface ReferralCode {
+  id: string;
+  business_id: string;
+  code: string;
+  created_at: string;
+}
+
 export interface CreateRolePayload {
   name: string;
   description?: string | null;
@@ -67,6 +74,10 @@ export interface CreateInvitationPayload {
   location_ids: string[];
 }
 
+export interface CreateReferralCodePayload {
+  code?: string | null;
+}
+
 export interface UpdateAccountPayload {
   role_id: string;
   location_ids: string[];
@@ -81,7 +92,7 @@ function arrayOrEmpty<T>(value: T[] | null | undefined): T[] {
 export const accountsApi = createApi({
   reducerPath: 'accountsApi',
   baseQuery,
-  tagTypes: ['Account', 'Role', 'Permission', 'Invitation'],
+  tagTypes: ['Account', 'Role', 'Permission', 'Invitation', 'Referral'],
   endpoints: (builder) => ({
     getAccounts: builder.query<Account[], void>({
       query: () => '/accounts',
@@ -125,6 +136,11 @@ export const accountsApi = createApi({
           ? [...result.map(({ id }) => ({ type: 'Invitation' as const, id })), { type: 'Invitation', id: 'LIST' }]
           : [{ type: 'Invitation', id: 'LIST' }],
     }),
+    getReferralCode: builder.query<ReferralCode | null, void>({
+      query: () => '/accounts/referrals',
+      transformResponse: (response: { data: ReferralCode | null }) => response.data ?? null,
+      providesTags: [{ type: 'Referral', id: 'CURRENT' }],
+    }),
     createRole: builder.mutation<Role, CreateRolePayload>({
       query: (body) => ({
         url: '/accounts/roles',
@@ -151,7 +167,7 @@ export const accountsApi = createApi({
     }),
     createInvitation: builder.mutation<Invitation, CreateInvitationPayload>({
       query: (body) => ({
-        url: '/accounts/invitations',
+        url: '/accounts/invitations/employee',
         method: 'POST',
         body,
       }),
@@ -160,6 +176,15 @@ export const accountsApi = createApi({
         location_ids: arrayOrEmpty(response.location_ids),
       }),
       invalidatesTags: [{ type: 'Invitation', id: 'LIST' }],
+    }),
+    createReferralCode: builder.mutation<ReferralCode, CreateReferralCodePayload | void>({
+      query: (body) => ({
+        url: '/accounts/referrals',
+        method: 'POST',
+        body: body ?? {},
+      }),
+      transformResponse: (response: { data: ReferralCode }) => response.data,
+      invalidatesTags: [{ type: 'Referral', id: 'CURRENT' }],
     }),
     resendInvitation: builder.mutation<Invitation, { id: string }>({
       query: ({ id }) => ({
@@ -203,9 +228,11 @@ export const {
   useGetRolesQuery,
   useGetPermissionsQuery,
   useGetInvitationsQuery,
+  useGetReferralCodeQuery,
   useCreateRoleMutation,
   useUpdateRoleMutation,
   useCreateInvitationMutation,
+  useCreateReferralCodeMutation,
   useResendInvitationMutation,
   useUpdateAccountMutation,
   useDeleteAccountMutation,

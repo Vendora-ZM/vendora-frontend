@@ -6,15 +6,12 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
+import {
+  useCreateReferralCodeMutation,
+  useGetReferralCodeQuery,
+} from '@/lib/features/accounts/accountsApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import styles from './page.module.css';
-
-function createReferralCode(name: string) {
-  const source = name.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const prefix = source.slice(0, 8) || 'VENDORA';
-  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `VND-${prefix}-${suffix}`;
-}
 
 export default function LoyaltyInvitePage() {
   const router = useRouter();
@@ -22,6 +19,10 @@ export default function LoyaltyInvitePage() {
   const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
   });
+  const { data: referralCode } = useGetReferralCodeQuery(undefined, {
+    skip: !me?.business_id,
+  });
+  const [createReferralCode, { isLoading: isCreatingReferralCode }] = useCreateReferralCodeMutation();
 
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -37,10 +38,10 @@ export default function LoyaltyInvitePage() {
   }, []);
 
   useEffect(() => {
-    if (!promoCode && companyName) {
-      setPromoCode(createReferralCode(companyName));
+    if (referralCode?.code && !promoCode) {
+      setPromoCode(referralCode.code);
     }
-  }, [companyName, promoCode]);
+  }, [promoCode, referralCode?.code]);
 
   const shareLink = useMemo(() => {
     if (!origin || !promoCode.trim()) return '';
@@ -69,9 +70,15 @@ export default function LoyaltyInvitePage() {
     setStatusMessage(successMessage);
   };
 
-  const handleGenerate = () => {
-    setPromoCode(createReferralCode(companyName));
-    setStatusMessage('New referral code generated.');
+  const handleGenerate = async () => {
+    try {
+      const result = await createReferralCode({ code: promoCode.trim() || undefined }).unwrap();
+      setPromoCode(result.code);
+      setStatusMessage('Referral code saved.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to create referral code.';
+      setStatusMessage(message);
+    }
   };
 
   if (meLoading) {
@@ -98,8 +105,8 @@ export default function LoyaltyInvitePage() {
             <Button type="button" variant="outline" onClick={() => router.push('/dashboard/accounts')}>
               Back to employees
             </Button>
-            <Button type="button" variant="primary" onClick={handleGenerate}>
-              Regenerate referral code
+            <Button type="button" variant="primary" onClick={handleGenerate} disabled={isCreatingReferralCode}>
+              {isCreatingReferralCode ? 'Saving code…' : 'Save referral code'}
             </Button>
           </div>
         </div>
@@ -160,8 +167,8 @@ export default function LoyaltyInvitePage() {
             />
 
             <div className={styles.actionRow}>
-              <Button type="button" variant="outline" onClick={handleGenerate}>
-                Generate new code
+              <Button type="button" variant="outline" onClick={handleGenerate} disabled={isCreatingReferralCode}>
+                {isCreatingReferralCode ? 'Saving…' : 'Save code'}
               </Button>
               <Button type="button" variant="outline" onClick={() => copyText(promoCode, 'Referral code copied.')}>
                 Copy code
