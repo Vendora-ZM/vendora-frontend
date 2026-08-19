@@ -74,7 +74,7 @@ function toFormState(product: Product): FormState {
   };
 }
 
-function ProductDetailsEditor({ product }: { product: Product }) {
+export function ProductDetailsEditor({ product }: { product: Product }) {
   const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
   const { data: categories = [] } = useGetCategoriesQuery();
   const [form, setForm] = useState<FormState>(() => toFormState(product));

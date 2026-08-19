@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useAppDispatch } from '@/lib/store';
-import { openEditModal, openDeleteModal } from '@/lib/features/products/productsSlice';
+import { openDeleteModal } from '@/lib/features/products/productsSlice';
 import styles from './ProductsTable.module.css';
 
 interface ProductsTableProps {
@@ -114,14 +114,14 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoadin
                       >
                         ➕
                       </button>
-                      <button
+                      <Link
                         className={styles.actionBtn}
                         title="Edit product"
                         aria-label={`Edit ${product.name}`}
-                        onClick={() => dispatch(openEditModal(product))}
+                        href={`/dashboard/products/${product.id}/edit`}
                       >
                         ✏️
-                      </button>
+                      </Link>
                       <button
                         className={`${styles.actionBtn} ${styles.deleteBtn}`}
                         title="Delete product"
