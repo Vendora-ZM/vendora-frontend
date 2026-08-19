@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
@@ -64,8 +64,11 @@ function roleBadge(role: Role) {
 
 export default function AccountsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabKey>('accounts');
   const [currentPage, setCurrentPage] = useState(1);
+  const [roleCurrentPage, setRoleCurrentPage] = useState(1);
+  const [invitationCurrentPage, setInvitationCurrentPage] = useState(1);
   const [accountSearch, setAccountSearch] = useState('');
   const [accountStatusFilter, setAccountStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -105,6 +108,13 @@ export default function AccountsPage() {
   const [createRole, { isLoading: creatingRole }] = useCreateRoleMutation();
   const [updateRole, { isLoading: updatingRole }] = useUpdateRoleMutation();
   const [resendInvitation, { isLoading: resendingInvitation }] = useResendInvitationMutation();
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'accounts' || tab === 'roles' || tab === 'invitations') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const selectedRole = useMemo(
     () => roles.find((role: Role) => role.id === selectedRoleId) ?? null,
@@ -162,6 +172,22 @@ export default function AccountsPage() {
 
   const startItem = filteredAccounts.length === 0 ? 0 : (safeCurrentPage - 1) * PAGE_SIZE + 1;
   const endItem = Math.min(safeCurrentPage * PAGE_SIZE, filteredAccounts.length);
+  const roleTotalPages = Math.max(1, Math.ceil(roles.length / PAGE_SIZE));
+  const safeRoleCurrentPage = Math.min(roleCurrentPage, roleTotalPages);
+  const pagedRoles = useMemo(() => {
+    const start = (safeRoleCurrentPage - 1) * PAGE_SIZE;
+    return roles.slice(start, start + PAGE_SIZE);
+  }, [roles, safeRoleCurrentPage]);
+  const roleStartItem = roles.length === 0 ? 0 : (safeRoleCurrentPage - 1) * PAGE_SIZE + 1;
+  const roleEndItem = Math.min(safeRoleCurrentPage * PAGE_SIZE, roles.length);
+  const invitationTotalPages = Math.max(1, Math.ceil(invitations.length / PAGE_SIZE));
+  const safeInvitationCurrentPage = Math.min(invitationCurrentPage, invitationTotalPages);
+  const pagedInvitations = useMemo(() => {
+    const start = (safeInvitationCurrentPage - 1) * PAGE_SIZE;
+    return invitations.slice(start, start + PAGE_SIZE);
+  }, [invitations, safeInvitationCurrentPage]);
+  const invitationStartItem = invitations.length === 0 ? 0 : (safeInvitationCurrentPage - 1) * PAGE_SIZE + 1;
+  const invitationEndItem = Math.min(safeInvitationCurrentPage * PAGE_SIZE, invitations.length);
 
   const handleRoleToggle = (permissionCode: string) => {
     setRoleForm((current) => ({
@@ -557,12 +583,15 @@ export default function AccountsPage() {
       {activeTab === 'roles' && (
         <div className={styles.grid}>
           <section className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div>
-                <h2>Role directory</h2>
-                <p>View existing roles and open a custom role to edit its permissions.</p>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h2>Role directory</h2>
+                  <p>View existing roles and open a custom role to edit its permissions.</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={() => router.push('/dashboard/accounts/roles/new')}>
+                  Create role
+                </Button>
               </div>
-            </div>
 
             <div className={styles.sectionNote}>
               Roles control what a person can do in the workspace. They are separate from the company profile and
@@ -575,7 +604,7 @@ export default function AccountsPage() {
               ) : roles.length === 0 ? (
                 <p className={styles.emptyCell}>No roles found.</p>
               ) : (
-                roles.map((role: Role) => (
+                pagedRoles.map((role: Role) => (
                   <button
                     key={role.id}
                     type="button"
@@ -591,22 +620,62 @@ export default function AccountsPage() {
                       <span>{role.description || 'No description provided'}</span>
                     </div>
                   </button>
-                ))
+                  ))
               )}
             </div>
+
+            {!rolesLoading && roles.length > 0 ? (
+              <div className={styles.pagination}>
+                <div className={styles.paginationSummary}>
+                  Showing {roleStartItem} to {roleEndItem} of {roles.length}
+                </div>
+                <div className={styles.paginationControls}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRoleCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={safeRoleCurrentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <div className={styles.pageNumbers} aria-label="Role pages">
+                    {Array.from({ length: roleTotalPages }, (_, index) => index + 1).map((page: number) => (
+                      <button
+                        key={page}
+                        type="button"
+                        className={`${styles.pageNumber} ${page === safeRoleCurrentPage ? styles.pageNumberActive : ''}`}
+                        onClick={() => setRoleCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRoleCurrentPage((page) => Math.min(roleTotalPages, page + 1))}
+                    disabled={safeRoleCurrentPage === roleTotalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <aside className={styles.sidebar}>
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h2>{selectedRole ? 'Edit role' : 'Create role'}</h2>
+                  <h2>{selectedRole ? 'Edit role' : 'Role details'}</h2>
                   <p>
                     {selectedRole
                       ? selectedRole.is_system
                         ? 'System roles are read-only.'
                         : 'Update the custom role name, description, and permissions.'
-                      : 'Create a new custom role and assign permissions.'}
+                      : 'Select a role to edit it, or create a new role on its own page.'}
                   </p>
                 </div>
 
@@ -614,61 +683,72 @@ export default function AccountsPage() {
                   <Button type="button" variant="outline" size="sm" onClick={() => handleRoleSelect(null)}>
                     New role
                   </Button>
-                ) : null}
+                ) : (
+                  <Button type="button" variant="primary" size="sm" onClick={() => router.push('/dashboard/accounts/roles/new')}>
+                    Create role
+                  </Button>
+                )}
               </div>
 
-              <form className={styles.form} onSubmit={handleCreateOrUpdateRole}>
-                <Input
-                  id="role-name"
-                  label="Role name"
-                  value={roleForm.name}
-                  onChange={(event) => setRoleForm((current) => ({ ...current, name: event.target.value }))}
-                  disabled={Boolean(selectedRole?.is_system)}
-                  required
-                />
+              {selectedRole ? (
+                <form className={styles.form} onSubmit={handleCreateOrUpdateRole}>
+                  <Input
+                    id="role-name"
+                    label="Role name"
+                    value={roleForm.name}
+                    onChange={(event) => setRoleForm((current) => ({ ...current, name: event.target.value }))}
+                    disabled={Boolean(selectedRole?.is_system)}
+                    required
+                  />
 
-                <Textarea
-                  id="role-description"
-                  label="Description"
-                  value={roleForm.description}
-                  onChange={(event) => setRoleForm((current) => ({ ...current, description: event.target.value }))}
-                  disabled={Boolean(selectedRole?.is_system)}
-                />
+                  <Textarea
+                    id="role-description"
+                    label="Description"
+                    value={roleForm.description}
+                    onChange={(event) => setRoleForm((current) => ({ ...current, description: event.target.value }))}
+                    disabled={Boolean(selectedRole?.is_system)}
+                  />
 
-                <div className={styles.permissionCard}>
-                  <div className={styles.multiSelectHeader}>
-                    <div>
-                      <label className={styles.label}>Permissions</label>
-                      <p className={styles.helperText}>Assign one or more capabilities to this role.</p>
+                  <div className={styles.permissionCard}>
+                    <div className={styles.multiSelectHeader}>
+                      <div>
+                        <label className={styles.label}>Permissions</label>
+                        <p className={styles.helperText}>Assign one or more capabilities to this role.</p>
+                      </div>
+                    </div>
+
+                    <div className={styles.checkboxGrid}>
+                      {permissions.map((permission: { code: string; description?: string | null }) => (
+                        <label key={permission.code} className={styles.checkboxItem}>
+                          <input
+                            type="checkbox"
+                            checked={roleForm.permissions.includes(permission.code)}
+                            onChange={() => handleRoleToggle(permission.code)}
+                            disabled={Boolean(selectedRole?.is_system)}
+                          />
+                          <span>
+                            <strong>{permission.code}</strong>
+                            {permission.description ? <small>{permission.description}</small> : null}
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </div>
 
-                  <div className={styles.checkboxGrid}>
-                    {permissions.map((permission: { code: string; description?: string | null }) => (
-                      <label key={permission.code} className={styles.checkboxItem}>
-                        <input
-                          type="checkbox"
-                          checked={roleForm.permissions.includes(permission.code)}
-                          onChange={() => handleRoleToggle(permission.code)}
-                          disabled={Boolean(selectedRole?.is_system)}
-                        />
-                        <span>
-                          <strong>{permission.code}</strong>
-                          {permission.description ? <small>{permission.description}</small> : null}
-                        </span>
-                      </label>
-                    ))}
+                  <Button type="submit" disabled={creatingRole || updatingRole || Boolean(selectedRole?.is_system)}>
+                    {creatingRole || updatingRole ? 'Saving role…' : 'Update role'}
+                  </Button>
+                </form>
+              ) : (
+                <div className={styles.form}>
+                  <div className={styles.sectionNote}>
+                    Create new roles on a dedicated page so you can keep this tab focused on browsing and editing roles.
                   </div>
+                  <Button type="button" variant="primary" onClick={() => router.push('/dashboard/accounts/roles/new')}>
+                    Open create role page
+                  </Button>
                 </div>
-
-                <Button type="submit" disabled={creatingRole || updatingRole || Boolean(selectedRole?.is_system)}>
-                  {creatingRole || updatingRole
-                    ? 'Saving role…'
-                    : selectedRole
-                      ? 'Update role'
-                      : 'Create role'}
-                </Button>
-              </form>
+              )}
             </section>
           </aside>
         </div>
@@ -712,7 +792,7 @@ export default function AccountsPage() {
                       </td>
                     </tr>
                   ) : (
-                    invitations.map((invitation: Invitation) => {
+                    pagedInvitations.map((invitation: Invitation) => {
                       const status = invitation.revoked_at
                         ? 'Revoked'
                         : invitation.accepted_at
@@ -781,6 +861,46 @@ export default function AccountsPage() {
                 </tbody>
               </table>
             </div>
+
+            {!invitationsLoading && invitations.length > 0 ? (
+              <div className={styles.pagination}>
+                <div className={styles.paginationSummary}>
+                  Showing {invitationStartItem} to {invitationEndItem} of {invitations.length}
+                </div>
+                <div className={styles.paginationControls}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInvitationCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={safeInvitationCurrentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <div className={styles.pageNumbers} aria-label="Invitation pages">
+                    {Array.from({ length: invitationTotalPages }, (_, index) => index + 1).map((page: number) => (
+                      <button
+                        key={page}
+                        type="button"
+                        className={`${styles.pageNumber} ${page === safeInvitationCurrentPage ? styles.pageNumberActive : ''}`}
+                        onClick={() => setInvitationCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInvitationCurrentPage((page) => Math.min(invitationTotalPages, page + 1))}
+                    disabled={safeInvitationCurrentPage === invitationTotalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            ) : null}
           </section>
         </div>
       )}
