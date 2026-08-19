@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppSelector } from '@/lib/store';
 import {
   useGetPaginatedProductsQuery,
@@ -40,14 +40,6 @@ export default function ProductsPage() {
     () => Object.fromEntries(categories.map((c: Category) => [c.id, c.name])),
     [categories]
   );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedCategoryId]);
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages));
-  }, [totalPages]);
 
   const paginationFooter = totalProducts > 0 ? (
     <div className={styles.pagination}>

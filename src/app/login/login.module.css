@@ -410,6 +410,8 @@
 
 .errorAlert { background-color: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #F87171; }
 
+.successAlert { background-color: #ECFDF5; color: #047857; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #6EE7B7; }
+
 @media (max-width: 768px) {
   .topNav {
     top: 12px;

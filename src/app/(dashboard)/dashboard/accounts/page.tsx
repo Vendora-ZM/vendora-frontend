@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Input, Select, Textarea } from '@/components/ui/Input';
@@ -62,10 +62,15 @@ function roleBadge(role: Role) {
   return role.is_system ? 'System role' : 'Custom role';
 }
 
+function getTabFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): TabKey {
+  const tab = searchParams.get('tab');
+  return tab === 'roles' || tab === 'invitations' ? tab : 'accounts';
+}
+
 export default function AccountsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<TabKey>('accounts');
+  const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromSearchParams(searchParams));
   const [currentPage, setCurrentPage] = useState(1);
   const [roleCurrentPage, setRoleCurrentPage] = useState(1);
   const [invitationCurrentPage, setInvitationCurrentPage] = useState(1);
@@ -108,13 +113,6 @@ export default function AccountsPage() {
   const [createRole, { isLoading: creatingRole }] = useCreateRoleMutation();
   const [updateRole, { isLoading: updatingRole }] = useUpdateRoleMutation();
   const [resendInvitation, { isLoading: resendingInvitation }] = useResendInvitationMutation();
-
-  useEffect(() => {
-    const tab = searchParams.get('tab');
-    if (tab === 'accounts' || tab === 'roles' || tab === 'invitations') {
-      setActiveTab(tab);
-    }
-  }, [searchParams]);
 
   const selectedRole = useMemo(
     () => roles.find((role: Role) => role.id === selectedRoleId) ?? null,

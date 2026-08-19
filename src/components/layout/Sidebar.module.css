@@ -56,6 +56,40 @@
   margin-top: 2px;
 }
 
+.workspaceSwitcher {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 6px;
+}
+
+.workspaceSwitcher select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 9px 10px;
+  outline: none;
+}
+
+.workspaceSwitcher select:focus {
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+.workspaceSwitcher select:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.workspaceSwitcher option {
+  color: #0f172a;
+}
+
 .identityAvatar {
   width: 34px;
   height: 34px;

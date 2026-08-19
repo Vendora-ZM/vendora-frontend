@@ -17,6 +17,14 @@ export interface MeResponse {
   permissions: string[];
 }
 
+export interface BusinessMembership {
+  business_id: string;
+  business_name: string;
+  role_id: string;
+  role_name: string;
+  created_at: string;
+}
+
 export const profileApi = createApi({
   reducerPath: 'profileApi',
   baseQuery: createReauthBaseQuery('/api/proxy'),
@@ -30,7 +38,12 @@ export const profileApi = createApi({
       }),
       providesTags: ['Me'],
     }),
+    getBusinessMemberships: builder.query<BusinessMembership[], void>({
+      query: () => '/me/businesses',
+      transformResponse: (response: BusinessMembership[]) => (Array.isArray(response) ? response : []),
+      providesTags: ['Me'],
+    }),
   }),
 });
 
-export const { useGetMeQuery } = profileApi;
+export const { useGetMeQuery, useGetBusinessMembershipsQuery } = profileApi;

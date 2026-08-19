@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
@@ -28,25 +28,17 @@ export default function LoyaltyInvitePage() {
   const [contactEmail, setContactEmail] = useState('');
   const [promoCode, setPromoCode] = useState('');
   const [note, setNote] = useState('We thought Vendora could be a great fit for your business.');
-  const [origin, setOrigin] = useState('');
+  const [origin] = useState(() => (typeof window === 'undefined' ? '' : window.location.origin));
   const [statusMessage, setStatusMessage] = useState('');
 
   const companyName = business?.name ?? me?.business_id ?? 'Merchant Store';
 
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
-
-  useEffect(() => {
-    if (referralCode?.code && !promoCode) {
-      setPromoCode(referralCode.code);
-    }
-  }, [promoCode, referralCode?.code]);
+  const effectivePromoCode = promoCode.trim() || referralCode?.code || '';
 
   const shareLink = useMemo(() => {
-    if (!origin || !promoCode.trim()) return '';
-    return `${origin}/signup?mode=register&promo_code=${encodeURIComponent(promoCode.trim())}`;
-  }, [origin, promoCode]);
+    if (!origin || !effectivePromoCode) return '';
+    return `${origin}/signup?mode=register&promo_code=${encodeURIComponent(effectivePromoCode)}`;
+  }, [effectivePromoCode, origin]);
 
   const emailDraft = useMemo(() => {
     const greeting = contactName.trim() ? `Hi ${contactName.trim()},` : 'Hi there,';
@@ -56,13 +48,13 @@ export default function LoyaltyInvitePage() {
       note.trim() || 'We would love for you to try Vendora.',
       '',
       shareLink ? `Use this referral link to sign up: ${shareLink}` : 'Use the referral link generated on the page.',
-      promoCode.trim() ? `Referral code: ${promoCode.trim()}` : '',
+      effectivePromoCode ? `Referral code: ${effectivePromoCode}` : '',
       '',
       `Best,`,
       companyName,
     ];
     return bodyLines.filter(Boolean).join('\n');
-  }, [companyName, contactName, note, promoCode, shareLink]);
+  }, [companyName, contactName, effectivePromoCode, note, shareLink]);
 
   const copyText = async (text: string, successMessage: string) => {
     if (!text) return;
@@ -170,7 +162,7 @@ export default function LoyaltyInvitePage() {
               <Button type="button" variant="outline" onClick={handleGenerate} disabled={isCreatingReferralCode}>
                 {isCreatingReferralCode ? 'Saving…' : 'Save code'}
               </Button>
-              <Button type="button" variant="outline" onClick={() => copyText(promoCode, 'Referral code copied.')}>
+              <Button type="button" variant="outline" onClick={() => copyText(effectivePromoCode, 'Referral code copied.')}>
                 Copy code
               </Button>
               <Button type="button" variant="primary" onClick={() => copyText(shareLink, 'Signup link copied.')}>

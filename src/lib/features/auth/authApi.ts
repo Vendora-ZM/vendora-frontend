@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 interface LoginRequest {
   email: string;
   password: string;
+  business_id?: string;
 }
 
 interface LoginResponse {
@@ -32,6 +33,20 @@ interface AcceptInvitationRequest {
   password: string;
 }
 
+interface AcceptInvitationResponse {
+  message?: string;
+  business_id?: string;
+}
+
+interface MessageResponse {
+  message?: string;
+}
+
+interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
 // All auth requests go through the Next.js local auth routes under /api/auth/...
 // The custom routes read the response from the backend, set HttpOnly cookies, and return success/business.
 export const authApi = createApi({
@@ -52,9 +67,30 @@ export const authApi = createApi({
         body: userData,
       }),
     }),
-    acceptInvitation: builder.mutation<{ message?: string }, AcceptInvitationRequest>({
+    acceptInvitation: builder.mutation<AcceptInvitationResponse, AcceptInvitationRequest>({
       query: (payload) => ({
         url: '/invitations/accept',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+    forgotPassword: builder.mutation<MessageResponse, { email: string }>({
+      query: (payload) => ({
+        url: '/password/forgot',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+    resetPassword: builder.mutation<MessageResponse, ResetPasswordRequest>({
+      query: (payload) => ({
+        url: '/password/reset',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+    switchBusiness: builder.mutation<LoginResponse, { business_id: string }>({
+      query: (payload) => ({
+        url: '/switch-business',
         method: 'POST',
         body: payload,
       }),
@@ -73,5 +109,8 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useAcceptInvitationMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useSwitchBusinessMutation,
   useLogoutMutation,
 } = authApi;

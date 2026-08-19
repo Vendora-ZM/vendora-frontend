@@ -3,7 +3,7 @@ export type AuthPayload = {
   refresh_token?: string;
   expires_in?: number;
   refresh_ttl_seconds?: number;
-  business?: { id?: string };
+  business?: { id?: string; permissions?: string[] };
   message?: string;
   data?: AuthPayload;
 };
@@ -13,7 +13,7 @@ export type ResolvedAuthPayload = {
   refresh_token?: string;
   expires_in?: number;
   refresh_ttl_seconds?: number;
-  business?: { id?: string };
+  business?: { id?: string; permissions?: string[] };
 };
 
 export function resolveAuthPayload(payload: AuthPayload): ResolvedAuthPayload {

@@ -4,13 +4,19 @@ import { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAcceptInvitationMutation, useLoginMutation, useRegisterMutation } from "@/lib/features/auth/authApi";
+import {
+  useAcceptInvitationMutation,
+  useForgotPasswordMutation,
+  useLoginMutation,
+  useRegisterMutation,
+  useResetPasswordMutation,
+} from "@/lib/features/auth/authApi";
 import { BUSINESS_CATEGORIES, BUSINESS_HIGHLIGHTS, getBusinessCategory } from "@/lib/business/businessTypes";
 import { useAppDispatch } from "@/lib/store";
 import { setCredentials } from "@/lib/features/auth/authSlice";
 import styles from "./login.module.css";
 
-type AuthMode = "LOGIN" | "REGISTER" | "FORGOT_PASSWORD" | "ACCEPT_INVITE";
+type AuthMode = "LOGIN" | "REGISTER" | "FORGOT_PASSWORD" | "RESET_PASSWORD" | "ACCEPT_INVITE";
 
 function LoginForm() {
   const router = useRouter();
@@ -19,8 +25,12 @@ function LoginForm() {
   const inviteToken = searchParams.get('invite') ?? '';
   const inviteEmail = searchParams.get('email') ?? '';
   const invitePromoCode = searchParams.get('promo_code') ?? '';
+  const loginBusinessId = searchParams.get('business_id') ?? '';
+  const resetToken = searchParams.get('reset') ?? '';
   const initialMode: AuthMode = inviteToken
     ? 'ACCEPT_INVITE'
+    : resetToken
+      ? 'RESET_PASSWORD'
     : searchParams.get('mode') === 'register'
       ? 'REGISTER'
       : 'LOGIN';
@@ -41,18 +51,22 @@ function LoginForm() {
   const [promoCode, setPromoCode] = useState(invitePromoCode);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
   const [acceptInvitation, { isLoading: isAcceptingInvitation }] = useAcceptInvitationMutation();
+  const [forgotPassword, { isLoading: isSendingResetLink }] = useForgotPasswordMutation();
+  const [resetPassword, { isLoading: isResettingPassword }] = useResetPasswordMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+    setSuccessMsg("");
 
     try {
       if (mode === "LOGIN") {
-        const response = await login({ email, password }).unwrap();
+        const response = await login({ email, password, business_id: loginBusinessId || undefined }).unwrap();
         if (response.success) {
           dispatch(setCredentials({
             businessId: response.business?.id ?? '',
@@ -99,8 +113,12 @@ function LoginForm() {
           return;
         }
 
-        await acceptInvitation({ email, token: inviteToken, password }).unwrap();
-        const response = await login({ email, password }).unwrap();
+        const accepted = await acceptInvitation({ email, token: inviteToken, password }).unwrap();
+        const response = await login({
+          email,
+          password,
+          business_id: accepted.business_id || loginBusinessId || undefined,
+        }).unwrap();
         if (response.success) {
           dispatch(setCredentials({
             businessId: response.business?.id ?? '',
@@ -109,9 +127,24 @@ function LoginForm() {
           }));
           router.push("/dashboard");
         }
-      } else {
-        // Handle forgot password mock
-        setErrorMsg("Forgot password not implemented yet.");
+      } else if (mode === "FORGOT_PASSWORD") {
+        const response = await forgotPassword({ email }).unwrap();
+        setSuccessMsg(response.message || "If an account exists for that email, a reset link has been sent.");
+      } else if (mode === "RESET_PASSWORD") {
+        if (password !== passwordConfirm) {
+          setErrorMsg("Passwords do not match.");
+          return;
+        }
+        if (!resetToken) {
+          setErrorMsg("Reset token is missing. Please request a new password reset link.");
+          return;
+        }
+
+        const response = await resetPassword({ token: resetToken, new_password: password }).unwrap();
+        setPassword("");
+        setPasswordConfirm("");
+        setMode("LOGIN");
+        setSuccessMsg(response.message || "Password reset successfully. Please sign in with your new password.");
       }
     } catch (err: unknown) {
       const error = err as {
@@ -127,7 +160,7 @@ function LoginForm() {
     }
   };
 
-  const isLoading = isLoginLoading || isRegisterLoading || isAcceptingInvitation;
+  const isLoading = isLoginLoading || isRegisterLoading || isAcceptingInvitation || isSendingResetLink || isResettingPassword;
   const selectedCategory = getBusinessCategory(businessCategory);
   const selectedHighlights = BUSINESS_HIGHLIGHTS[selectedCategory.value] ?? BUSINESS_HIGHLIGHTS.other;
 
@@ -180,8 +213,14 @@ function LoginForm() {
           )}
           {mode === "FORGOT_PASSWORD" && (
             <>
-              <h1>Reset Password</h1>
+              <h1>Reset password</h1>
               <p>Enter your email to receive reset instructions.</p>
+            </>
+          )}
+          {mode === "RESET_PASSWORD" && (
+            <>
+              <h1>Choose a new password</h1>
+              <p>Create a fresh password for your Vendora account.</p>
             </>
           )}
         </div>
@@ -189,6 +228,7 @@ function LoginForm() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div key={mode} className={styles.fadeEnter}>
             {errorMsg && <div className={styles.errorAlert}>{errorMsg}</div>}
+            {successMsg && <div className={styles.successAlert}>{successMsg}</div>}
             
             {/* Common fields (Email) */}
             <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
@@ -458,6 +498,58 @@ function LoginForm() {
             </>
           )}
 
+          {mode === "RESET_PASSWORD" && (
+            <>
+              <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
+                <label htmlFor="resetPassword">New Password</label>
+                <div className={styles.passwordField}>
+                  <input
+                    id="resetPassword"
+                    type={showPassword ? "text" : "password"}
+                    className={styles.input}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M3.98 8.223 2.707 6.95 4.12 5.536l2.022 2.022A11.2 11.2 0 0 1 12 6c5.5 0 9.5 4.5 10.3 6-.42.79-1.5 2.33-3.16 3.79l1.88 1.88-1.414 1.414-2.03-2.03A11.2 11.2 0 0 1 12 18c-5.5 0-9.5-4.5-10.3-6 .47-.9 1.8-2.76 4.28-3.78ZM8.5 11.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Zm2 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+                        <path d="M20.707 3.293 3.293 20.707 1.879 19.293 19.293 1.879l1.414 1.414Z" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 6c5.5 0 9.5 4.5 10.3 6-.8 1.5-4.8 6-10.3 6S2.5 13.5 1.7 12C2.5 10.5 6.5 6 12 6Zm0 2C8.3 8 5.1 10.8 4 12c1.1 1.2 4.3 4 8 4s6.9-2.8 8-4c-1.1-1.2-4.3-4-8-4Zm0 1.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.inputGroup} style={{ marginBottom: "20px" }}>
+                <label htmlFor="resetPasswordConfirm">Confirm New Password</label>
+                <input
+                  id="resetPasswordConfirm"
+                  type="password"
+                  className={styles.input}
+                  placeholder="Re-enter password"
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </div>
+            </>
+          )}
+
             {/* Password field for Login */}
             {mode === "LOGIN" && (
               <div className={styles.inputGroup} style={{ marginBottom: "8px" }}>
@@ -518,6 +610,8 @@ function LoginForm() {
                   {mode === "LOGIN" && "Sign In"}
                   {mode === "REGISTER" && "Create Account"}
                   {mode === "FORGOT_PASSWORD" && "Send Reset Link"}
+                  {mode === "RESET_PASSWORD" && "Reset Password"}
+                  {mode === "ACCEPT_INVITE" && "Accept Invite"}
                 </>
               )}
             </button>
@@ -547,6 +641,12 @@ function LoginForm() {
             <p>
               Remember your password?{" "}
               <span onClick={() => setMode("LOGIN")}>Back to login</span>
+            </p>
+          )}
+          {mode === "RESET_PASSWORD" && (
+            <p>
+              Have a new reset link?{" "}
+              <span onClick={() => setMode("FORGOT_PASSWORD")}>Request another</span>
             </p>
           )}
         </div>

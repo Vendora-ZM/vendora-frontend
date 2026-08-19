@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { getFriendlyErrorMessage } from '@/lib/errors/apiError';
 import styles from './page.module.css';
@@ -13,7 +12,6 @@ export default function PosError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const router = useRouter();
   const message = getFriendlyErrorMessage(error, 'We could not load the POS right now. Please try again.');
 
   return (

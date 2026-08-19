@@ -4,11 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { useLogoutMutation } from '@/lib/features/auth/authApi';
+import { useLogoutMutation, useSwitchBusinessMutation } from '@/lib/features/auth/authApi';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
-import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { useGetBusinessMembershipsQuery, useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useAppDispatch } from '@/lib/store';
-import { logout } from '@/lib/features/auth/authSlice';
+import { logout, setCredentials } from '@/lib/features/auth/authSlice';
 import { useAppSelector } from '@/lib/store';
 import styles from './Sidebar.module.css';
 
@@ -37,17 +37,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { data: me } = useGetMeQuery();
+  const { data: businessMemberships = [] } = useGetBusinessMembershipsQuery();
   const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
   });
   const authPermissions = useAppSelector((state) => state.auth.permissions);
   const [logoutApi] = useLogoutMutation();
+  const [switchBusiness, { isLoading: isSwitchingBusiness }] = useSwitchBusinessMutation();
   const canManageAccounts = Boolean(
     me?.permissions?.includes('users.manage') || authPermissions.includes('users.manage')
   );
   const workspaceName = business?.name ?? 'Merchant Store';
   const signedInName = `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || 'Signed-in user';
   const signedInRole = me?.role_name ?? 'Team member';
+
+  const handleBusinessSwitch = async (businessId: string) => {
+    if (!businessId || businessId === me?.business_id || isSwitchingBusiness) {
+      return;
+    }
+
+    try {
+      const response = await switchBusiness({ business_id: businessId }).unwrap();
+      dispatch(setCredentials({
+        businessId: response.business?.id ?? businessId,
+        permissions: response.business?.permissions ?? [],
+      }));
+      onClose();
+      router.refresh();
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Failed to switch business', error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -93,6 +114,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className={styles.identityPanel}>
           <span className={styles.identityLabel}>Workspace</span>
           <strong className={styles.identityValue}>{workspaceName}</strong>
+          {businessMemberships.length > 1 ? (
+            <label className={styles.workspaceSwitcher}>
+              <span className={styles.identityLabel}>Switch business</span>
+              <select
+                value={me?.business_id ?? ''}
+                onChange={(event) => {
+                  void handleBusinessSwitch(event.target.value);
+                }}
+                disabled={isSwitchingBusiness}
+              >
+                {businessMemberships.map((membership) => (
+                  <option key={membership.business_id} value={membership.business_id}>
+                    {membership.business_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <span className={styles.identityLabel}>Signed in as</span>
           <div className={styles.identityPerson}>
             <span className={styles.identityAvatar}>{signedInName[0]?.toUpperCase() ?? 'M'}</span>

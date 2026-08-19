@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   useCreateCategoryMutation,
   useGetCategoriesQuery,
@@ -48,10 +48,6 @@ export default function CategoriesPage() {
   const isLoading = categoriesLoading || paginatedLoading;
   const isError = categoriesError || paginatedError;
   const activeCount = categories.filter((category: Category) => category.is_active).length;
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages));
-  }, [totalPages]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

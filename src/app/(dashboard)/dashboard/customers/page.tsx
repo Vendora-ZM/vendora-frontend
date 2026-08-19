@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAppSelector } from '@/lib/store';
 import {
   useGetCustomersQuery,
@@ -40,14 +40,6 @@ export default function CustomersPage() {
   const totalPages = Math.max(1, paginatedCustomersResponse?.meta.total_pages ?? Math.ceil(totalCustomers / pageSize));
   const isLoading = customersLoading || paginatedLoading;
   const isError = customersError || paginatedError;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages));
-  }, [totalPages]);
 
   const paginationFooter = !isLoading && totalCustomers > 0 ? (
     <div className={styles.paginationFooter}>

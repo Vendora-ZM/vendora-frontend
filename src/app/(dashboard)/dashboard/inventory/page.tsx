@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   useGetBalancesQuery,
   useGetMovementsQuery,
@@ -70,14 +70,6 @@ export default function InventoryPage() {
   const movementTotalPages = Math.max(1, paginatedMovementsResponse?.meta.total_pages ?? Math.ceil(movementTotal / movementPageSize));
   const balancesTableLoading = balancesLoading || paginatedBalancesLoading;
   const movementsTableLoading = movementsLoading || paginatedMovementsLoading;
-
-  useEffect(() => {
-    setBalancePage((page) => Math.min(page, balanceTotalPages));
-  }, [balanceTotalPages]);
-
-  useEffect(() => {
-    setMovementPage((page) => Math.min(page, movementTotalPages));
-  }, [movementTotalPages]);
 
   // Summary stats
   const totalSkus = balances.length;

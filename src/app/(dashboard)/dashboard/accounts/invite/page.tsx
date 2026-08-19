@@ -49,7 +49,7 @@ export default function EmployeeInvitePage() {
   const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
   });
-  const { data: roles = [], isLoading: rolesLoading } = useGetRolesQuery(undefined, {
+  const { data: roles = [] } = useGetRolesQuery(undefined, {
     skip: !me?.business_id,
   });
   const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery(undefined, {
