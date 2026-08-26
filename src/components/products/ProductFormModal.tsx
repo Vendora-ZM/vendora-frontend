@@ -34,6 +34,7 @@ interface FormState {
   is_active: boolean;
   initial_stock?: string;
   initial_location_id?: string;
+  initial_expiry_date?: string;
 }
 
 const defaultForm: FormState = {
@@ -50,6 +51,7 @@ const defaultForm: FormState = {
   is_active: true,
   initial_stock: '',
   initial_location_id: '',
+  initial_expiry_date: '',
 };
 
 export const ProductFormModal: React.FC = () => {
@@ -85,6 +87,7 @@ export const ProductFormModal: React.FC = () => {
         is_active: selectedProduct.is_active,
         initial_stock: '',
         initial_location_id: '',
+        initial_expiry_date: '',
       });
     } else {
       setForm(defaultForm);
@@ -111,6 +114,9 @@ export const ProductFormModal: React.FC = () => {
     }
     if (form.cost_price && isNaN(parseFloat(form.cost_price))) {
       newErrors.cost_price = 'Must be a valid number.';
+    }
+    if (modalMode === 'create' && form.initial_stock && parseFloat(form.initial_stock) > 0 && !form.initial_location_id) {
+      newErrors.initial_location_id = 'Select where the opening stock will be stored.';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -143,6 +149,7 @@ export const ProductFormModal: React.FC = () => {
             location_id: form.initial_location_id,
             quantity_delta: form.initial_stock,
             notes: 'Initial stock setup',
+            expiry_date: form.initial_expiry_date || undefined,
           }).unwrap();
         }
       } else if (selectedProduct) {
@@ -316,7 +323,7 @@ export const ProductFormModal: React.FC = () => {
             <>
               <Input
                 id="product-initial-stock"
-                label="Initial Stock"
+                label="Opening Stock"
                 type="number"
                 step="1"
                 min="0"
@@ -326,15 +333,31 @@ export const ProductFormModal: React.FC = () => {
               />
               <Select
                 id="product-initial-location"
-                label="Stock Location"
+                label="Opening Stock Location"
                 value={form.initial_location_id || ''}
                 onChange={set('initial_location_id')}
+                error={errors.initial_location_id}
               >
                 <option value="">— Select Location —</option>
                 {locations.map((loc: Location) => (
                   <option key={loc.id} value={loc.id}>{loc.name}</option>
                 ))}
               </Select>
+              {form.initial_stock && parseFloat(form.initial_stock) > 0 && (
+                <Input
+                  id="product-initial-expiry-date"
+                  label="Opening Stock Expiry Date (Optional)"
+                  type="date"
+                  value={form.initial_expiry_date || ''}
+                  onChange={set('initial_expiry_date')}
+                />
+              )}
+              <div className={styles.categoryHelper}>
+                <span className={styles.categoryHelperLabel}>Stock can be adjusted later</span>
+                <p className={styles.categoryHelperText}>
+                  Opening stock is optional. You can add, remove, or correct stock later from the inventory adjustment flow.
+                </p>
+              </div>
             </>
           )}
 

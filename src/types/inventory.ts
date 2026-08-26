@@ -25,6 +25,7 @@ export interface InventoryMovement {
   reference_type?: string;
   reference_id?: string;
   notes?: string;
+  expiry_date?: string;
   created_at: string;
   created_by?: string;
 }
@@ -34,6 +35,7 @@ export interface AdjustStockRequest {
   product_id: string;
   quantity_delta: string;
   notes?: string;
+  expiry_date?: string;
 }
 
 export interface TransferStockRequest {

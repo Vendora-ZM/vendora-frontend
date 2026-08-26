@@ -4,8 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCreateProductMutation, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
+import { useAdjustStockMutation } from '@/lib/features/inventory/inventoryApi';
+import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { Input, Textarea, Select } from '@/components/ui/Input';
 import { CreateProductPayload, type Category } from '@/types/product';
+import type { Location } from '@/types/location';
 import styles from './page.module.css';
 
 interface FormState {
@@ -20,6 +23,9 @@ interface FormState {
   is_taxable: boolean;
   tax_rate: string;
   is_active: boolean;
+  initial_stock: string;
+  initial_location_id: string;
+  initial_expiry_date: string;
 }
 
 const defaultForm: FormState = {
@@ -34,12 +40,18 @@ const defaultForm: FormState = {
   is_taxable: false,
   tax_rate: '',
   is_active: true,
+  initial_stock: '',
+  initial_location_id: '',
+  initial_expiry_date: '',
 };
 
 export default function NewProductPage() {
   const router = useRouter();
   const { data: categories = [] } = useGetCategoriesQuery();
-  const [createProduct, { isLoading }] = useCreateProductMutation();
+  const { data: locations = [] } = useGetLocationsQuery();
+  const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
+  const [adjustStock, { isLoading: isAdjusting }] = useAdjustStockMutation();
+  const isLoading = isCreating || isAdjusting;
 
   const [form, setForm] = useState<FormState>(defaultForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
@@ -64,6 +76,9 @@ export default function NewProductPage() {
     if (form.cost_price && isNaN(parseFloat(form.cost_price))) {
       newErrors.cost_price = 'Must be a valid number.';
     }
+    if (form.initial_stock && parseFloat(form.initial_stock) > 0 && !form.initial_location_id) {
+      newErrors.initial_location_id = 'Select where the opening stock will be stored.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -87,7 +102,16 @@ export default function NewProductPage() {
         tax_rate: form.is_taxable ? form.tax_rate : '0',
       };
       
-      await createProduct(payload).unwrap();
+      const newProduct = await createProduct(payload).unwrap();
+      if (form.initial_stock && parseFloat(form.initial_stock) > 0 && form.initial_location_id) {
+        await adjustStock({
+          product_id: newProduct.id,
+          location_id: form.initial_location_id,
+          quantity_delta: form.initial_stock,
+          notes: 'Initial stock setup',
+          expiry_date: form.initial_expiry_date || undefined,
+        }).unwrap();
+      }
       // On success, redirect back to products list
       router.push('/dashboard/products');
     } catch (err: unknown) {
@@ -183,6 +207,52 @@ export default function NewProductPage() {
                   onChange={set('cost_price')}
                   error={errors.cost_price}
                 />
+              </div>
+            </div>
+
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <svg className={styles.sectionIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7 12 3 4 7l8 4 8-4Z"></path><path d="M4 7v10l8 4 8-4V7"></path><path d="M12 11v10"></path></svg>
+                <h2 className={styles.sectionTitle}>Opening Stock</h2>
+              </div>
+              <div className={styles.formGrid}>
+                <Input
+                  id="product-initial-stock"
+                  label="Opening Stock"
+                  type="number"
+                  step="1"
+                  min="0"
+                  placeholder="e.g. 50"
+                  value={form.initial_stock}
+                  onChange={set('initial_stock')}
+                />
+                <Select
+                  id="product-initial-location"
+                  label="Opening Stock Location"
+                  value={form.initial_location_id}
+                  onChange={set('initial_location_id')}
+                  error={errors.initial_location_id}
+                >
+                  <option value="">— Select Location —</option>
+                  {locations.map((loc: Location) => (
+                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  ))}
+                </Select>
+                {form.initial_stock && parseFloat(form.initial_stock) > 0 && (
+                  <Input
+                    id="product-initial-expiry-date"
+                    label="Opening Stock Expiry Date (Optional)"
+                    type="date"
+                    value={form.initial_expiry_date}
+                    onChange={set('initial_expiry_date')}
+                  />
+                )}
+                <div className={styles.categoryHelper}>
+                  <span className={styles.categoryHelperLabel}>Stock can be adjusted later</span>
+                  <p className={styles.categoryHelperText}>
+                    This step is optional. You can adjust this product&apos;s stock later from the inventory adjustment flow whenever stock changes.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

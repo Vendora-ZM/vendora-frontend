@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { closeAdjustModal } from '@/lib/features/inventory/inventorySlice';
 import { useAdjustStockMutation } from '@/lib/features/inventory/inventoryApi';
@@ -22,17 +22,31 @@ export const AdjustStockModal: React.FC = () => {
   const [locationId, setLocationId] = useState<string>('');
   const [quantityDelta, setQuantityDelta] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
+  const [expiryDate, setExpiryDate] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const product = products.find((p: Product) => p.id === selectedProductId);
 
   const selectedLocationId = locationId || locations[0]?.id || '';
+  const parsedDelta = Number(quantityDelta);
+  const isAddingStock = quantityDelta !== '' && !Number.isNaN(parsedDelta) && parsedDelta > 0;
+
+  useEffect(() => {
+    if (!isAdjustModalOpen) {
+      setLocationId('');
+      setQuantityDelta('');
+      setNotes('');
+      setExpiryDate('');
+      setError(null);
+      setIsSubmitting(false);
+    }
+  }, [isAdjustModalOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProductId) return;
-    if (!locationId) {
+    if (!selectedLocationId) {
       setError('Please select a location');
       return;
     }
@@ -50,6 +64,7 @@ export const AdjustStockModal: React.FC = () => {
         location_id: selectedLocationId,
         quantity_delta: quantityDelta,
         notes: notes || undefined,
+        expiry_date: isAddingStock && expiryDate ? expiryDate : undefined,
       }).unwrap();
       dispatch(closeAdjustModal());
     } catch (err: unknown) {
@@ -101,6 +116,17 @@ export const AdjustStockModal: React.FC = () => {
           required
           helpText="Use a positive number to add stock, or a negative number to remove stock."
         />
+
+        {isAddingStock && (
+          <Input
+            label="Expiry Date (Optional)"
+            type="date"
+            value={expiryDate}
+            onChange={(e) => setExpiryDate(e.target.value)}
+            disabled={isSubmitting}
+            helpText="Set this when the stock being added expires on a specific date."
+          />
+        )}
 
         <Input
           label="Notes (Optional)"
