@@ -3,7 +3,10 @@
 import React, { useMemo } from 'react';
 import { useAppSelector } from '@/lib/store';
 import { useGetSalesTrendsQuery } from '@/lib/features/analytics/analyticsApi';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { getDateRange } from '@/lib/utils/dateRange';
+import { formatCurrency } from '@/lib/utils/currency';
 import type { SalesTrendPoint } from '@/types/analytics';
 import {
   AreaChart,
@@ -20,6 +23,11 @@ import styles from './AnalyticsWidgets.module.css';
 export const SalesTrendChart: React.FC = () => {
   const { dateRangePreset, locationId } = useAppSelector((s) => s.analytics);
   const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
 
   const { data = [], isLoading } = useGetSalesTrendsQuery({ from, to, location_id: locationId });
 
@@ -56,13 +64,19 @@ export const SalesTrendChart: React.FC = () => {
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" stroke="#8C9098" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-              <YAxis stroke="#8C9098" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `K${val}`} />
+              <YAxis
+                stroke="#8C9098"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => formatCurrency(Number(value), { currencyCode, maximumFractionDigits: 0, minimumFractionDigits: 0 })}
+              />
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
               <Tooltip
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                 formatter={(value) => {
                   const amount = Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
-                  return `K${amount.toFixed(2)}`;
+                  return formatCurrency(amount, { currencyCode });
                 }}
               />
               <Legend verticalAlign="top" height={36} />

@@ -10,6 +10,7 @@ import { useGetCategoriesQuery, useGetProductsQuery } from '@/lib/features/produ
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { getPaymentTypeLabel } from '@/lib/business/paymentTypes';
+import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import type { Account } from '@/lib/features/accounts/accountsApi';
 import type { Category, Product } from '@/types/product';
 import { Sale, SaleStatus } from '@/types/sale';
@@ -83,10 +84,6 @@ function formatDate(iso: string) {
   return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 
-function formatAmount(amount: number) {
-  return `K${(amount / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-}
-
 function formatDecimal(value: number) {
   return Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
@@ -102,8 +99,7 @@ function parseQuantity(value: string) {
 }
 
 function saleLabel(sale: Sale) {
-  const label = sale.sale_number || sale.id;
-  return label;
+  return sale.sale_number || 'Sale record';
 }
 
 export default function SalesPage() {
@@ -134,6 +130,7 @@ export default function SalesPage() {
   const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
   });
+  const currencyCode = business?.currency_code;
 
   const sales = pageQuery.data?.data ?? [];
   const total = pageQuery.data?.meta?.total ?? 0;
@@ -191,7 +188,7 @@ export default function SalesPage() {
     reportSales.forEach((sale: Sale) => {
       sale.items.forEach((item: Sale['items'][number]) => {
         const product = productMap.get(item.product_id);
-        const name = product?.name ?? `Product ${item.product_id.slice(0, 8)}`;
+        const name = product?.name ?? 'Unknown product';
         const categoryName = product?.category_id ? categoryMap.get(product.category_id)?.name ?? 'Uncategorized' : 'Uncategorized';
         const existing = map.get(item.product_id) ?? {
           id: item.product_id,
@@ -238,7 +235,7 @@ export default function SalesPage() {
     const map = new Map<string, AggregateRow>();
     reportSales.forEach((sale: Sale) => {
       const employeeId = sale.created_by ?? 'unassigned';
-      const label = sale.created_by ? employeeMap.get(sale.created_by) ?? `User ${sale.created_by.slice(0, 8)}` : 'Unassigned';
+      const label = sale.created_by ? employeeMap.get(sale.created_by) ?? 'Unknown employee' : 'Unassigned';
       const existing = map.get(employeeId) ?? {
         id: employeeId,
         label,
@@ -346,7 +343,7 @@ export default function SalesPage() {
           </div>
           <div className={styles.summaryCard}>
             <span className={styles.summaryLabel}>Revenue</span>
-            <strong className={styles.summaryValue}>{formatAmount(summary.revenue)}</strong>
+            <strong className={styles.summaryValue}>{formatCurrencyFromCents(summary.revenue, { currencyCode })}</strong>
             <span className={styles.summaryMeta}>Completed and draft sales combined</span>
           </div>
           <div className={styles.summaryCard}>
@@ -356,7 +353,7 @@ export default function SalesPage() {
           </div>
           <div className={styles.summaryCard}>
             <span className={styles.summaryLabel}>Average ticket</span>
-            <strong className={styles.summaryValue}>{formatAmount(summary.averageTicket)}</strong>
+            <strong className={styles.summaryValue}>{formatCurrencyFromCents(summary.averageTicket, { currencyCode })}</strong>
             <span className={styles.summaryMeta}>{summary.paymentCount} payments recorded</span>
           </div>
         </div>
@@ -441,7 +438,7 @@ export default function SalesPage() {
                           </td>
                           <td>{formatDecimal(row.units)}</td>
                           <td>{row.count}</td>
-                          <td className={styles.amount}>{formatAmount(row.amount)}</td>
+                          <td className={styles.amount}>{formatCurrencyFromCents(row.amount, { currencyCode })}</td>
                         </tr>
                       ))
                     ) : (
@@ -496,7 +493,7 @@ export default function SalesPage() {
                           </td>
                           <td>{formatDecimal(row.units)}</td>
                           <td>{row.count}</td>
-                          <td className={styles.amount}>{formatAmount(row.amount)}</td>
+                          <td className={styles.amount}>{formatCurrencyFromCents(row.amount, { currencyCode })}</td>
                         </tr>
                       ))
                     ) : (
@@ -530,7 +527,7 @@ export default function SalesPage() {
                   ))
                 ) : receiptRows.length > 0 ? (
                   receiptRows.map((sale: Sale) => {
-                    const employee = sale.created_by ? employeeMap.get(sale.created_by) ?? sale.created_by : 'Unknown user';
+                    const employee = sale.created_by ? employeeMap.get(sale.created_by) ?? 'Unknown employee' : 'Unknown user';
                     return (
                       <div key={sale.id} className={styles.receiptRow}>
                         <div className={styles.cellStack}>
@@ -582,7 +579,7 @@ export default function SalesPage() {
                         <strong>{row.label}</strong>
                         <span>{row.count} sales</span>
                       </div>
-                      <div className={styles.metricAmount}>{formatAmount(row.amount)}</div>
+                      <div className={styles.metricAmount}>{formatCurrencyFromCents(row.amount, { currencyCode })}</div>
                     </div>
                   ))
                 ) : (
@@ -615,7 +612,7 @@ export default function SalesPage() {
                         <strong>{row.label.replace(/_/g, ' ')}</strong>
                         <span>{row.count} payments</span>
                       </div>
-                      <div className={styles.metricAmount}>{formatAmount(row.amount)}</div>
+                      <div className={styles.metricAmount}>{formatCurrencyFromCents(row.amount, { currencyCode })}</div>
                     </div>
                   ))
                 ) : (
@@ -640,7 +637,7 @@ export default function SalesPage() {
                 </div>
                 <div className={styles.shiftTile}>
                   <span>Total revenue</span>
-                  <strong>{formatAmount(summary.revenue)}</strong>
+                  <strong>{formatCurrencyFromCents(summary.revenue, { currencyCode })}</strong>
                 </div>
                 <div className={styles.shiftTile}>
                   <span>Refunds</span>
@@ -698,7 +695,7 @@ export default function SalesPage() {
                             </span>
                           </td>
                           <td>{sale.items?.length ?? 0}</td>
-                          <td className={styles.amount}>{formatAmount(sale.total_amount ?? 0)}</td>
+                          <td className={styles.amount}>{formatCurrencyFromCents(sale.total_amount ?? 0, { currencyCode })}</td>
                         </tr>
                       );
                     })}

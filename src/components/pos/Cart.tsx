@@ -9,6 +9,7 @@ import { PaymentMethod, Sale } from '@/types/sale';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import { buildPaymentTypeOptions, getPaymentTypeLabel } from '@/lib/business/paymentTypes';
+import { formatCurrency } from '@/lib/utils/currency';
 import styles from './Cart.module.css';
 
 type CheckoutStage = 2 | 3 | 4;
@@ -24,14 +25,11 @@ type SaleSummary = {
 
 interface CartProps {
   initialStage?: CheckoutStage;
+  currencyCode?: string;
   paymentTypes?: string[];
   salesChannelLabel?: string;
   onBackToSelection?: () => void;
   onStartNewSale?: () => void;
-}
-
-function formatAmount(amount: number) {
-  return `K${amount.toFixed(2)}`;
 }
 
 function parseQuantityInput(value: string) {
@@ -49,6 +47,7 @@ function parseQuantityInput(value: string) {
 
 export const Cart: React.FC<CartProps> = ({
   initialStage = 2,
+  currencyCode,
   paymentTypes,
   salesChannelLabel,
   onBackToSelection,
@@ -91,6 +90,7 @@ export const Cart: React.FC<CartProps> = ({
   const methodLabel = activePaymentType?.label ?? getPaymentTypeLabel(method, paymentTypes);
 
   const locationName = useMemo(() => locations[0]?.name ?? 'Primary location', [locations]);
+  const formatAmount = (amount: number) => formatCurrency(amount, { currencyCode });
 
   const handleGoToPayment = () => {
     if (cart.length === 0) return;

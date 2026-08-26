@@ -7,14 +7,17 @@ import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { setDateRangePreset, setLocationId, DateRangePreset } from '@/lib/features/analytics/analyticsSlice';
 import { useGetSalesTrendsQuery, useGetTopProductsQuery } from '@/lib/features/analytics/analyticsApi';
 import { useGetAccountsQuery } from '@/lib/features/accounts/accountsApi';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
 import { useGetBalancesQuery } from '@/lib/features/inventory/inventoryApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
 import { useGetCustomersQuery } from '@/lib/features/customers/customersApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { logout } from '@/lib/features/auth/authSlice';
 import { setNotifications, type NotificationItem } from '@/lib/features/notifications/notificationsSlice';
 import { getDateRange } from '@/lib/utils/dateRange';
+import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import type { Customer } from '@/types/customer';
 import type { Location } from '@/types/location';
 import type { InventoryBalance } from '@/types/inventory';
@@ -47,13 +50,6 @@ const ADVISOR_PROMPTS = [
   'Identify slow-moving stock.',
   'Benchmark performance.',
 ];
-
-function formatCurrency(amount: number) {
-  return `K${(amount / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
 
 function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
@@ -213,6 +209,11 @@ export default function DashboardOverview() {
   const [questionDraft, setQuestionDraft] = useState(ADVISOR_PROMPTS[0]);
   const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
   const { from, to } = useMemo(() => getDateRange(dateRangePreset), [dateRangePreset]);
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
 
   const { data: locationsRaw = [] } = useGetLocationsQuery();
   const { data: salesTrends = [], isLoading: trendsLoading, error: trendsError } = useGetSalesTrendsQuery({
@@ -326,7 +327,7 @@ export default function DashboardOverview() {
       if (sale.discount_amount > 0 && (!suspiciousDiscountSale || discountShare > suspiciousDiscountSale.discountShare)) {
         suspiciousDiscountSale = {
           sale,
-          employeeLabel: sale.created_by ? employeeMap.get(sale.created_by) ?? `User ${sale.created_by.slice(0, 8)}` : 'Unassigned',
+          employeeLabel: sale.created_by ? employeeMap.get(sale.created_by) ?? 'Unknown employee' : 'Unassigned',
           discountShare,
         };
       }
@@ -493,8 +494,9 @@ export default function DashboardOverview() {
     if (bestProduct) {
       insights.push({
         title: 'Top seller',
-        text: `${bestProduct.product_name} leads with ${bestProductSold.toLocaleString()} sold and ${formatCurrency(
-          bestProduct.revenue
+        text: `${bestProduct.product_name} leads with ${bestProductSold.toLocaleString()} sold and ${formatCurrencyFromCents(
+          bestProduct.revenue,
+          { currencyCode }
         )} in revenue.`,
         tone: 'positive',
       });
@@ -513,7 +515,7 @@ export default function DashboardOverview() {
     if (recentSalesSummary.refundCount > 0) {
       insights.push({
         title: 'Refund watch',
-        text: `${recentSalesSummary.refundCount.toLocaleString()} sale${recentSalesSummary.refundCount === 1 ? '' : 's'} were refunded in the recent feed, totaling ${formatCurrency(recentSalesSummary.totalRefunded)}.`,
+        text: `${recentSalesSummary.refundCount.toLocaleString()} sale${recentSalesSummary.refundCount === 1 ? '' : 's'} were refunded in the recent feed, totaling ${formatCurrencyFromCents(recentSalesSummary.totalRefunded, { currencyCode })}.`,
         tone: 'warning',
       });
     }
@@ -531,7 +533,7 @@ export default function DashboardOverview() {
     if (recentSalesSummary.totalTax > 0) {
       insights.push({
         title: 'Tax summary',
-        text: `Recent sales collected ${formatCurrency(recentSalesSummary.totalTax)} in tax, so there is a live tax trail to review before month-end reporting.`,
+        text: `Recent sales collected ${formatCurrencyFromCents(recentSalesSummary.totalTax, { currencyCode })} in tax, so there is a live tax trail to review before month-end reporting.`,
         tone: 'neutral',
       });
     }
@@ -539,7 +541,7 @@ export default function DashboardOverview() {
     if (recentSalesSummary.totalDiscount > 0) {
       insights.push({
         title: 'Discount summary',
-        text: `Recent sales included ${formatCurrency(recentSalesSummary.totalDiscount)} in discounts, which is worth comparing against margin before the next promotion.`,
+        text: `Recent sales included ${formatCurrencyFromCents(recentSalesSummary.totalDiscount, { currencyCode })} in discounts, which is worth comparing against margin before the next promotion.`,
         tone: recentSalesSummary.totalDiscount > totalRevenue * 0.15 ? 'warning' : 'neutral',
       });
     }
@@ -615,7 +617,7 @@ export default function DashboardOverview() {
         'Benchmark performance.',
       ],
     };
-  }, [graphData, lowStockAlerts, profitMargin, recentSalesSummary, topProducts, totalRevenue]);
+  }, [currencyCode, graphData, lowStockAlerts, profitMargin, recentSalesSummary, topProducts, totalRevenue]);
 
   const advisorResponse = useMemo(() => {
     const topSeller = topProducts[0];
@@ -745,7 +747,7 @@ export default function DashboardOverview() {
             ? `${recentSalesSummary.topPayment[0]} is the most common recent payment method.`
             : 'No payment mix is visible yet.',
           recentSalesSummary.totalCompleted > 0
-            ? `${formatCurrency(recentSalesSummary.totalCompleted)} in completed sales is feeding the current cash picture.`
+            ? `${formatCurrencyFromCents(recentSalesSummary.totalCompleted, { currencyCode })} in completed sales is feeding the current cash picture.`
             : 'No completed sales are in the recent sample yet.',
           'Use this together with expenses and supplier payments for a fuller cash plan.',
         ],
@@ -757,7 +759,7 @@ export default function DashboardOverview() {
       return {
         answer:
           recentSalesSummary.refundCount > 0
-            ? `${recentSalesSummary.refundCount.toLocaleString()} recent sale${recentSalesSummary.refundCount === 1 ? '' : 's'} were refunded, totaling ${formatCurrency(recentSalesSummary.totalRefunded)}.`
+            ? `${recentSalesSummary.refundCount.toLocaleString()} recent sale${recentSalesSummary.refundCount === 1 ? '' : 's'} were refunded, totaling ${formatCurrencyFromCents(recentSalesSummary.totalRefunded, { currencyCode })}.`
             : 'No refunded sales are showing in the current sample, so refund risk looks quiet for now.',
         bullets: [
           recentSalesSummary.refundCount > 0
@@ -767,7 +769,7 @@ export default function DashboardOverview() {
             ? `${recentSalesSummary.suspiciousDiscountSale.employeeLabel} also applied the largest discount on ${recentSalesSummary.suspiciousDiscountSale.sale.sale_number}.`
             : 'No unusually discounted sale stands out in the recent sample.',
           recentSalesSummary.totalRefunded > 0
-            ? `Refunds removed ${formatCurrency(recentSalesSummary.totalRefunded)} from the recent sample.`
+            ? `Refunds removed ${formatCurrencyFromCents(recentSalesSummary.totalRefunded, { currencyCode })} from the recent sample.`
             : 'No refund amount is showing in the recent sample.',
         ],
         actions: ['Review refunds', 'Audit discounts', 'Check receipt notes'],
@@ -795,13 +797,13 @@ export default function DashboardOverview() {
       return {
         answer:
           recentSalesSummary.totalTax > 0
-            ? `Vendora can already see ${formatCurrency(recentSalesSummary.totalTax)} in tax from the recent sales sample, which is a good base for a month-end summary.`
+            ? `Vendora can already see ${formatCurrencyFromCents(recentSalesSummary.totalTax, { currencyCode })} in tax from the recent sales sample, which is a good base for a month-end summary.`
             : 'There is not enough tax activity in the current sample yet, but the advisor will summarize tax automatically as sales accumulate.',
         bullets: [
           recentSalesSummary.totalTax > 0
             ? 'Use this figure to sanity-check month-end reporting.'
             : 'Tax detail will become more useful as more completed sales are recorded.',
-          totalRefunds > 0 ? `${formatCurrency(totalRefunds)} in refunds is already affecting the period totals.` : 'No refund drag is visible in the current trend window.',
+          totalRefunds > 0 ? `${formatCurrencyFromCents(totalRefunds, { currencyCode })} in refunds is already affecting the period totals.` : 'No refund drag is visible in the current trend window.',
           profitMargin >= 25
             ? 'Healthy margin gives you some room if taxes or supplier costs tick up.'
             : 'Margin is tighter, so tax and cost control matter more.',
@@ -851,6 +853,7 @@ export default function DashboardOverview() {
     aiAdvisor.prompts,
     aiAdvisor.summary,
     balances.length,
+    currencyCode,
     graphData,
     lowStockAlerts,
     profitMargin,
@@ -1105,7 +1108,7 @@ export default function DashboardOverview() {
               </svg>
             </div>
           </div>
-          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrency(totalRevenue)}</p>
+          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrencyFromCents(totalRevenue, { currencyCode })}</p>
           <span className={`${styles.statTrend} ${styles.positive}`}>
             {totalSalesCount.toLocaleString()} sales in the selected period
           </span>
@@ -1123,7 +1126,7 @@ export default function DashboardOverview() {
               </svg>
             </div>
           </div>
-          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrency(totalProfit)}</p>
+          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrencyFromCents(totalProfit, { currencyCode })}</p>
           <span className={`${styles.statTrend} ${styles.positive}`}>Margin {profitMargin.toFixed(1)}%</span>
         </div>
 
@@ -1139,7 +1142,7 @@ export default function DashboardOverview() {
               </svg>
             </div>
           </div>
-          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrency(inventoryValue)}</p>
+          <p className={styles.statValue}>{isLoading ? 'Loading…' : formatCurrencyFromCents(inventoryValue, { currencyCode })}</p>
           <span className={styles.statTrend}>{balances.length.toLocaleString()} stock records</span>
         </div>
 
@@ -1239,7 +1242,7 @@ export default function DashboardOverview() {
                             className={`${styles.barFill} ${styles.barFillRevenue}`}
                             style={{ height: `${Math.max((point.revenue / graphMax) * 100, point.revenue > 0 ? 4 : 0)}%` }}
                           />
-                          <span className={styles.barValue}>{formatCurrency(point.revenue)}</span>
+                          <span className={styles.barValue}>{formatCurrencyFromCents(point.revenue, { currencyCode })}</span>
                         </div>
                         <span className={styles.barSeriesLabel}>Revenue</span>
                       </div>
@@ -1250,7 +1253,7 @@ export default function DashboardOverview() {
                             className={`${styles.barFill} ${styles.barFillProfit}`}
                             style={{ height: `${Math.max((point.profit / graphMax) * 100, point.profit > 0 ? 4 : 0)}%` }}
                           />
-                          <span className={styles.barValue}>{formatCurrency(point.profit)}</span>
+                          <span className={styles.barValue}>{formatCurrencyFromCents(point.profit, { currencyCode })}</span>
                         </div>
                         <span className={styles.barSeriesLabel}>Profit</span>
                       </div>
@@ -1313,7 +1316,7 @@ export default function DashboardOverview() {
                               {STATUS_LABELS[sale.status]}
                             </span>
                           </td>
-                          <td>{formatCurrency(sale.total_amount ?? 0)}</td>
+                          <td>{formatCurrencyFromCents(sale.total_amount ?? 0, { currencyCode })}</td>
                         </tr>
                       );
                     })
@@ -1380,7 +1383,7 @@ export default function DashboardOverview() {
                         Item code (SKU) {product.sku} · {product.quantity_sold} sold
                       </span>
                     </div>
-                    <span className={styles.productRevenue}>{formatCurrency(product.revenue)}</span>
+                    <span className={styles.productRevenue}>{formatCurrencyFromCents(product.revenue, { currencyCode })}</span>
                   </li>
                 ))
               )}

@@ -81,13 +81,13 @@ export const MovementsTable: React.FC<MovementsTableProps> = ({ movements, produ
             ? <EmptyState />
             : movements.map((movement) => {
                 const product = products[movement.product_id];
-                const locationName = locations[movement.location_id] || 'Unknown';
+                const locationName = locations[movement.location_id] || 'Unknown location';
                 const delta = parseFloat(movement.quantity_delta);
                 const isPositive = delta > 0;
 
                 return (
                   <tr key={movement.id} className={styles.row}>
-                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.875rem' }}>
+                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.8125rem' }}>
                       {formatDate(movement.created_at)}
                     </td>
                     <td>
@@ -100,7 +100,7 @@ export const MovementsTable: React.FC<MovementsTableProps> = ({ movements, produ
                     </td>
                     <td>
                       <div className={styles.productCell}>
-                        <span className={styles.productName}>{product?.name || 'Unknown Product'}</span>
+                        <span className={styles.productName}>{product?.name || 'Unknown product'}</span>
                         <span className={styles.productSku}>Item code (SKU): {product?.sku || 'N/A'}</span>
                       </div>
                     </td>

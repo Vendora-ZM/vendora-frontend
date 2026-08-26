@@ -63,7 +63,7 @@ export const BalancesTable: React.FC<BalancesTableProps> = ({ balances, products
             ? <EmptyState />
             : balances.map((balance) => {
                 const product = products[balance.product_id];
-                const locationName = locations[balance.location_id] || 'Unknown Location';
+                const locationName = locations[balance.location_id] || 'Unknown location';
                 const available = parseFloat(balance.quantity_available);
                 const isLow = available <= 0;
 
@@ -71,7 +71,7 @@ export const BalancesTable: React.FC<BalancesTableProps> = ({ balances, products
                   <tr key={balance.id || `${balance.product_id}-${balance.location_id}`} className={styles.row}>
                     <td>
                       <div className={styles.productCell}>
-                        <span className={styles.productName}>{product?.name || 'Unknown Product'}</span>
+                        <span className={styles.productName}>{product?.name || 'Unknown product'}</span>
                         <span className={styles.productSku}>Item code (SKU): {product?.sku || 'N/A'}</span>
                       </div>
                     </td>

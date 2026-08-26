@@ -12,8 +12,11 @@ import { useAppDispatch } from '@/lib/store';
 import { openAdjustModal, openTransferModal } from '@/lib/features/inventory/inventorySlice';
 import { useGetProductByIdQuery, useUpdateProductMutation, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetBalancesQuery, useGetMovementsQuery } from '@/lib/features/inventory/inventoryApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
+import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import { Product, UpdateProductPayload } from '@/types/product';
 import type { Category } from '@/types/product';
 import type { Location } from '@/types/location';
@@ -27,13 +30,6 @@ const STATUS_LABELS: Record<SaleStatus, string> = {
   refunded: 'Refunded',
   cancelled: 'Cancelled',
 };
-
-function formatMoney(cents: number) {
-  return `$${(cents / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString('en-US', {
@@ -74,7 +70,7 @@ function toFormState(product: Product): FormState {
   };
 }
 
-export function ProductDetailsEditor({ product }: { product: Product }) {
+export function ProductDetailsEditor({ product, currencyCode }: { product: Product; currencyCode?: string }) {
   const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
   const { data: categories = [] } = useGetCategoriesQuery();
   const [form, setForm] = useState<FormState>(() => toFormState(product));
@@ -158,11 +154,11 @@ export function ProductDetailsEditor({ product }: { product: Product }) {
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span>Selling Price</span>
-          <strong>{formatMoney(product.selling_price)}</strong>
+          <strong>{formatCurrencyFromCents(product.selling_price, { currencyCode })}</strong>
         </div>
         <div className={styles.statCard}>
           <span>Cost Price</span>
-          <strong>{formatMoney(product.cost_price)}</strong>
+          <strong>{formatCurrencyFromCents(product.cost_price, { currencyCode })}</strong>
         </div>
         <div className={styles.statCard}>
           <span>Margin</span>
@@ -336,6 +332,11 @@ export function ProductWorkspace() {
   const params = useParams<{ id?: string | string[] }>();
   const productId = Array.isArray(params.id) ? params.id[0] : params.id ?? '';
   const dispatch = useAppDispatch();
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
 
   const { data: product, isLoading: productLoading, isError } = useGetProductByIdQuery(productId, {
     skip: !productId,
@@ -458,11 +459,11 @@ export function ProductWorkspace() {
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <span>Selling Price</span>
-            <strong>{formatMoney(product?.selling_price ?? 0)}</strong>
+            <strong>{formatCurrencyFromCents(product?.selling_price ?? 0, { currencyCode })}</strong>
           </div>
           <div className={styles.statCard}>
             <span>Cost Price</span>
-            <strong>{formatMoney(product?.cost_price ?? 0)}</strong>
+            <strong>{formatCurrencyFromCents(product?.cost_price ?? 0, { currencyCode })}</strong>
           </div>
           <div className={styles.statCard}>
             <span>Units Sold</span>
@@ -470,7 +471,7 @@ export function ProductWorkspace() {
           </div>
           <div className={styles.statCard}>
             <span>Revenue</span>
-            <strong>{formatMoney(totals.revenue)}</strong>
+            <strong>{formatCurrencyFromCents(totals.revenue, { currencyCode })}</strong>
           </div>
         </div>
 
@@ -494,7 +495,7 @@ export function ProductWorkspace() {
         </div>
       </section>
 
-      <ProductDetailsEditor key={product!.id} product={product!} />
+      <ProductDetailsEditor key={product!.id} product={product!} currencyCode={currencyCode} />
 
       <section id="inventory" className={styles.card}>
         <div className={styles.sectionHeader}>
@@ -526,7 +527,7 @@ export function ProductWorkspace() {
               ) : (
                 balancesByLocation.map((balance: InventoryBalance) => (
                   <tr key={balance.id}>
-                    <td>{locationMap[balance.location_id] ?? 'Unknown Location'}</td>
+                    <td>{locationMap[balance.location_id] ?? 'Unknown location'}</td>
                     <td>{Number(balance.quantity_on_hand || 0)}</td>
                     <td>{Number(balance.quantity_reserved || 0)}</td>
                     <td className={styles.availableCell}>{Number(balance.quantity_available || 0)}</td>
@@ -552,7 +553,7 @@ export function ProductWorkspace() {
             <h3>Sales History</h3>
             <p>Recent sales that include this product.</p>
           </div>
-          <span>{formatMoney(totals.revenue)}</span>
+          <span>{formatCurrencyFromCents(totals.revenue, { currencyCode })}</span>
         </div>
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
@@ -583,9 +584,9 @@ export function ProductWorkspace() {
                         <span className={styles.secondaryCell}>{formatDateTime(sale.created_at)}</span>
                       </div>
                     </td>
-                    <td>{locationMap[sale.location_id] ?? 'Unknown Location'}</td>
+                    <td>{locationMap[sale.location_id] ?? 'Unknown location'}</td>
                     <td>{Number(item.quantity || 0)}</td>
-                    <td className={styles.revenueCell}>{formatMoney(Number(item.line_total || 0))}</td>
+                    <td className={styles.revenueCell}>{formatCurrencyFromCents(Number(item.line_total || 0), { currencyCode })}</td>
                     <td>
                       <span className={`${styles.badge} ${styles[sale.status] ?? ''}`}>
                         {STATUS_LABELS[sale.status]}
@@ -630,7 +631,7 @@ export function ProductWorkspace() {
                 movementRows.map((movement: InventoryMovement) => (
                   <tr key={movement.id}>
                     <td>{formatDateTime(movement.created_at)}</td>
-                    <td>{locationMap[movement.location_id] ?? 'Unknown Location'}</td>
+                    <td>{locationMap[movement.location_id] ?? 'Unknown location'}</td>
                     <td>{movement.movement_type}</td>
                     <td className={Number(movement.quantity_delta || 0) < 0 ? styles.negativeDelta : styles.positiveDelta}>
                       {Number(movement.quantity_delta || 0)}

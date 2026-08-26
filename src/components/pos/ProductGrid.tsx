@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useGetProductsQuery, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
 import { useAppDispatch } from '@/lib/store';
 import { addToCart } from '@/lib/features/pos/posSlice';
+import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import { Product, type Category } from '@/types/product';
 import styles from './ProductGrid.module.css';
 
@@ -11,6 +14,11 @@ export const ProductGrid: React.FC = () => {
   const dispatch = useAppDispatch();
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
 
   const { data: products = [], isLoading } = useGetProductsQuery({
     search: search || undefined,
@@ -78,7 +86,7 @@ export const ProductGrid: React.FC = () => {
                   <span className={styles.productSku}>Item code (SKU): {product.sku}</span>
                 </div>
                 <div className={styles.productPrice}>
-                  K{(product.selling_price / 100).toFixed(2)}
+                  {formatCurrencyFromCents(product.selling_price, { currencyCode })}
                 </div>
               </button>
             ))}

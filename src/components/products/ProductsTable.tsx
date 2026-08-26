@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useAppDispatch } from '@/lib/store';
 import { openDeleteModal } from '@/lib/features/products/productsSlice';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import styles from './ProductsTable.module.css';
 
 interface ProductsTableProps {
@@ -14,9 +17,8 @@ interface ProductsTableProps {
   footer?: React.ReactNode;
 }
 
-function PriceDisplay({ value }: { value: number }) {
-  const num = value / 100;
-  return <span>{isNaN(num) ? '—' : `$${num.toFixed(2)}`}</span>;
+function PriceDisplay({ value, currencyCode }: { value: number; currencyCode?: string }) {
+  return <span>{formatCurrencyFromCents(value, { currencyCode })}</span>;
 }
 
 function SkeletonRow() {
@@ -47,6 +49,11 @@ function EmptyState() {
 
 export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoading, categoryMap, footer }) => {
   const dispatch = useAppDispatch();
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
 
   return (
     <div className={styles.tableWrapper}>
@@ -84,8 +91,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoadin
                       <span className={styles.noCategory}>Uncategorised</span>
                     )}
                   </td>
-                  <td><PriceDisplay value={product.selling_price} /></td>
-                  <td><PriceDisplay value={product.cost_price} /></td>
+                  <td><PriceDisplay value={product.selling_price} currencyCode={currencyCode} /></td>
+                  <td><PriceDisplay value={product.cost_price} currencyCode={currencyCode} /></td>
                   <td className={styles.unitCell}>{product.unit || '—'}</td>
                   <td>
                     <span className={`${styles.statusBadge} ${product.is_active ? styles.active : styles.inactive}`}>

@@ -54,10 +54,12 @@ function getInitialSelectedSalesChannelId(storageKey: string, enabledSalesChanne
 function PosWorkspace({
   businessId,
   businessCategory,
+  currencyCode,
   paymentTypes,
 }: {
   businessId: string;
   businessCategory: string;
+  currencyCode?: string;
   paymentTypes?: string[];
 }) {
   const { cart } = useAppSelector((s) => s.pos);
@@ -149,6 +151,7 @@ function PosWorkspace({
         <section className={styles.checkoutStage}>
           <Cart
             initialStage={2}
+            currencyCode={currencyCode}
             paymentTypes={paymentTypes}
             salesChannelLabel={selectedSalesChannelOption.label}
             onBackToSelection={() => setStage('selection')}
@@ -298,6 +301,7 @@ export default function PosPage() {
       key={currentBusiness.id}
       businessId={currentBusiness.id}
       businessCategory={currentBusiness.business_category}
+      currencyCode={currentBusiness.currency_code}
       paymentTypes={paymentTypes}
     />
   );

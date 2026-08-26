@@ -17,9 +17,9 @@
 }
 
 .table th {
-  padding: 14px 20px;
+  padding: 12px 18px;
   text-align: left;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-grey);
   text-transform: uppercase;
@@ -29,8 +29,8 @@
 }
 
 .table td {
-  padding: 16px 20px;
-  font-size: 0.9375rem;
+  padding: 12px 18px;
+  font-size: 0.875rem;
   color: var(--color-dark-grey);
   border-bottom: 1px solid rgba(140, 144, 152, 0.08);
   vertical-align: middle;
@@ -60,14 +60,14 @@
 }
 
 .productSku {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--color-grey);
 }
 
 .qtyCell {
   font-weight: 600;
   font-family: monospace;
-  font-size: 1rem;
+  font-size: 0.875rem;
 }
 
 .qtyAvailable {
@@ -89,7 +89,7 @@
   cursor: pointer;
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--color-primary-navy);
   transition: all 0.15s;

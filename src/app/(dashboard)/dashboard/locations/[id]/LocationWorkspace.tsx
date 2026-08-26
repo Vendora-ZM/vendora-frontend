@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetSalesTrendsQuery, useGetTopProductsQuery, useGetInventoryTurnoverQuery } from '@/lib/features/analytics/analyticsApi';
 import { useGetBalancesQuery } from '@/lib/features/inventory/inventoryApi';
 import { useGetProductsQuery } from '@/lib/features/products/productsApi';
@@ -22,6 +23,7 @@ import { useGetCustomersQuery } from '@/lib/features/customers/customersApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { DateRangePreset } from '@/lib/features/analytics/analyticsSlice';
 import { getDateRange } from '@/lib/utils/dateRange';
+import { formatCurrency, formatCurrencyFromCents } from '@/lib/utils/currency';
 import type { Location } from '@/types/location';
 import type { SalesTrendPoint, TopProductRow, InventoryTurnoverRow } from '@/types/analytics';
 import { Product } from '@/types/product';
@@ -53,13 +55,6 @@ const STATUS_LABELS: Record<SaleStatus, string> = {
   cancelled: 'Cancelled',
 };
 
-function formatMoney(cents: number) {
-  return `K${(cents / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
     month: 'short',
@@ -78,6 +73,10 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
 
   const { data: locations = [], isLoading: isLocationsLoading } = useGetLocationsQuery();
   const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
   const { data: customersRaw = [] } = useGetCustomersQuery({});
   const selectedLocation = useMemo(
     () => locations.find((location: Location) => location.id === locationId) ?? null,
@@ -260,7 +259,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
             <div className={styles.summaryHeader}>
               <div>
                 <h2>{selectedLocation?.name}</h2>
-                <p>{selectedLocation?.id}</p>
+                <p>Branch overview</p>
               </div>
               <span>
                 {from} to {to}
@@ -270,11 +269,11 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
                 <span>Revenue</span>
-                <strong>{isLoading ? 'Loading…' : formatMoney(totalRevenue)}</strong>
+                <strong>{isLoading ? 'Loading…' : formatCurrencyFromCents(totalRevenue, { currencyCode })}</strong>
               </div>
               <div className={styles.statCard}>
                 <span>Profit</span>
-                <strong>{isLoading ? 'Loading…' : formatMoney(totalProfit)}</strong>
+                <strong>{isLoading ? 'Loading…' : formatCurrencyFromCents(totalProfit, { currencyCode })}</strong>
               </div>
               <div className={styles.statCard}>
                 <span>Sales</span>
@@ -282,7 +281,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
               </div>
               <div className={styles.statCard}>
                 <span>Inventory Value</span>
-                <strong>{isLoading ? 'Loading…' : formatMoney(inventoryValue)}</strong>
+                <strong>{isLoading ? 'Loading…' : formatCurrencyFromCents(inventoryValue, { currencyCode })}</strong>
               </div>
             </div>
 
@@ -356,11 +355,17 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="date" stroke="#8C9098" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                    <YAxis stroke="#8C9098" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `K${value}`} />
+                    <YAxis
+                      stroke="#8C9098"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => formatCurrency(Number(value), { currencyCode, minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    />
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                     <Tooltip
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                      formatter={(value: unknown) => `K${Number(value).toFixed(2)}`}
+                      formatter={(value: unknown) => formatCurrency(Number(value), { currencyCode })}
                     />
                     <Area type="monotone" dataKey="revenue" stroke="#1A84DD" strokeWidth={3} fillOpacity={1} fill="url(#locationRevenue)" />
                     <Area type="monotone" dataKey="profit" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#locationProfit)" />
@@ -408,7 +413,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                             </div>
                           </td>
                           <td>{row.quantity_sold}</td>
-                          <td className={styles.revenue}>{formatMoney(row.revenue)}</td>
+                          <td className={styles.revenue}>{formatCurrencyFromCents(row.revenue, { currencyCode })}</td>
                         </tr>
                       ))
                     )}
@@ -458,7 +463,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                               {STATUS_LABELS[sale.status]}
                             </span>
                           </td>
-                          <td className={styles.revenue}>{formatMoney(sale.total_amount ?? 0)}</td>
+                          <td className={styles.revenue}>{formatCurrencyFromCents(sale.total_amount ?? 0, { currencyCode })}</td>
                         </tr>
                       ))
                     )}
@@ -556,7 +561,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                         </div>
                       </td>
                       <td>{row.quantity_sold}</td>
-                      <td className={styles.revenue}>{formatMoney(row.revenue)}</td>
+                      <td className={styles.revenue}>{formatCurrencyFromCents(row.revenue, { currencyCode })}</td>
                     </tr>
                   ))
                 )}
@@ -606,7 +611,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                       <td>
                         <span className={`${styles.badge} ${styles[sale.status] ?? ''}`}>{STATUS_LABELS[sale.status]}</span>
                       </td>
-                      <td className={styles.revenue}>{formatMoney(sale.total_amount ?? 0)}</td>
+                      <td className={styles.revenue}>{formatCurrencyFromCents(sale.total_amount ?? 0, { currencyCode })}</td>
                     </tr>
                   ))
                 )}
@@ -658,7 +663,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                       <tr key={balance.product_id}>
                         <td>
                           <div className={styles.productCell}>
-                            <span className={styles.productName}>{product?.name ?? balance.product_id}</span>
+                            <span className={styles.productName}>{product?.name ?? 'Unknown product'}</span>
                             <span className={styles.productSku}>Item code (SKU): {product?.sku ?? 'N/A'}</span>
                           </div>
                         </td>
@@ -718,7 +723,7 @@ export function LocationWorkspace({ view }: LocationWorkspaceProps) {
                         </div>
                       </td>
                       <td>{row.sales}</td>
-                      <td className={styles.revenue}>{formatMoney(row.spend)}</td>
+                      <td className={styles.revenue}>{formatCurrencyFromCents(row.spend, { currencyCode })}</td>
                       <td>{formatDate(row.lastOrder)}</td>
                     </tr>
                   ))

@@ -3,18 +3,16 @@
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { closeDetailModal } from '@/lib/features/sales/salesSlice';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { Modal } from '@/components/ui/Modal';
+import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import styles from './OrderDetailModal.module.css';
 
 const PAYMENT_LABELS: Record<string, string> = {
   cash: 'Cash', card: 'Card', mobile_money: 'Mobile Money',
   bank_transfer: 'Bank Transfer', other: 'Other',
 };
-
-function formatCurrency(value: number | string) {
-  const n = typeof value === 'number' ? value / 100 : parseFloat(value);
-  return isNaN(n) ? '—' : `K${n.toFixed(2)}`;
-}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -32,6 +30,11 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
 export const OrderDetailModal: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isDetailModalOpen, selectedSale } = useAppSelector((s) => s.sales);
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
 
   if (!selectedSale) return null;
 
@@ -80,12 +83,12 @@ export const OrderDetailModal: React.FC = () => {
             <tbody>
               {selectedSale.items.map((item) => (
                 <tr key={item.id}>
-                  <td className={styles.productIdCell}><code>{item.product_id.slice(0, 8)}…</code></td>
+                  <td className={styles.productIdCell}>Unknown product</td>
                   <td>{item.quantity}</td>
-                  <td>{formatCurrency(item.unit_price)}</td>
-                  <td>{formatCurrency(item.discount_amount)}</td>
-                  <td>{formatCurrency(item.tax_amount)}</td>
-                  <td><strong>{formatCurrency(item.line_total)}</strong></td>
+                  <td>{formatCurrencyFromCents(item.unit_price, { currencyCode })}</td>
+                  <td>{formatCurrencyFromCents(item.discount_amount, { currencyCode })}</td>
+                  <td>{formatCurrencyFromCents(item.tax_amount, { currencyCode })}</td>
+                  <td><strong>{formatCurrencyFromCents(item.line_total, { currencyCode })}</strong></td>
                 </tr>
               ))}
             </tbody>
@@ -96,23 +99,23 @@ export const OrderDetailModal: React.FC = () => {
         <div className={styles.totalsSection}>
           <div className={styles.totalRow}>
             <span>Subtotal</span>
-            <span>{formatCurrency(selectedSale.subtotal)}</span>
+            <span>{formatCurrencyFromCents(selectedSale.subtotal, { currencyCode })}</span>
           </div>
           <div className={styles.totalRow}>
             <span>Tax</span>
-            <span>{formatCurrency(selectedSale.tax_amount)}</span>
+            <span>{formatCurrencyFromCents(selectedSale.tax_amount, { currencyCode })}</span>
           </div>
           <div className={styles.totalRow}>
             <span>Discount</span>
-            <span>-{formatCurrency(selectedSale.discount_amount)}</span>
+            <span>-{formatCurrencyFromCents(selectedSale.discount_amount, { currencyCode })}</span>
           </div>
           <div className={`${styles.totalRow} ${styles.grandTotal}`}>
             <span>Total</span>
-            <span>{formatCurrency(selectedSale.total_amount)}</span>
+            <span>{formatCurrencyFromCents(selectedSale.total_amount, { currencyCode })}</span>
           </div>
           <div className={styles.totalRow}>
             <span>Amount Paid</span>
-            <span>{formatCurrency(selectedSale.amount_paid)}</span>
+            <span>{formatCurrencyFromCents(selectedSale.amount_paid, { currencyCode })}</span>
           </div>
         </div>
 
@@ -124,7 +127,7 @@ export const OrderDetailModal: React.FC = () => {
               {selectedSale.payments.map((p) => (
                 <div key={p.id} className={styles.paymentItem}>
                   <span className={styles.paymentMethod}>{PAYMENT_LABELS[p.method] ?? p.method}</span>
-                  <span className={styles.paymentAmount}>{formatCurrency(p.amount)}</span>
+                  <span className={styles.paymentAmount}>{formatCurrencyFromCents(p.amount, { currencyCode })}</span>
                   {p.reference && <span className={styles.paymentRef}>Ref: {p.reference}</span>}
                 </div>
               ))}

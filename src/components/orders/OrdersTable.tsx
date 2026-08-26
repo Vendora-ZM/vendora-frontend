@@ -4,6 +4,9 @@ import React from 'react';
 import { Sale } from '@/types/sale';
 import { useAppDispatch } from '@/lib/store';
 import { openDetailModal } from '@/lib/features/sales/salesSlice';
+import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
+import { useGetMeQuery } from '@/lib/features/profile/profileApi';
+import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import styles from './OrdersTable.module.css';
 
 interface OrdersTableProps {
@@ -17,12 +20,6 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   refunded:  { label: 'Refunded',  cls: 'refunded' },
   cancelled: { label: 'Cancelled', cls: 'cancelled' },
 };
-
-function formatCurrency(value: number | string) {
-  const n = typeof value === 'number' ? value / 100 : parseFloat(value);
-  return isNaN(n) ? '—' : `K${n.toFixed(2)}`;
-}
-
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -56,6 +53,11 @@ function EmptyState() {
 
 export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
   const dispatch = useAppDispatch();
+  const { data: me } = useGetMeQuery();
+  const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
+    skip: !me?.business_id,
+  });
+  const currencyCode = business?.currency_code;
 
   return (
     <div className={styles.tableWrapper}>
@@ -85,7 +87,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) =
                     <td className={styles.dateCell}>{formatDate(order.created_at)}</td>
                     <td className={styles.itemsCell}>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</td>
                     <td>
-                      <span className={styles.totalAmount}>{formatCurrency(order.total_amount)}</span>
+                      <span className={styles.totalAmount}>{formatCurrencyFromCents(order.total_amount, { currencyCode })}</span>
                     </td>
                     <td>
                       <span className={`${styles.statusBadge} ${styles[status.cls]}`}>

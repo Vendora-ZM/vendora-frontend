@@ -12,9 +12,9 @@
 }
 
 .table th {
-  padding: 14px 20px;
+  padding: 12px 18px;
   text-align: left;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-grey);
   text-transform: uppercase;
@@ -24,9 +24,9 @@
 }
 
 .table td {
-  padding: 16px 20px;
+  padding: 12px 18px;
   border-bottom: 1px solid rgba(140, 144, 152, 0.08);
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
   color: var(--color-dark-grey);
   vertical-align: middle;
 }
@@ -37,11 +37,10 @@
 .orderNumber {
   font-weight: 700;
   color: var(--color-primary-navy);
-  font-family: monospace;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
-.dateCell { color: var(--color-grey); font-size: 0.875rem; }
+.dateCell { color: var(--color-grey); font-size: 0.8rem; }
 .itemsCell { color: var(--color-grey); }
 
 .totalAmount {
@@ -71,7 +70,7 @@
   border: 1px solid rgba(140, 144, 152, 0.25);
   background: transparent;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--color-dark-grey);
   cursor: pointer;

@@ -383,7 +383,7 @@
 
 .table th,
 .table td {
-  padding: 16px 24px;
+  padding: 12px 18px;
   text-align: left;
   border-bottom: 1px solid rgba(140, 144, 152, 0.1);
 }
@@ -391,13 +391,13 @@
 .table th {
   color: var(--color-grey);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   background-color: #FAFAFA;
 }
 
 .table td {
   color: var(--color-dark-grey);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .table tr:last-child td {
@@ -411,7 +411,7 @@
   gap: 5px;
   padding: 4px 12px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 
@@ -449,6 +449,7 @@
   font-weight: 700;
   color: var(--color-primary-navy);
   font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
 }
 
 /* ========== EMPTY STATE ========== */
