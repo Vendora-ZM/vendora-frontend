@@ -7,7 +7,6 @@
   margin: 0 auto;
 }
 
-/* Header */
 .header {
   display: flex;
   align-items: flex-start;
@@ -30,7 +29,6 @@
   margin: 0;
 }
 
-/* Stats Grid */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -253,7 +251,6 @@
   font-weight: 800;
 }
 
-/* Tabs */
 .tabsBar {
   display: flex;
   gap: 4px;
@@ -285,9 +282,8 @@
   font-weight: 600;
 }
 
-/* Table container */
 .tableContainer {
-  overflow-x: auto;
+  min-width: 0;
 }
 
 .paginationFooter {
@@ -296,9 +292,6 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 16px 20px 20px;
-  border-top: 1px solid rgba(140, 144, 152, 0.1);
-  background: var(--color-white);
 }
 
 .paginationSummary {
@@ -365,14 +358,48 @@
 
 @media (max-width: 640px) {
   .page {
-    padding: 20px 16px;
+    gap: 20px;
+    padding: 18px 12px 24px;
   }
+
+  .header {
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 1.35rem;
+    letter-spacing: -0.2px;
+  }
+
+  .subtitle {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
   .statsGrid {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
+
   .statCard {
-    padding: 16px;
+    gap: 10px;
+    padding: 14px 12px;
+    align-items: flex-start;
+  }
+
+  .statIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .statLabel {
+    font-size: 0.68rem;
+    font-weight: 500;
+  }
+
+  .statValue {
+    font-size: 1.15rem;
   }
 
   .advancedInventorySummary,
@@ -390,9 +417,128 @@
     padding-bottom: 16px;
   }
 
-  .paginationFooter {
-    padding-left: 16px;
-    padding-right: 16px;
+  .advancedInventorySummary {
+    gap: 12px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .advancedEyebrow,
+  .advancedHint,
+  .advancedPill,
+  .advancedLabel {
+    font-size: 0.64rem;
+  }
+
+  .advancedTitle {
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .advancedText,
+  .advancedCopy,
+  .advancedPanelCopy,
+  .movementMixRow span,
+  .watchItem span {
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .advancedCard,
+  .advancedPanel {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .advancedValue,
+  .advancedPanelTitle,
+  .movementMixRow strong,
+  .watchItem strong {
+    font-size: 0.92rem;
+  }
+
+  .movementMixRow,
+  .watchItem {
     align-items: flex-start;
+    padding: 10px 12px;
+  }
+
+  .tab {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .paginationFooter {
+    align-items: flex-start;
+  }
+
+  .paginationSummary {
+    font-size: 0.75rem;
+  }
+
+  .paginationControls,
+  .paginationPages {
+    gap: 6px;
+  }
+
+  .paginationButton {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .title {
+    font-size: 1.2rem;
+  }
+
+  .subtitle {
+    font-size: 0.76rem;
+  }
+
+  .statsGrid {
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 12px 10px;
+  }
+
+  .statIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .statValue {
+    font-size: 1rem;
+  }
+
+  .advancedInventorySummary,
+  .advancedGrid,
+  .advancedSplit {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .advancedCard,
+  .advancedPanel {
+    padding: 12px;
+  }
+
+  .tab {
+    padding: 7px 10px;
+    font-size: 0.76rem;
+  }
+
+  .paginationButton {
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 0.7rem;
   }
 }

@@ -101,7 +101,7 @@ export default function NewProductPage() {
         is_taxable: form.is_taxable,
         tax_rate: form.is_taxable ? form.tax_rate : '0',
       };
-      
+
       const newProduct = await createProduct(payload).unwrap();
       if (form.initial_stock && parseFloat(form.initial_stock) > 0 && form.initial_location_id) {
         await adjustStock({
@@ -112,7 +112,6 @@ export default function NewProductPage() {
           expiry_date: form.initial_expiry_date || undefined,
         }).unwrap();
       }
-      // On success, redirect back to products list
       router.push('/dashboard/products');
     } catch (err: unknown) {
       const message = (err as { data?: { message?: string } })?.data?.message;
@@ -129,7 +128,7 @@ export default function NewProductPage() {
           </div>
           <div>
             <h1 className={styles.title}>Add New Product</h1>
-            <p className={styles.subtitle}>Enter the details below to list a new item in your inventory.</p>
+            <p className={styles.subtitle}>Add a new item.</p>
           </div>
         </div>
       </div>
@@ -141,9 +140,7 @@ export default function NewProductPage() {
         </div>}
 
         <div className={styles.formLayout}>
-          {/* Main Content Column */}
           <div>
-            {/* General Information Section */}
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <svg className={styles.sectionIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -170,7 +167,7 @@ export default function NewProductPage() {
                   <Textarea
                     id="product-description"
                     label="Description"
-                    placeholder="Optional product description…"
+                    placeholder="Short note"
                     value={form.description}
                     onChange={set('description')}
                   />
@@ -178,7 +175,6 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* Pricing Section */}
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <svg className={styles.sectionIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -248,18 +244,16 @@ export default function NewProductPage() {
                   />
                 )}
                 <div className={styles.categoryHelper}>
-                  <span className={styles.categoryHelperLabel}>Stock can be adjusted later</span>
+                  <span className={styles.categoryHelperLabel}>Optional</span>
                   <p className={styles.categoryHelperText}>
-                    This step is optional. You can adjust this product&apos;s stock later from the inventory adjustment flow whenever stock changes.
+                    Add stock now or later.
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Sidebar Column */}
           <div>
-            {/* Organization Section */}
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <svg className={styles.sectionIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -278,9 +272,9 @@ export default function NewProductPage() {
                   ))}
                 </Select>
                 <div className={styles.categoryHelper}>
-                  <span className={styles.categoryHelperLabel}>Need a new category?</span>
+                  <span className={styles.categoryHelperLabel}>Need one?</span>
                   <p className={styles.categoryHelperText}>
-                    Create one first, then come back and assign it to this product.
+                    Create it first.
                   </p>
                   <Link href="/dashboard/categories" className={styles.categoryHelperLink}>
                     Manage categories
@@ -303,7 +297,6 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* Tax Settings */}
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <svg className={styles.sectionIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -313,7 +306,7 @@ export default function NewProductPage() {
                 <label className={styles.toggle} htmlFor="product-taxable">
                   <div className={styles.toggleInfo}>
                     <span className={styles.toggleLabel}>Taxable Product</span>
-                    <span className={styles.toggleHint}>Apply tax upon checkout</span>
+                    <span className={styles.toggleHint}>Apply tax at checkout</span>
                   </div>
                   <div className={`${styles.toggleSwitch} ${form.is_taxable ? styles.toggleOn : ''}`}>
                     <input

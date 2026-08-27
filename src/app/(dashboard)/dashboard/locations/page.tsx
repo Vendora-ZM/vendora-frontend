@@ -29,7 +29,6 @@ export default function LocationsPage() {
   const canManageLocations = Boolean(me?.permissions?.includes('locations.manage'));
 
   const totalPages = Math.max(1, Math.ceil(locations.length / PAGE_SIZE));
-
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const pageLocations = useMemo(() => {
@@ -88,11 +87,11 @@ export default function LocationsPage() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Location</th>
-                <th>Location ID</th>
+                <th className={styles.locationColumn}>Location</th>
+                <th className={styles.hideOnMobile}>Location ID</th>
                 <th>Created</th>
-                <th>Updated</th>
-                <th />
+                <th className={styles.hideOnMobile}>Updated</th>
+                <th className={styles.actionsColumn} />
               </tr>
             </thead>
             <tbody>
@@ -109,15 +108,15 @@ export default function LocationsPage() {
               ) : (
                 pageLocations.map((location: Location) => (
                   <tr key={location.id}>
-                    <td>
+                    <td className={styles.locationColumn}>
                       <div className={styles.locationCopy}>
                         <span className={styles.locationName}>{location.name}</span>
                         <span className={styles.locationHint}>Open the profile to see branch analytics.</span>
                       </div>
                     </td>
-                    <td className={styles.locationId}>{location.id}</td>
-                    <td>{formatDate(location.created_at)}</td>
-                    <td>{formatDate(location.updated_at)}</td>
+                    <td className={`${styles.locationId} ${styles.hideOnMobile}`}>{location.id}</td>
+                    <td className={styles.dateCell}>{formatDate(location.created_at)}</td>
+                    <td className={`${styles.dateCell} ${styles.hideOnMobile}`}>{formatDate(location.updated_at)}</td>
                     <td className={styles.actionCell}>
                       <div className={styles.actionGroup}>
                         <Link className={styles.viewLink} href={`/dashboard/locations/${location.id}`}>

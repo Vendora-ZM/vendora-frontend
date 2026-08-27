@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-width: 0;
 }
 
 .header {
@@ -83,6 +84,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 720px;
 }
 
 .table th {
@@ -95,6 +97,7 @@
   letter-spacing: 0.5px;
   background: #fafafa;
   border-bottom: 1px solid rgba(140, 144, 152, 0.1);
+  white-space: nowrap;
 }
 
 .table td {
@@ -117,6 +120,16 @@
   background: rgba(26, 132, 221, 0.03);
 }
 
+.locationColumn {
+  width: 36%;
+}
+
+.actionsColumn,
+.actionCell {
+  width: 1%;
+  white-space: nowrap;
+}
+
 .emptyCell {
   text-align: center !important;
   padding: 28px 20px !important;
@@ -127,6 +140,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .locationName {
@@ -142,6 +156,10 @@
 .locationId {
   word-break: break-all;
   color: var(--color-grey);
+}
+
+.dateCell {
+  white-space: nowrap;
 }
 
 .actionCell {
@@ -289,24 +307,92 @@
 }
 
 @media (max-width: 768px) {
+  .page {
+    gap: 20px;
+  }
+
   .title {
-    font-size: 1.6rem;
+    font-size: 1.55rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    line-height: 1.45;
   }
 
   .header {
     align-items: flex-start;
+    gap: 12px;
+  }
+
+  .createLink {
+    padding: 10px 13px;
+    font-size: 0.82rem;
   }
 
   .cardHeader,
   .pagination {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .cardHeader {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .cardHeader h2 {
+    font-size: 0.92rem;
+  }
+
+  .cardHeader p,
+  .cardMeta,
+  .paginationSummary {
+    font-size: 0.76rem;
+  }
+
+  .table {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .hideOnMobile {
+    display: none;
   }
 
   .table th,
   .table td {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .table th {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 0.68rem;
+  }
+
+  .table td {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 0.78rem;
+  }
+
+  .locationColumn {
+    width: 46%;
+  }
+
+  .locationName {
+    font-size: 0.82rem;
+  }
+
+  .locationHint {
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .dateCell {
+    font-size: 0.74rem;
   }
 
   .actionCell {
@@ -314,6 +400,115 @@
   }
 
   .actionGroup {
+    gap: 6px;
     justify-content: flex-start;
+  }
+
+  .viewLink,
+  .secondaryViewLink,
+  .dangerActionButton {
+    padding: 7px 10px;
+    font-size: 0.72rem;
+    border-radius: 9px;
+  }
+
+  .pageButton {
+    padding: 8px 11px;
+    font-size: 0.75rem;
+  }
+
+  .pageNumber {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    gap: 18px;
+  }
+
+  .title {
+    font-size: 1.32rem;
+  }
+
+  .subtitle {
+    font-size: 0.78rem;
+  }
+
+  .createLink {
+    padding: 9px 11px;
+    font-size: 0.76rem;
+  }
+
+  .cardHeader,
+  .pagination {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .cardHeader {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .table th,
+  .table td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .table th {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 0.64rem;
+  }
+
+  .table td {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 0.72rem;
+  }
+
+  .locationColumn {
+    width: 48%;
+  }
+
+  .locationName {
+    font-size: 0.76rem;
+  }
+
+  .locationHint,
+  .dateCell,
+  .paginationSummary,
+  .cardHeader p,
+  .cardMeta {
+    font-size: 0.66rem;
+  }
+
+  .viewLink,
+  .secondaryViewLink,
+  .dangerActionButton {
+    padding: 6px 8px;
+    font-size: 0.68rem;
+  }
+
+  .paginationControls,
+  .pageNumbers {
+    gap: 6px;
+  }
+
+  .pageButton {
+    padding: 7px 9px;
+    font-size: 0.7rem;
+  }
+
+  .pageNumber {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    font-size: 0.7rem;
   }
 }

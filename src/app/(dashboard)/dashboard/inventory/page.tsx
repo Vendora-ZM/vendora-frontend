@@ -46,7 +46,6 @@ export default function InventoryPage() {
     offset: (movementPage - 1) * movementPageSize,
   });
 
-  // Build lookup maps for fast rendering
   const productsMap = useMemo(
     () => Object.fromEntries(productsRaw.map((p: Product) => [p.id, p])),
     [productsRaw]
@@ -71,7 +70,6 @@ export default function InventoryPage() {
   const balancesTableLoading = balancesLoading || paginatedBalancesLoading;
   const movementsTableLoading = movementsLoading || paginatedMovementsLoading;
 
-  // Summary stats
   const totalSkus = balances.length;
   const lowStockCount = balances.filter((b: InventoryBalance) => parseFloat(b.quantity_available) <= 5).length;
   const outOfStockCount = balances.filter((b: InventoryBalance) => parseFloat(b.quantity_available) <= 0).length;
@@ -145,7 +143,6 @@ export default function InventoryPage() {
 
   return (
     <div className={styles.page}>
-      {/* Header */}
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Inventory</h1>
@@ -153,7 +150,6 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ background: 'rgba(6, 41, 107, 0.08)', color: '#06296B' }}>
@@ -315,7 +311,6 @@ export default function InventoryPage() {
         </div>
       </details>
 
-      {/* Tabs */}
       <div className={styles.tabsBar}>
         <button
           className={`${styles.tab} ${activeTab === 'balances' ? styles.tabActive : ''}`}
@@ -331,17 +326,14 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      {/* Table */}
       <div className={styles.tableContainer}>
         {activeTab === 'balances' ? (
-          <>
-            <BalancesTable
-              balances={paginatedBalances}
-              products={productsMap}
-              locations={locationsMap}
-              isLoading={balancesTableLoading}
-            />
-            {!balancesTableLoading && balanceTotal > 0 ? (
+          <BalancesTable
+            balances={paginatedBalances}
+            products={productsMap}
+            locations={locationsMap}
+            isLoading={balancesTableLoading}
+            footer={!balancesTableLoading && balanceTotal > 0 ? (
               <div className={styles.paginationFooter}>
                 <div className={styles.paginationSummary}>
                   Showing {Math.min((balancePage - 1) * balancePageSize + 1, balanceTotal)}-
@@ -380,16 +372,14 @@ export default function InventoryPage() {
                 </div>
               </div>
             ) : null}
-          </>
+          />
         ) : (
-          <>
-            <MovementsTable
-              movements={paginatedMovements}
-              products={productsMap}
-              locations={locationsMap}
-              isLoading={movementsTableLoading}
-            />
-            {!movementsTableLoading && movementTotal > 0 ? (
+          <MovementsTable
+            movements={paginatedMovements}
+            products={productsMap}
+            locations={locationsMap}
+            isLoading={movementsTableLoading}
+            footer={!movementsTableLoading && movementTotal > 0 ? (
               <div className={styles.paginationFooter}>
                 <div className={styles.paginationSummary}>
                   Showing {Math.min((movementPage - 1) * movementPageSize + 1, movementTotal)}-
@@ -428,11 +418,10 @@ export default function InventoryPage() {
                 </div>
               </div>
             ) : null}
-          </>
+          />
         )}
       </div>
 
-      {/* Modals */}
       <AdjustStockModal />
       <TransferStockModal />
     </div>
