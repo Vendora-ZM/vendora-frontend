@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DashboardNotificationsMenu } from '@/components/layout/DashboardNotificationsMenu';
@@ -21,6 +21,15 @@ function isUnauthorizedError(error: unknown) {
   );
 }
 
+const QUICK_NAV_LINKS = [
+  { href: '/dashboard', label: 'Home', exact: true },
+  { href: '/dashboard/pos', label: 'POS', exact: false },
+  { href: '/dashboard/sales', label: 'Sales', exact: false },
+  { href: '/dashboard/products', label: 'Products', exact: false },
+  { href: '/dashboard/orders', label: 'Orders', exact: false },
+  { href: '/dashboard/analytics', label: 'Analytics', exact: false },
+];
+
 export default function DashboardLayout({
   children,
 }: {
@@ -28,6 +37,7 @@ export default function DashboardLayout({
 }) {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const authState = useAppSelector((state) => state.auth);
@@ -128,6 +138,9 @@ export default function DashboardLayout({
     [authState.userName, me]
   );
   const email = me?.email ?? authState.email ?? '';
+  const showQuickNav = pathname !== '/dashboard';
+  const isQuickNavActive = (href: string, exact: boolean) => (exact ? pathname === href : pathname.startsWith(href));
+
   const avatarInitials = useMemo(() => {
     const parts = (userName || '').split(' ').filter(Boolean);
     if (parts.length === 0) {
@@ -194,6 +207,23 @@ export default function DashboardLayout({
         </header>
 
         <main className={styles.content}>
+          {showQuickNav ? (
+            <nav className={styles.quickNavShell} aria-label="Quick page navigation">
+              <div className={styles.quickNavTrack}>
+                {QUICK_NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`${styles.quickNavLink} ${isQuickNavActive(link.href, link.exact) ? styles.quickNavLinkActive : ''}`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+              <span className={styles.quickNavHint}>Swipe for more pages</span>
+            </nav>
+          ) : null}
+
           {trialState ? (
             <div className={`${styles.trialBanner} ${trialState.isExpired ? styles.trialBannerExpired : ''}`}>
               <div className={styles.trialBannerCopy}>
