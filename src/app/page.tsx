@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BUSINESS_CATEGORIES, BUSINESS_HIGHLIGHTS, getBusinessCategory } from '@/lib/business/businessTypes';
@@ -10,17 +11,17 @@ import styles from './page.module.css';
 const benefits = [
   {
     title: 'POS built for speed',
-    text: 'Sell from a smartphone, tablet, or computer with a checkout flow that keeps the line moving.',
+    text: 'Sell fast from phone, tablet, or desktop.',
     icon: '01',
   },
   {
     title: 'Inventory that stays clear',
-    text: 'Track stock across products, locations, and transfers so you can reorder before you run out.',
+    text: 'Track stock and reorder before it runs out.',
     icon: '02',
   },
   {
     title: 'AI that explains the business',
-    text: 'See why sales changed, what may run out next, and what action to take before the week ends.',
+    text: 'See what changed and what to do next.',
     icon: '03',
   },
 ];
@@ -28,52 +29,39 @@ const benefits = [
 const productSections = [
   {
     title: 'Point of Sale',
-    text: 'Sell from a smartphone, tablet, or computer with a clean checkout flow that works for busy counters.',
-    detail: 'Fast orders, quick discounts, receipts, and easy staff handoff.',
+    text: 'Sell fast from any device.',
+    detail: 'Fast orders, discounts, and receipts.',
   },
   {
     title: 'Inventory management',
-    text: 'Keep tabs on what is in stock, what moved, and what needs to be reordered next.',
-    detail: 'Simple stock counts, low stock alerts, and branch-aware stock visibility.',
+    text: 'See stock, movement, and what to reorder.',
+    detail: 'Counts, low-stock alerts, and branch visibility.',
   },
   {
     title: 'AI Business Advisor',
-    text: 'Ask questions in plain language and get useful explanations instead of just numbers.',
-    detail: 'Sales explanations, demand forecasts, cash flow signals, and smart recommendations.',
+    text: 'Ask questions and get clear answers.',
+    detail: 'Sales insights, forecasts, and recommendations.',
   },
   {
     title: 'Sales analytics',
-    text: 'Understand performance by day, item, category, employee, and payment method.',
-    detail: 'Clear reports that help owners see what is happening at a glance.',
+    text: 'Track performance by day, item, and team.',
+    detail: 'Reports owners can scan quickly.',
   },
   {
     title: 'Employee management',
-    text: 'Assign roles, permissions, and PIN access so each team member sees the right tools.',
-    detail: 'Better control for cashiers, supervisors, and managers.',
+    text: 'Give each team member the right access.',
+    detail: 'Control for cashiers, supervisors, and managers.',
   },
   {
     title: 'CRM and loyalty',
-    text: 'Keep customers coming back with saved profiles, loyalty, and discount-aware workflows.',
-    detail: 'Customer history, repeat visits, and promotions in one place.',
+    text: 'Keep customers coming back with loyalty tools.',
+    detail: 'History, repeat visits, and promotions.',
   },
   {
     title: 'Multi-store management',
-    text: 'Run several branches from one account while still keeping each location distinct.',
-    detail: 'Location-level access, reporting, and operational control.',
+    text: 'Run multiple branches from one account.',
+    detail: 'Per-location access and reporting.',
   },
-];
-
-const productHighlights = [
-  'Fast checkout on mobile, tablet, and desktop',
-  'Live stock visibility before products run out',
-  'Simple role-based access for every team',
-  'Reports that owners can actually read quickly',
-];
-
-const posHighlights = [
-  'Sell from a smartphone, tablet, or computer.',
-  'Move faster with quick discounts and one-tap receipts.',
-  'Keep staff handoffs simple during busy hours.',
 ];
 
 const aiInsights = [
@@ -97,34 +85,34 @@ const aiPrompts = [
 const steps = [
   {
     title: 'Set up your business',
-    text: 'Create your workspace, add locations, and define who can see what.',
+    text: 'Create your workspace and add locations.',
   },
   {
     title: 'Load your products',
-    text: 'Bring in your catalog, pricing, categories, and stock levels.',
+    text: 'Add products, prices, and stock.',
   },
   {
     title: 'Start selling live',
-    text: 'Use the POS, review sales, and track performance from the dashboard.',
+    text: 'Start selling and track results.',
   },
 ];
 
 const audiences = [
   {
     title: 'Owners',
-    text: 'Get a single view of the business without digging through separate systems.',
+    text: 'See the whole business in one place.',
   },
   {
     title: 'Store managers',
-    text: 'Run daily operations with clear visibility across sales, stock, and teams.',
+    text: 'Run daily work with clear visibility.',
   },
   {
     title: 'Cashiers',
-    text: 'Move fast with a checkout flow that is simple to learn and easy to use.',
+    text: 'Use a checkout flow that is fast and simple.',
   },
   {
     title: 'Multi-location teams',
-    text: 'Keep each branch aligned while still viewing the performance of the full business.',
+    text: 'Keep branches aligned and visible.',
   },
 ];
 
@@ -132,22 +120,22 @@ const faqItems = [
   {
     question: 'Who is Vendora built for?',
     answer:
-      'Vendora is built for merchants who want to manage sales, stock, customers, and locations from one place.',
+      'Vendora is for merchants managing sales, stock, customers, and locations.',
   },
   {
     question: 'Can I use it across multiple branches?',
     answer:
-      'Yes. Vendora is designed to handle multiple locations with focused analytics for each branch.',
+      'Yes. Vendora supports multiple branches with branch-level analytics.',
   },
   {
     question: 'How do teams get access?',
     answer:
-      'You create roles and assign permissions so each user only sees the parts of the platform they should use.',
+      'Create roles and permissions for each user.',
   },
   {
     question: 'What is the fastest way to get started?',
     answer:
-      'Create an account, set up your business, add products, and begin using the dashboard right away.',
+      'Create an account, add products, and start using the dashboard.',
   },
 ];
 
@@ -171,12 +159,16 @@ export default function Home() {
           <div className={styles.heroContent}>
             <span className={styles.kicker}>The all-in-one OS for growing businesses</span>
             <h1 className={styles.title}>
-              Everything you need to sell, scale, and manage your business.
+              Sell faster with fewer stock surprises.
             </h1>
             <p className={styles.subtitle}>
-              From intelligent inventory to lightning-fast point of sale, Vendora gives you the clarity and control to run your operations smoothly—whether you have one store or fifty.
+              Keep checkout moving and stock visible from one place.
             </p>
-            <div className={styles.ctaGroup}>
+            <div className={styles.heroOutcomeStrip}>
+              <span className={styles.heroOutcomeLabel}>Merchant outcome</span>
+              <strong className={styles.heroOutcomeValue}>Faster sales. Clear stock. Calm operations.</strong>
+            </div>
+            <div className={`${styles.ctaGroup} ${styles.dualCtaGroup}`}>
               <Link href="/signup" className={styles.primaryButton}>
                 Start free trial
               </Link>
@@ -184,67 +176,24 @@ export default function Home() {
                 Sign in
               </Link>
             </div>
-            <section className={styles.posSpotlight} aria-label="Point of sale spotlight">
-              <div className={styles.posSpotlightHeader}>
-                <span className={styles.posSpotlightKicker}>Point of Sale</span>
-                <strong>Sell from a smartphone, tablet, or computer.</strong>
-              </div>
-              <div className={styles.posSpotlightList}>
-                {posHighlights.map((item) => (
-                  <span key={item} className={styles.posSpotlightItem}>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </section>
-            <div className={styles.heroPills}>
-              <span className={styles.heroPill}>Multi-location ready</span>
-              <span className={styles.heroPill}>Role-based access</span>
-              <span className={styles.heroPill}>Live inventory</span>
-              <span className={styles.heroPill}>Fast checkout</span>
-            </div>
-
-            <div className={styles.heroStats}>
-              {productHighlights.map((item) => (
-                <div key={item} className={styles.heroStat}>
-                  <span className={styles.heroStatLabel}>Why it matters</span>
-                  <strong className={styles.heroStatValue}>{item}</strong>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className={styles.heroImage}>
-            <div className={styles.mockup}>
-              <div className={styles.mockupHeader}>
-                <div className={styles.mockupDot} style={{ background: '#ff5f56' }} />
-                <div className={styles.mockupDot} style={{ background: '#ffbd2e' }} />
-                <div className={styles.mockupDot} style={{ background: '#27c93f' }} />
+            <div className={styles.heroVisualFrame}>
+              <div className={styles.heroVisualBadge}>Real merchant outcome</div>
+              <div className={styles.heroVisualCopy}>
+                <strong>Sell more with less guesswork.</strong>
+                <span>Fast checkout, clear stock, better decisions.</span>
               </div>
-              <div className={styles.mockupBody}>
-                <div className={styles.mockupSidebar}>
-                  <div className={styles.mockupLine} />
-                  <div className={`${styles.mockupLine} ${styles.short}`} />
-                  <div className={`${styles.mockupLine} ${styles.shorter}`} />
-                </div>
-                <div className={styles.mockupContent}>
-                  <div className={styles.mockupCard}>
-                    <strong>Sales today</strong>
-                    <span>See the numbers that matter now.</span>
-                  </div>
-                  <div className={styles.mockupCard}>
-                    <strong>Low stock alerts</strong>
-                    <span>Know what to reorder before it runs out.</span>
-                  </div>
-                  <div className={styles.mockupCard}>
-                    <strong>Branch access</strong>
-                    <span>Give each team only what they need.</span>
-                  </div>
-                  <div className={styles.mockupCard}>
-                    <strong>Top products</strong>
-                    <span>Spot what is moving fastest across the business.</span>
-                  </div>
-                </div>
+              <div className={styles.heroPhotoWrap}>
+                <Image
+                  src="/images/landing-hero-outcome.png"
+                  alt="Merchant confidently serving customers in a modern, well-stocked shop"
+                  fill
+                  priority
+                  sizes="(max-width: 640px) 100vw, (max-width: 1100px) 90vw, 560px"
+                  className={styles.heroPhoto}
+                />
               </div>
             </div>
           </div>
@@ -253,7 +202,7 @@ export default function Home() {
         <section className={styles.section} id="features">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionEyebrow}>The Vendora Advantage</span>
-            <h2 className={styles.sectionTitle}>Smarter tools for smoother operations.</h2>
+            <h2 className={styles.sectionTitle}>Tools for smoother operations.</h2>
             <p className={styles.sectionSubtitle}>
               Vendora brings the selling tools, analytics, and AI guidance into one system so the platform feels
               useful from day one.
@@ -274,9 +223,9 @@ export default function Home() {
         <section className={styles.section} id="products">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionEyebrow}>Products</span>
-            <h2 className={styles.sectionTitle}>What Vendora helps merchants do.</h2>
+            <h2 className={styles.sectionTitle}>What Vendora helps you do.</h2>
             <p className={styles.sectionSubtitle}>
-              A quick breakdown of the platform, written in simple words so buyers can see the value before sign-up.
+              A quick look at what the platform helps you do.
             </p>
           </div>
 
@@ -294,7 +243,7 @@ export default function Home() {
         <section className={styles.section} id="business-types">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionEyebrow}>Business types</span>
-            <h2 className={styles.sectionTitle}>Pick a category, then choose a more specific business type.</h2>
+            <h2 className={styles.sectionTitle}>Pick your business type.</h2>
             <p className={styles.sectionSubtitle}>
               Vendora can shape the setup around what you sell, whether you run a shop, restaurant, clinic, or service
               business.
@@ -352,9 +301,9 @@ export default function Home() {
           <div className={styles.analyticsBanner}>
             <div className={styles.analyticsCopy}>
               <span className={styles.sectionEyebrow}>AI Dashboard</span>
-              <h2 className={styles.sectionTitle}>Meet your AI Business Co-pilot.</h2>
+              <h2 className={styles.sectionTitle}>Meet your AI co-pilot.</h2>
               <p className={styles.sectionSubtitle}>
-                Go beyond standard reports. Vendora analyzes your data in real-time to explain sales trends, forecast demand, and recommend your next move.
+                See sales trends, forecasts, and next steps in real time.
               </p>
             </div>
 
@@ -384,7 +333,7 @@ export default function Home() {
           <div className={styles.splitLayout}>
             <div className={styles.splitPanel}>
               <span className={styles.sectionEyebrow}>How it works</span>
-              <h2 className={styles.sectionTitle}>A simple path from setup to live work.</h2>
+              <h2 className={styles.sectionTitle}>From setup to selling.</h2>
               <div className={styles.stepList}>
                 {steps.map((step, index) => (
                   <article key={step.title} className={styles.stepItem}>
@@ -400,7 +349,7 @@ export default function Home() {
 
             <div className={styles.splitPanel}>
               <span className={styles.sectionEyebrow}>Built for</span>
-              <h2 className={styles.sectionTitle}>The people who keep the business moving.</h2>
+              <h2 className={styles.sectionTitle}>Built for every team.</h2>
               <div className={styles.cardGrid}>
                 {audiences.map((audience) => (
                   <article key={audience.title} className={styles.miniCard}>
@@ -416,9 +365,9 @@ export default function Home() {
         <section className={styles.section} id="pricing">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionEyebrow}>Pricing</span>
-            <h2 className={styles.sectionTitle}>Simple pricing that is easy to explain.</h2>
+            <h2 className={styles.sectionTitle}>Simple pricing.</h2>
             <p className={styles.sectionSubtitle}>
-              Start with a trial, then choose the plan that matches the size of your operation.
+              Start with a trial, then pick the right plan.
             </p>
           </div>
 
@@ -442,7 +391,7 @@ export default function Home() {
                 {isYearly ? '999' : '99'}
                 <span className={styles.pricePeriod}>/{isYearly ? 'year' : 'month'}</span>
               </div>
-              <p className={styles.tierDesc}>For single-location merchants who want to get organized quickly.</p>
+              <p className={styles.tierDesc}>For single-location merchants.</p>
               <ul className={styles.featureList}>
                 <li className={styles.featureItem}>1 store</li>
                 <li className={styles.featureItem}>Essential POS and inventory tools</li>
@@ -461,7 +410,7 @@ export default function Home() {
                 {isYearly ? '1,990' : '199'}
                 <span className={styles.pricePeriod}>/{isYearly ? 'year' : 'month'}</span>
               </div>
-              <p className={styles.tierDesc}>For businesses that are expanding into more than one branch.</p>
+              <p className={styles.tierDesc}>For growing multi-branch businesses.</p>
               <ul className={styles.featureList}>
                 <li className={styles.featureItem}>Multiple locations</li>
                 <li className={styles.featureItem}>Role-based access</li>
@@ -475,7 +424,7 @@ export default function Home() {
             <div className={styles.pricingCard}>
               <h3 className={styles.tierName}>Enterprise</h3>
               <div className={styles.tierPrice}>Custom</div>
-              <p className={styles.tierDesc}>For larger teams that need tailored workflows and rollout support.</p>
+              <p className={styles.tierDesc}>For larger teams with custom needs.</p>
               <ul className={styles.featureList}>
                 <li className={styles.featureItem}>Unlimited locations</li>
                 <li className={styles.featureItem}>Custom access needs</li>
@@ -492,7 +441,7 @@ export default function Home() {
           <div className={styles.contactStrip}>
             <div>
               <span className={styles.sectionEyebrow}>Ready to move faster?</span>
-              <h2 className={styles.sectionTitle}>Give your team one place to sell and manage the business.</h2>
+              <h2 className={styles.sectionTitle}>Give your team one place to work.</h2>
               <p className={styles.sectionSubtitle}>
                 If you are evaluating Vendora, the fastest path is to create a workspace and explore the dashboard
                 from the inside.
@@ -512,7 +461,7 @@ export default function Home() {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <span className={styles.sectionEyebrow}>Questions buyers ask</span>
-            <h2 className={styles.sectionTitle}>Keep the page clear enough to decide.</h2>
+            <h2 className={styles.sectionTitle}>Common questions.</h2>
           </div>
           <div className={styles.faqList}>
             {faqItems.map((item) => (
@@ -526,9 +475,9 @@ export default function Home() {
 
         <section className={styles.section} style={{ paddingBottom: 0 }}>
           <div className={styles.ctaSection}>
-            <h2 className={styles.sectionTitle}>Ready to see Vendora in action?</h2>
+            <h2 className={styles.sectionTitle}>Ready to try Vendora?</h2>
             <p className={styles.sectionSubtitle}>
-              Start a trial, explore the flow, and let the platform show how it supports your business.
+              Start a trial and explore the flow.
             </p>
             <div className={styles.ctaGroup} style={{ justifyContent: 'center' }}>
               <Link href="/signup" className={styles.primaryButton}>
@@ -542,3 +491,10 @@ export default function Home() {
     </>
   );
 }
+
+
+
+
+
+
+

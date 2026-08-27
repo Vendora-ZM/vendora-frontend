@@ -416,6 +416,66 @@
   color: var(--color-primary-navy);
 }
 
+.paymentItemsCard {
+  display: grid;
+  gap: 12px;
+  margin: 0 20px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #FAFAFA;
+  border: 1px solid rgba(140, 144, 152, 0.12);
+}
+
+.paymentItemsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.paymentItemsHeader strong {
+  color: var(--color-primary-navy);
+  font-size: 0.88rem;
+}
+
+.paymentItemsList {
+  display: grid;
+  gap: 10px;
+}
+
+.paymentItemRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.paymentItemInfo {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.paymentItemName {
+  color: var(--color-primary-navy);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.paymentItemMeta {
+  color: var(--color-grey);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.paymentItemTotal {
+  flex-shrink: 0;
+  color: var(--color-dark-grey);
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .channelSummary {
   display: flex;
   flex-direction: column;
@@ -657,3 +717,28 @@
   }
 }
 
+
+@media (max-width: 480px) {
+  .paymentItemsCard {
+    margin: 0 12px;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .paymentItemsHeader {
+    gap: 8px;
+  }
+
+  .paymentItemsHeader strong {
+    font-size: 0.76rem;
+  }
+
+  .paymentItemName {
+    font-size: 0.78rem;
+  }
+
+  .paymentItemMeta,
+  .paymentItemTotal {
+    font-size: 0.68rem;
+  }
+}

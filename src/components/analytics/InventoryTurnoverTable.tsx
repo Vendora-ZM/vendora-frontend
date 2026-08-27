@@ -24,8 +24,8 @@ export const InventoryTurnoverTable: React.FC = () => {
             <tr>
               <th>Product</th>
               <th className={styles.rightAlign}>Sold</th>
-              <th className={styles.rightAlign}>Avg. Stock</th>
-              <th className={styles.rightAlign}>Turnover</th>
+              <th className={`${styles.rightAlign} ${styles.mobileHideMd}`}>Avg. Stock</th>
+              <th className={`${styles.rightAlign} ${styles.mobileKeep}`}>Turnover</th>
             </tr>
           </thead>
           <tbody>
@@ -42,8 +42,8 @@ export const InventoryTurnoverTable: React.FC = () => {
                     </div>
                   </td>
                   <td className={styles.rightAlign}>{row.quantity_sold}</td>
-                  <td className={styles.rightAlign}>{parseFloat(row.avg_on_hand).toFixed(1)}</td>
-                  <td className={`${styles.rightAlign} ${styles.turnoverVal}`}>
+                  <td className={`${styles.rightAlign} ${styles.mobileHideMd}`}>{parseFloat(row.avg_on_hand).toFixed(1)}</td>
+                  <td className={`${styles.rightAlign} ${styles.turnoverVal} ${styles.mobileKeep}`}>
                     {parseFloat(row.turnover_rate).toFixed(2)}
                   </td>
                 </tr>
@@ -55,3 +55,4 @@ export const InventoryTurnoverTable: React.FC = () => {
     </div>
   );
 };
+

@@ -56,3 +56,44 @@
     margin-bottom: 20px;
   }
 }
+
+@media (max-width: 768px) {
+  .page {
+    gap: 0;
+    min-width: 0;
+  }
+
+  .pageHeader {
+    margin-bottom: 16px;
+    min-width: 0;
+  }
+
+  .title {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .subtitle {
+    margin-top: 3px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+
+  .grid {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .title {
+    font-size: 1.15rem;
+  }
+
+  .subtitle {
+    font-size: 0.74rem;
+  }
+
+  .grid {
+    gap: 12px;
+  }
+}

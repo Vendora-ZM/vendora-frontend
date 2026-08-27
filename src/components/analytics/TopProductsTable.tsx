@@ -31,7 +31,7 @@ export const TopProductsTable: React.FC = () => {
           <thead>
             <tr>
               <th>Product</th>
-              <th className={styles.rightAlign}>Sold</th>
+              <th className={`${styles.rightAlign} ${styles.mobileHideSm}`}>Sold</th>
               <th className={styles.rightAlign}>Revenue</th>
             </tr>
           </thead>
@@ -49,7 +49,7 @@ export const TopProductsTable: React.FC = () => {
                       <span className={styles.productSku}>Item code (SKU): {row.sku}</span>
                     </div>
                   </td>
-                  <td className={styles.rightAlign}>{row.quantity_sold}</td>
+                  <td className={`${styles.rightAlign} ${styles.mobileHideSm}`}>{row.quantity_sold}</td>
                   <td className={`${styles.rightAlign} ${styles.revenueVal}`}>
                     {formatCurrencyFromCents(row.revenue, { currencyCode })}
                   </td>
@@ -62,3 +62,4 @@ export const TopProductsTable: React.FC = () => {
     </div>
   );
 };
+

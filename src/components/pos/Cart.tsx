@@ -429,6 +429,28 @@ export const Cart: React.FC<CartProps> = ({
             </div>
           </div>
 
+          <div className={styles.paymentItemsCard}>
+            <div className={styles.paymentItemsHeader}>
+              <span className={styles.summaryLabel}>Items in this sale</span>
+              <strong>{cart.reduce((sum, item) => sum + item.cartQuantity, 0)} unit{cart.reduce((sum, item) => sum + item.cartQuantity, 0) === 1 ? '' : 's'}</strong>
+            </div>
+            <div className={styles.paymentItemsList}>
+              {cart.map((item) => (
+                <div key={`payment-${item.id}`} className={styles.paymentItemRow}>
+                  <div className={styles.paymentItemInfo}>
+                    <strong className={styles.paymentItemName}>{item.name}</strong>
+                    <span className={styles.paymentItemMeta}>
+                      {item.cartQuantity} x {formatAmount(item.selling_price / 100)}
+                    </span>
+                  </div>
+                  <span className={styles.paymentItemTotal}>
+                    {formatAmount((item.selling_price / 100) * item.cartQuantity)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {error ? (
             <div className={styles.errorBanner}>
               <div className={styles.errorCopy}>
@@ -503,3 +525,4 @@ export const Cart: React.FC<CartProps> = ({
     </div>
   );
 };
+

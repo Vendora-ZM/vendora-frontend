@@ -59,3 +59,36 @@
     font-size: 0.8rem;
   }
 }
+
+@media (max-width: 768px) {
+  .toolbar {
+    margin-bottom: 16px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .presets {
+    flex-wrap: nowrap;
+    min-width: max-content;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgba(140, 144, 152, 0.08);
+  }
+
+  .presetBtn {
+    padding: 7px 10px;
+    font-size: 0.74rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .toolbar {
+    margin-bottom: 14px;
+  }
+
+  .presetBtn {
+    padding: 6px 9px;
+    font-size: 0.68rem;
+  }
+}

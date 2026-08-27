@@ -445,13 +445,13 @@
 @media (max-width: 768px) {
   .container {
     align-items: flex-start;
-    padding: 72px 12px 18px;
+    padding: 72px 18px 18px;
   }
 
   .topNav {
     top: 10px;
-    left: 12px;
-    right: 12px;
+    left: 18px;
+    right: 18px;
     transform: none;
     justify-content: center;
     gap: 6px;
@@ -467,7 +467,7 @@
   .glassCard {
     width: 100%;
     margin-top: 54px;
-    padding: 24px 16px;
+    padding: 24px 18px;
     border-radius: 20px;
   }
 
@@ -551,12 +551,12 @@
 
 @media (max-width: 420px) {
   .container {
-    padding: 64px 8px 14px;
+    padding: 64px 16px 14px;
   }
 
   .topNav {
-    left: 8px;
-    right: 8px;
+    left: 16px;
+    right: 16px;
     gap: 4px;
     padding: 7px 8px;
   }
@@ -568,7 +568,7 @@
 
   .glassCard {
     margin-top: 48px;
-    padding: 18px 12px;
+    padding: 18px 16px;
     border-radius: 18px;
   }
 
@@ -645,4 +645,5 @@
     font-size: 0.84rem;
   }
 }
+
 

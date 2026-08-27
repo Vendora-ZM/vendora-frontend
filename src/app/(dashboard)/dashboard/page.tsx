@@ -1289,10 +1289,10 @@ export default function DashboardOverview() {
                 <thead>
                   <tr>
                     <th>Order ID</th>
-                    <th>Customer</th>
+                    <th>Amount</th>
                     <th>Time</th>
                     <th>Status</th>
-                    <th>Amount</th>
+                    <th>Customer</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1323,17 +1323,17 @@ export default function DashboardOverview() {
 
                       return (
                         <tr key={sale.id}>
-                          <td style={{ fontWeight: 600, color: 'var(--color-primary-navy)' }}>
+                          <td className={styles.orderIdCell}>
                             {sale.sale_number}
                           </td>
-                          <td>{getCustomerName(customer)}</td>
+                          <td>{formatCurrencyFromCents(sale.total_amount ?? 0, { currencyCode })}</td>
                           <td>{formatDateTime(sale.completed_at ?? sale.created_at)}</td>
                           <td>
                             <span className={`${styles.badge} ${statusClass}`}>
                               {STATUS_LABELS[sale.status]}
                             </span>
                           </td>
-                          <td>{formatCurrencyFromCents(sale.total_amount ?? 0, { currencyCode })}</td>
+                          <td>{getCustomerName(customer)}</td>
                         </tr>
                       );
                     })
@@ -1423,6 +1423,8 @@ export default function DashboardOverview() {
     </div>
   );
 }
+
+
 
 
 

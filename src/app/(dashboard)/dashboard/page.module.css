@@ -375,7 +375,7 @@
 }
 
 .chartLegacyBarLabel {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   color: var(--color-grey);
   text-align: center;
 }
@@ -458,11 +458,11 @@
 }
 
 .badge {
-  padding: 6px 14px;
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.02em;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
 }
 
@@ -860,7 +860,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   color: #dbeafe;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -967,7 +967,7 @@
   color: rgba(248, 251, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
@@ -990,7 +990,7 @@
   color: rgba(248, 251, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
@@ -1358,11 +1358,11 @@
 
   .presetBtn {
     padding: 8px 11px;
-    font-size: 0.75rem;
+    font-size: 0.62rem;
   }
 
   .locationField {
-    font-size: 0.75rem;
+    font-size: 0.62rem;
   }
 
   .locationSelect {
@@ -1395,7 +1395,7 @@
   }
 
   .statTrend {
-    font-size: 0.75rem;
+    font-size: 0.62rem;
   }
 
   .quickActionsSection {
@@ -1470,7 +1470,7 @@
   }
 
   .legendItem {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
   }
 
   .legendSwatch {
@@ -1517,8 +1517,8 @@
   }
 
   .badge {
-    padding: 5px 10px;
-    font-size: 0.68rem;
+    padding: 4px 8px;
+    font-size: 0.62rem;
   }
 
   .alertsContainer {
@@ -1675,7 +1675,7 @@
   }
 
   .statTrend {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     font-weight: 400;
   }
 
@@ -1757,7 +1757,7 @@
   }
 
   .quickActionDescription {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     line-height: 1.3;
     font-weight: 400;
   }
@@ -1809,6 +1809,11 @@
     padding: 10px;
   }
 
+  .orderIdCell {
+    font-size: 0.66rem;
+    font-weight: 400;
+  }
+
   .alertItem {
     padding: 9px;
   }
@@ -1830,4 +1835,30 @@
   }
 }
 
+
+
+
+
+/* Recent activity order id mobile refinement */
+.orderIdCell {
+  color: var(--color-primary-navy);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .orderIdCell {
+    font-size: 0.74rem;
+    font-weight: 450;
+  }
+}
+
+@media (max-width: 420px) {
+  .orderIdCell {
+    font-size: 0.66rem;
+    font-weight: 400;
+  }
+}
 
