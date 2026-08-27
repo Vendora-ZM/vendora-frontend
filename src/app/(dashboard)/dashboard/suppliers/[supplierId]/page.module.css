@@ -1,0 +1,315 @@
+.page {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.backLink {
+  display: inline-flex;
+  margin-bottom: 10px;
+  color: var(--color-accent-blue);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.subtitle,
+.summaryNote,
+.notes,
+.infoList p {
+  margin: 6px 0 0;
+  color: #526174;
+  line-height: 1.5;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.primaryButton {
+  background: var(--gradient-blue);
+  color: var(--color-white);
+}
+
+.secondaryButton {
+  background: #fff;
+  color: var(--color-primary-navy);
+  border: 1px solid rgba(140, 144, 152, 0.18);
+}
+
+.summaryGrid,
+.detailGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.summaryGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.detailGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.summaryCard,
+.detailCard,
+.notesCard,
+.emptyCard {
+  background: var(--color-white);
+  border: 1px solid rgba(140, 144, 152, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06);
+  padding: 18px;
+}
+
+.summaryLabel,
+.infoList span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.summaryValue {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-primary-navy);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.infoList {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.infoList div {
+  display: grid;
+  gap: 4px;
+}
+
+.infoList p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tag,
+.tagMuted,
+.emptyTag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.tag {
+  background: rgba(26, 132, 221, 0.1);
+  color: #0f4fa8;
+}
+
+.tagMuted {
+  background: rgba(148, 163, 184, 0.12);
+  color: #475569;
+}
+
+.emptyTag {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.emptyCard {
+  display: grid;
+  gap: 14px;
+  justify-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .page {
+    gap: 14px;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .headerActions {
+    align-self: flex-start;
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 1.45rem;
+  }
+
+  .subtitle,
+  .summaryNote,
+  .notes,
+  .infoList p {
+    font-size: 0.82rem;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    min-height: 38px;
+    padding: 0 14px;
+    font-size: 0.78rem;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .summaryCard:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .summaryCard,
+  .detailCard,
+  .notesCard,
+  .emptyCard {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .summaryLabel,
+  .infoList span {
+    font-size: 0.68rem;
+  }
+
+  .summaryValue {
+    font-size: 1.26rem;
+  }
+
+  .cardTitle {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    gap: 10px;
+  }
+
+  .backLink {
+    margin-bottom: 8px;
+    font-size: 0.72rem;
+  }
+
+  .title {
+    font-size: 1.18rem;
+  }
+
+  .subtitle,
+  .summaryNote,
+  .notes,
+  .infoList p {
+    font-size: 0.72rem;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 0.74rem;
+  }
+
+  .summaryGrid {
+    gap: 8px;
+  }
+
+  .summaryCard,
+  .detailCard,
+  .notesCard,
+  .emptyCard {
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .summaryLabel,
+  .infoList span {
+    font-size: 0.64rem;
+  }
+
+  .summaryValue {
+    font-size: 1.12rem;
+  }
+
+  .cardTitle {
+    font-size: 0.94rem;
+  }
+
+  .infoList,
+  .tagList {
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .tag,
+  .tagMuted,
+  .emptyTag {
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 0.68rem;
+  }
+}

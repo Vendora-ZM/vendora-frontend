@@ -1,0 +1,505 @@
+.page {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--color-grey);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: var(--gradient-blue);
+  color: var(--color-white);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 16px 28px rgba(26, 132, 221, 0.18);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summaryCard,
+.tableCard {
+  background: var(--color-white);
+  border: 1px solid rgba(140, 144, 152, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06);
+}
+
+.summaryCard {
+  padding: 16px;
+  display: grid;
+  gap: 6px;
+}
+
+.summaryLabel {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.summaryValue {
+  color: var(--color-primary-navy);
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.summaryNote,
+.tableText,
+.emptySubtitle {
+  margin: 0;
+  color: #526174;
+  line-height: 1.5;
+}
+
+.tableCard {
+  overflow: hidden;
+}
+
+.tableHeader {
+  padding: 18px 20px 12px;
+}
+
+.tableTitle {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 1.16rem;
+  font-weight: 700;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.table thead tr {
+  background: #fafafa;
+}
+
+.table th {
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.12);
+  text-align: left;
+  color: var(--color-grey);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(140, 144, 152, 0.08);
+  color: var(--color-dark-grey);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.row {
+  transition: background 0.12s ease;
+}
+
+.row:hover {
+  background: #f8faff;
+}
+
+.row:last-child td {
+  border-bottom: none;
+}
+
+.supplierColumn {
+  width: 30%;
+}
+
+.actionsColumn,
+.actionsCell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.supplierCell,
+.contactCell,
+.operationsCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.supplierName,
+.contactName {
+  color: var(--color-primary-navy);
+  font-weight: 600;
+}
+
+.supplierMeta,
+.contactMeta,
+.operationsCell span {
+  color: var(--color-grey);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(26, 132, 221, 0.1);
+  color: #0f4fa8;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(26, 132, 221, 0.16);
+  color: var(--color-primary-navy);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: #fff;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 18px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+
+.emptyTitle {
+  margin: 0 0 8px;
+  color: var(--color-primary-navy);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-width: 0;
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(140, 144, 152, 0.1);
+}
+
+.paginationSummary {
+  color: var(--color-grey);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.paginationPages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.paginationBtn,
+.paginationPage {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(140, 144, 152, 0.18);
+  background: var(--color-white);
+  color: var(--color-primary-navy);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.paginationBtn:hover:not(:disabled),
+.paginationPage:hover:not(:disabled) {
+  border-color: rgba(26, 132, 221, 0.35);
+  transform: translateY(-1px);
+}
+
+.paginationBtn:disabled,
+.paginationPage:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.paginationPageActive {
+  background: var(--gradient-blue);
+  color: var(--color-white);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(26, 132, 221, 0.2);
+}
+
+@media (max-width: 768px) {
+  .page {
+    gap: 14px;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.82rem;
+  }
+
+  .primaryButton {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 0.82rem;
+    align-self: flex-start;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .summaryCard:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .summaryCard {
+    padding: 14px;
+  }
+
+  .tableHeader {
+    padding: 14px 14px 10px;
+  }
+
+  .table {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .hideOnMobile {
+    display: none;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 8px;
+    font-size: 0.75rem;
+  }
+
+  .supplierColumn {
+    width: 40%;
+  }
+
+  .supplierName,
+  .contactName {
+    font-size: 0.8rem;
+  }
+
+  .supplierMeta,
+  .contactMeta,
+  .operationsCell span,
+  .countBadge,
+  .viewLink {
+    font-size: 0.68rem;
+  }
+
+  .countBadge {
+    min-height: 28px;
+    padding: 0 8px;
+  }
+
+  .viewLink {
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: 9px;
+  }
+
+  .pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 14px 16px;
+  }
+
+  .paginationSummary {
+    font-size: 0.78rem;
+  }
+
+  .paginationControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .paginationPages {
+    max-width: 100%;
+    padding-bottom: 2px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 1.2rem;
+  }
+
+  .subtitle,
+  .summaryNote,
+  .tableText,
+  .emptySubtitle,
+  .paginationSummary {
+    font-size: 0.72rem;
+  }
+
+  .primaryButton {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.76rem;
+    border-radius: 12px;
+  }
+
+  .summaryGrid {
+    gap: 8px;
+  }
+
+  .summaryCard {
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .summaryLabel {
+    font-size: 0.64rem;
+  }
+
+  .summaryValue {
+    font-size: 1.25rem;
+  }
+
+  .tableCard {
+    border-radius: 18px;
+  }
+
+  .tableHeader {
+    padding: 12px 12px 8px;
+  }
+
+  .tableTitle {
+    font-size: 0.98rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 6px;
+    font-size: 0.68rem;
+  }
+
+  .supplierColumn {
+    width: 44%;
+  }
+
+  .supplierName,
+  .contactName {
+    font-size: 0.74rem;
+  }
+
+  .supplierMeta,
+  .contactMeta,
+  .countBadge,
+  .viewLink {
+    font-size: 0.62rem;
+  }
+
+  .countBadge {
+    min-height: 25px;
+    padding: 0 7px;
+  }
+
+  .viewLink {
+    min-height: 28px;
+    padding: 0 8px;
+  }
+
+  .paginationBtn,
+  .paginationPage {
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+  }
+
+  .emptyState {
+    padding: 40px 14px;
+  }
+}

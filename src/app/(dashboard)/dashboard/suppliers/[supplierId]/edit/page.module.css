@@ -1,0 +1,243 @@
+.page {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.backLink {
+  display: inline-flex;
+  margin-bottom: 10px;
+  color: var(--color-accent-blue);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--color-grey);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.formCard {
+  background: var(--color-white);
+  border: 1px solid rgba(140, 144, 152, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06);
+  padding: 20px;
+}
+
+.cardHeader {
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--color-primary-navy);
+  font-size: 1.14rem;
+  font-weight: 700;
+}
+
+.cardText {
+  margin: 6px 0 0;
+  color: #526174;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.field span {
+  color: var(--color-primary-navy);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 14px;
+  background: #f8fafc;
+  color: var(--color-primary-navy);
+  font: inherit;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: rgba(26, 132, 221, 0.48);
+  background: var(--color-white);
+  box-shadow: 0 0 0 4px rgba(26, 132, 221, 0.08);
+}
+
+.field textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.primaryButton {
+  border: none;
+  background: var(--gradient-blue);
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+.secondaryButton {
+  border: 1px solid rgba(140, 144, 152, 0.18);
+  background: #fff;
+  color: var(--color-primary-navy);
+}
+
+@media (max-width: 768px) {
+  .page {
+    gap: 14px;
+  }
+
+  .title {
+    font-size: 1.45rem;
+  }
+
+  .subtitle,
+  .cardText {
+    font-size: 0.82rem;
+  }
+
+  .formCard {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .fieldGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .field span {
+    font-size: 0.78rem;
+  }
+
+  .field input,
+  .field textarea {
+    padding: 11px 12px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    min-height: 38px;
+    padding: 0 14px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    gap: 10px;
+  }
+
+  .backLink {
+    margin-bottom: 8px;
+    font-size: 0.72rem;
+  }
+
+  .title {
+    font-size: 1.18rem;
+  }
+
+  .subtitle,
+  .cardText {
+    font-size: 0.72rem;
+  }
+
+  .formCard {
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .form,
+  .fieldGrid {
+    gap: 10px;
+  }
+
+  .field {
+    gap: 6px;
+  }
+
+  .field span {
+    font-size: 0.7rem;
+  }
+
+  .field input,
+  .field textarea {
+    padding: 9px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 0.76rem;
+  }
+}
+
