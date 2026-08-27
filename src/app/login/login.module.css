@@ -3,6 +3,7 @@
   min-height: 100vh;
   align-items: center;
   justify-content: center;
+  padding: 88px 20px 28px;
   background: var(--gradient-blue);
   position: relative;
   overflow: hidden;
@@ -48,7 +49,9 @@
   z-index: 0;
 }
 
-.shape1, .shape2, .shape3 {
+.shape1,
+.shape2,
+.shape3 {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
@@ -87,6 +90,7 @@
   0% {
     transform: translateY(0) scale(1);
   }
+
   100% {
     transform: translateY(-50px) scale(1.1);
   }
@@ -95,24 +99,23 @@
 .glassCard {
   position: relative;
   z-index: 1;
+  width: min(100%, 480px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 36px;
+  border-radius: 24px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
-  padding: 48px;
-  width: 100%;
-  max-width: 480px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   color: var(--color-white);
   transition: all 0.3s ease;
 }
 
 .logo {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   animation: fadeInDown 0.6s ease-out;
 }
 
@@ -121,6 +124,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -128,27 +132,44 @@
 }
 
 .header {
+  margin-bottom: 24px;
   text-align: center;
-  margin-bottom: 32px;
 }
 
 .header h1 {
+  margin: 0 0 8px;
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 8px;
   color: var(--color-white);
 }
 
 .header p {
-  font-size: 1rem;
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.5;
   color: rgba(255, 255, 255, 0.8);
 }
 
 .form {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+}
+
+.fadeEnter {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeUp 0.4s ease forwards;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inputStack {
+  display: grid;
+  gap: 18px;
 }
 
 .inputGroup {
@@ -174,6 +195,16 @@
   font-family: inherit;
   transition: all 0.2s ease;
   outline: none;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.input:focus {
+  border-color: var(--color-white);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
 }
 
 .passwordField {
@@ -217,16 +248,6 @@
   width: 18px;
   height: 18px;
   fill: currentColor;
-}
-
-.input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.input:focus {
-  border-color: var(--color-white);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
 }
 
 .row {
@@ -285,8 +306,8 @@
 .fieldHint {
   margin: 0;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 0.86rem;
-  line-height: 1.5;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .consentRow {
@@ -308,8 +329,8 @@
 }
 
 .consentText {
-  line-height: 1.55;
   font-size: 0.92rem;
+  line-height: 1.55;
 }
 
 .legalLink {
@@ -328,6 +349,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-height: 20px;
   font-size: 0.9rem;
 }
 
@@ -348,18 +370,22 @@
   text-decoration-color: var(--color-white);
 }
 
+.formSpacer {
+  height: 20px;
+}
+
 .submitBtn {
   width: 100%;
+  margin-top: 20px;
   padding: 16px;
   border-radius: 12px;
   border: none;
   background: var(--gradient-orange);
   color: var(--color-white);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 8px;
   box-shadow: 0 4px 14px 0 rgba(245, 124, 0, 0.39);
 }
 
@@ -373,65 +399,250 @@
 }
 
 .footer {
-  margin-top: 32px;
+  margin-top: 24px;
   text-align: center;
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.8);
 }
 
+.footer p {
+  margin: 0;
+  line-height: 1.6;
+}
+
 .footer span {
+  margin-left: 6px;
   color: var(--color-white);
   font-weight: 600;
   cursor: pointer;
-  margin-left: 6px;
 }
 
 .footer span:hover {
   text-decoration: underline;
 }
 
-.footer p {
-  line-height: 1.6;
+.errorAlert,
+.successAlert {
+  margin-bottom: 18px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
-/* Animations for modes */
-.fadeEnter {
-  opacity: 0;
-  transform: translateY(10px);
-  animation: fadeUp 0.4s ease forwards;
+.errorAlert {
+  background-color: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #F87171;
 }
 
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.successAlert {
+  background-color: #ECFDF5;
+  color: #047857;
+  border: 1px solid #6EE7B7;
 }
-
-.errorAlert { background-color: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #F87171; }
-
-.successAlert { background-color: #ECFDF5; color: #047857; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #6EE7B7; }
 
 @media (max-width: 768px) {
+  .container {
+    align-items: flex-start;
+    padding: 72px 12px 18px;
+  }
+
   .topNav {
-    top: 12px;
-    left: 16px;
-    right: 16px;
+    top: 10px;
+    left: 12px;
+    right: 12px;
     transform: none;
     justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 16px;
+  }
+
+  .topNavLink {
+    padding: 7px 9px;
+    font-size: 0.74rem;
   }
 
   .glassCard {
-    margin-top: 84px;
-    padding: 32px 20px;
+    width: 100%;
+    margin-top: 54px;
+    padding: 24px 16px;
+    border-radius: 20px;
+  }
+
+  .logo {
+    margin-bottom: 18px;
+  }
+
+  .header {
+    margin-bottom: 18px;
+  }
+
+  .header h1 {
+    font-size: 1.45rem;
+  }
+
+  .header p {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .inputStack {
+    gap: 14px;
+  }
+
+  .inputGroup {
+    gap: 6px;
+  }
+
+  .inputGroup label {
+    font-size: 0.76rem;
+  }
+
+  .input {
+    padding: 12px 13px;
+    font-size: 0.86rem;
+    border-radius: 10px;
   }
 
   .row {
     flex-direction: column;
+    gap: 14px;
+  }
+
+  .selectorSummary {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .selectorSummaryLabel {
+    font-size: 0.64rem;
+  }
+
+  .selectorSummaryCopy strong {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .selectorSummaryPill {
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+
+  .fieldHint,
+  .consentText,
+  .options,
+  .footer {
+    font-size: 0.74rem;
   }
 
   .consentRow {
-    padding: 12px 14px;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .submitBtn {
+    margin-top: 16px;
+    padding: 13px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .container {
+    padding: 64px 8px 14px;
+  }
+
+  .topNav {
+    left: 8px;
+    right: 8px;
+    gap: 4px;
+    padding: 7px 8px;
+  }
+
+  .topNavLink {
+    padding: 6px 7px;
+    font-size: 0.66rem;
+  }
+
+  .glassCard {
+    margin-top: 48px;
+    padding: 18px 12px;
+    border-radius: 18px;
+  }
+
+  .logo {
+    margin-bottom: 14px;
+  }
+
+  .header h1 {
+    font-size: 1.24rem;
+  }
+
+  .header p {
+    font-size: 0.68rem;
+  }
+
+  .inputStack {
+    gap: 12px;
+  }
+
+  .inputGroup label,
+  .fieldHint,
+  .options,
+  .footer,
+  .consentText {
+    font-size: 0.68rem;
+  }
+
+  .input {
+    padding: 11px 12px;
+    font-size: 0.8rem;
+  }
+
+  .passwordField .input {
+    padding-right: 44px;
+  }
+
+  .passwordToggle {
+    right: 10px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .passwordToggle svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .selectorSummary {
+    padding: 10px;
+  }
+
+  .selectorSummaryLabel {
+    font-size: 0.58rem;
+  }
+
+  .selectorSummaryCopy strong {
+    font-size: 0.72rem;
+  }
+
+  .selectorSummaryPill {
+    font-size: 0.62rem;
+  }
+
+  .consentRow {
+    padding: 9px 10px;
+  }
+
+  .formSpacer {
+    height: 12px;
+  }
+
+  .submitBtn {
+    padding: 12px;
+    font-size: 0.84rem;
   }
 }
 

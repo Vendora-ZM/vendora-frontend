@@ -24,6 +24,7 @@ import type { InventoryBalance } from '@/types/inventory';
 import type { SalesTrendPoint, TopProductRow } from '@/types/analytics';
 import { Product } from '@/types/product';
 import { Sale, SaleStatus, type SalePayment } from '@/types/sale';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import styles from './page.module.css';
 
 const DATE_PRESETS: { value: DateRangePreset; label: string }[] = [
@@ -1233,34 +1234,50 @@ export default function DashboardOverview() {
                   {isLoading ? 'Loading revenue data…' : 'No revenue data available for this period.'}
                 </div>
               ) : (
-                graphData.map((point: { dateKey: string; label: string; revenue: number; profit: number }) => (
-                  <div key={point.dateKey} className={styles.barCol}>
-                    <div className={styles.barGroup}>
-                      <div className={styles.barSeries}>
-                        <div className={styles.barTrack}>
-                          <div
-                            className={`${styles.barFill} ${styles.barFillRevenue}`}
-                            style={{ height: `${Math.max((point.revenue / graphMax) * 100, point.revenue > 0 ? 4 : 0)}%` }}
-                          />
-                          <span className={styles.barValue}>{formatCurrencyFromCents(point.revenue, { currencyCode })}</span>
-                        </div>
-                        <span className={styles.barSeriesLabel}>Revenue</span>
-                      </div>
-
-                      <div className={styles.barSeries}>
-                        <div className={styles.barTrack}>
-                          <div
-                            className={`${styles.barFill} ${styles.barFillProfit}`}
-                            style={{ height: `${Math.max((point.profit / graphMax) * 100, point.profit > 0 ? 4 : 0)}%` }}
-                          />
-                          <span className={styles.barValue}>{formatCurrencyFromCents(point.profit, { currencyCode })}</span>
-                        </div>
-                        <span className={styles.barSeriesLabel}>Profit</span>
-                      </div>
-                    </div>
-                    <span className={styles.barLabel}>{point.label}</span>
-                  </div>
-                ))
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={graphData}
+                    margin={{ top: 12, right: 8, left: 0, bottom: 4 }}
+                    barGap={0}
+                    barCategoryGap="22%"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <XAxis
+                      dataKey="label"
+                      stroke="#8C9098"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="#8C9098"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      width={52}
+                      tickFormatter={(value) => formatCurrencyFromCents(Number(value ?? 0), {
+                        currencyCode,
+                        maximumFractionDigits: 0,
+                        minimumFractionDigits: 0,
+                      })}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(26, 132, 221, 0.06)' }}
+                      contentStyle={{
+                        borderRadius: '12px',
+                        border: '1px solid rgba(140, 144, 152, 0.14)',
+                        boxShadow: '0 12px 28px rgba(15, 23, 42, 0.12)',
+                      }}
+                      formatter={(value, name) => [
+                        formatCurrencyFromCents(Number(value ?? 0), { currencyCode }),
+                        String(name),
+                      ]}
+                      labelFormatter={(_label, payload) => payload?.[0]?.payload?.label ?? ''}
+                    />
+                    <Bar dataKey="revenue" name="Revenue" fill="#1A84DD" radius={[10, 10, 0, 0]} maxBarSize={22} />
+                    <Bar dataKey="profit" name="Profit" fill="#F59E0B" radius={[10, 10, 0, 0]} maxBarSize={22} />
+                  </BarChart>
+                </ResponsiveContainer>
               )}
             </div>
           </div>
@@ -1406,3 +1423,8 @@ export default function DashboardOverview() {
     </div>
   );
 }
+
+
+
+
+

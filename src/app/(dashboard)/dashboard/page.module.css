@@ -293,15 +293,12 @@
 
 /* Revenue Graph Mockup */
 .graphContainer {
-  padding: 24px;
+  padding: 18px 20px 22px;
   height: 320px;
-  display: flex;
-  align-items: stretch;
-  gap: 12px;
-  justify-content: space-between;
+  min-width: 0;
 }
 
-.barCol {
+.chartLegacyBarCol {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -311,7 +308,7 @@
   height: 100%;
 }
 
-.barGroup {
+.chartLegacyBarGroup {
   width: 100%;
   height: 100%;
   display: flex;
@@ -321,7 +318,7 @@
   padding: 0 2px;
 }
 
-.barSeries {
+.chartLegacyBarSeries {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -330,7 +327,7 @@
   gap: 6px;
 }
 
-.barTrack {
+.chartLegacyBarTrack {
   width: 100%;
   min-height: 220px;
   background: #f4f5f7;
@@ -339,7 +336,7 @@
   overflow: hidden;
 }
 
-.barFill {
+.chartLegacyBarFill {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -350,16 +347,16 @@
   box-shadow: 0 -4px 12px rgba(26, 132, 221, 0.2);
 }
 
-.barFillRevenue {
+.chartLegacyBarFillRevenue {
   background: linear-gradient(180deg, #1a84dd, #0b5fbf);
 }
 
-.barFillProfit {
+.chartLegacyBarFillProfit {
   background: linear-gradient(180deg, #f59e0b, #f97316);
   box-shadow: 0 -4px 12px rgba(245, 124, 0, 0.18);
 }
 
-.barValue {
+.chartLegacyBarValue {
   position: absolute;
   top: 8px;
   left: 50%;
@@ -371,13 +368,13 @@
   white-space: nowrap;
 }
 
-.barSeriesLabel {
+.chartLegacyBarSeriesLabel {
   font-size: 0.7rem;
   color: var(--color-grey);
   font-weight: 600;
 }
 
-.barLabel {
+.chartLegacyBarLabel {
   font-size: 0.75rem;
   color: var(--color-grey);
   text-align: center;
@@ -1286,12 +1283,12 @@
     padding: 12px 16px;
   }
 
-  .barCol {
+  .chartLegacyBarCol {
     min-width: 132px;
     flex: 0 0 132px;
   }
 
-  .barTrack {
+  .chartLegacyBarTrack {
     min-height: 180px;
   }
 
@@ -1488,28 +1485,28 @@
     overflow-x: hidden;
   }
 
-  .barCol {
+  .chartLegacyBarCol {
     min-width: 0;
     flex: 1 1 0;
   }
 
-  .barGroup {
+  .chartLegacyBarGroup {
     gap: 4px;
     padding: 0;
   }
 
-  .barTrack {
+  .chartLegacyBarTrack {
     min-height: 132px;
     border-radius: 10px;
   }
 
-  .barValue {
+  .chartLegacyBarValue {
     top: 6px;
     font-size: 0.58rem;
   }
 
-  .barSeriesLabel,
-  .barLabel {
+  .chartLegacyBarSeriesLabel,
+  .chartLegacyBarLabel {
     font-size: 0.62rem;
   }
 
@@ -1773,8 +1770,8 @@
 
   .sectionHint,
   .legendItem,
-  .barSeriesLabel,
-  .barLabel,
+  .chartLegacyBarSeriesLabel,
+  .chartLegacyBarLabel,
   .table th,
   .table td,
   .alertContent p,
@@ -1798,11 +1795,11 @@
     height: 190px;
   }
 
-  .barTrack {
+  .chartLegacyBarTrack {
     min-height: 118px;
   }
 
-  .barValue {
+  .chartLegacyBarValue {
     font-size: 0.52rem;
   }
 
@@ -1816,3 +1813,21 @@
     padding: 9px;
   }
 }
+
+
+
+@media (max-width: 768px) {
+  .graphContainer {
+    padding: 14px 12px 18px;
+    height: 260px;
+  }
+}
+
+@media (max-width: 420px) {
+  .graphContainer {
+    padding: 12px 10px 16px;
+    height: 232px;
+  }
+}
+
+
