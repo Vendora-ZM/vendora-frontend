@@ -7,17 +7,24 @@ import { openDetailModal } from '@/lib/features/sales/salesSlice';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { formatCurrencyFromCents } from '@/lib/utils/currency';
+import { Button } from '@/components/ui/Button';
 import styles from './OrdersTable.module.css';
 
 interface OrdersTableProps {
   orders: Sale[];
   isLoading: boolean;
+  currentPage: number;
+  totalPages: number;
+  totalOrders: number;
+  startItem: number;
+  endItem: number;
+  onPageChange: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   completed: { label: 'Completed', cls: 'completed' },
-  draft:     { label: 'Draft',     cls: 'draft' },
-  refunded:  { label: 'Refunded',  cls: 'refunded' },
+  draft: { label: 'Draft', cls: 'draft' },
+  refunded: { label: 'Refunded', cls: 'refunded' },
   cancelled: { label: 'Cancelled', cls: 'cancelled' },
 };
 
@@ -31,7 +38,7 @@ function SkeletonRow() {
   return (
     <tr className={styles.skeletonRow}>
       {Array.from({ length: 6 }).map((_, i) => (
-        <td key={i}><div className={styles.skeleton} /></td>
+        <td key={i} className={i === 1 ? styles.hideOnMobile : ''}><div className={styles.skeleton} /></td>
       ))}
     </tr>
   );
@@ -51,7 +58,16 @@ function EmptyState() {
   );
 }
 
-export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
+export const OrdersTable: React.FC<OrdersTableProps> = ({
+  orders,
+  isLoading,
+  currentPage,
+  totalPages,
+  totalOrders,
+  startItem,
+  endItem,
+  onPageChange,
+}) => {
   const dispatch = useAppDispatch();
   const { data: me } = useGetMeQuery();
   const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
@@ -65,7 +81,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) =
         <thead>
           <tr>
             <th>Order No.</th>
-            <th>Date</th>
+            <th className={styles.hideOnMobile}>Date</th>
             <th>Items</th>
             <th>Total</th>
             <th>Status</th>
@@ -84,7 +100,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) =
                     <td>
                       <span className={styles.orderNumber}>{order.sale_number}</span>
                     </td>
-                    <td className={styles.dateCell}>{formatDate(order.created_at)}</td>
+                    <td className={`${styles.dateCell} ${styles.hideOnMobile}`}>{formatDate(order.created_at)}</td>
                     <td className={styles.itemsCell}>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</td>
                     <td>
                       <span className={styles.totalAmount}>{formatCurrencyFromCents(order.total_amount, { currencyCode })}</span>
@@ -96,6 +112,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) =
                     </td>
                     <td>
                       <button
+                        type="button"
                         className={styles.viewBtn}
                         onClick={() => dispatch(openDetailModal(order))}
                         title="View order details"
@@ -109,6 +126,46 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) =
               })}
         </tbody>
       </table>
+
+      {!isLoading && totalOrders > 0 ? (
+        <div className={styles.pagination}>
+          <div className={styles.paginationSummary}>
+            Showing {startItem} to {endItem} of {totalOrders}
+          </div>
+          <div className={styles.paginationControls}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <div className={styles.pageNumbers} aria-label="Order pages">
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}
+                  onClick={() => onPageChange(page)}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange((page) => Math.min(totalPages, page + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

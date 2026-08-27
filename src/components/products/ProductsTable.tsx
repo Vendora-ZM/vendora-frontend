@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useAppDispatch } from '@/lib/store';
@@ -25,7 +25,9 @@ function SkeletonRow() {
   return (
     <tr className={styles.skeletonRow}>
       {Array.from({ length: 7 }).map((_, i) => (
-        <td key={i}><div className={styles.skeleton} /></td>
+        <td key={i} className={i === 1 || i === 3 || i === 4 ? styles.hideOnMobile : ''}>
+          <div className={styles.skeleton} />
+        </td>
       ))}
     </tr>
   );
@@ -54,96 +56,135 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ products, isLoadin
     skip: !me?.business_id,
   });
   const currencyCode = business?.currency_code;
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent | PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const openAdjustStock = (productId: string) => {
+    import('@/lib/features/inventory/inventorySlice').then(({ openAdjustModal }) => {
+      dispatch(openAdjustModal(productId));
+    });
+  };
 
   return (
     <div className={styles.tableWrapper}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Category</th>
-            <th>Selling Price</th>
-            <th>Cost Price</th>
-            <th>Unit</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading
-            ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
-            : products.length === 0
-            ? <EmptyState />
-            : products.map((product) => (
-                <tr key={product.id} className={styles.row}>
-                  <td>
-                    <div className={styles.productCell}>
-                      <span className={styles.productName}>{product.name}</span>
-                      <span className={styles.productSku}>Item code: {product.sku}</span>
-                    </div>
-                  </td>
-                  <td className={styles.categoryCell}>
-                    {product.category_id ? (
-                      <span className={styles.categoryBadge}>
-                        {categoryMap[product.category_id] ?? '—'}
-                      </span>
-                    ) : (
-                      <span className={styles.noCategory}>Uncategorised</span>
-                    )}
-                  </td>
-                  <td><PriceDisplay value={product.selling_price} currencyCode={currencyCode} /></td>
-                  <td><PriceDisplay value={product.cost_price} currencyCode={currencyCode} /></td>
-                  <td className={styles.unitCell}>{product.unit || '—'}</td>
-                  <td>
-                    <span className={`${styles.statusBadge} ${product.is_active ? styles.active : styles.inactive}`}>
-                      {product.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className={styles.actions}>
-                      <Link
-                        className={styles.profileLink}
-                        href={`/dashboard/products/${product.id}`}
-                        title="Open product profile"
-                        aria-label={`Open product profile for ${product.name}`}
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        className={styles.actionBtn}
-                        title="Add/Adjust Stock"
-                        aria-label={`Adjust Stock for ${product.name}`}
-                        onClick={() => {
-                          import('@/lib/features/inventory/inventorySlice').then(({ openAdjustModal }) => {
-                            dispatch(openAdjustModal(product.id));
-                          });
-                        }}
-                      >
-                        ➕
-                      </button>
-                      <Link
-                        className={styles.actionBtn}
-                        title="Edit product"
-                        aria-label={`Edit ${product.name}`}
-                        href={`/dashboard/products/${product.id}/edit`}
-                      >
-                        ✏️
-                      </Link>
-                      <button
-                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                        title="Delete product"
-                        aria-label={`Delete ${product.name}`}
-                        onClick={() => dispatch(openDeleteModal(product))}
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-          }
-        </tbody>
-      </table>
+      <div className={styles.tableScroll}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.productColumn}>Product</th>
+              <th className={styles.hideOnMobile}>Category</th>
+              <th>Selling Price</th>
+              <th className={styles.hideOnMobile}>Cost Price</th>
+              <th className={styles.hideOnMobile}>Unit</th>
+              <th>Status</th>
+              <th className={styles.actionsColumn}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              : products.length === 0
+              ? <EmptyState />
+              : products.map((product) => {
+                  const isMenuOpen = openMenuId === product.id;
+
+                  return (
+                    <tr key={product.id} className={styles.row}>
+                      <td className={styles.productColumn}>
+                        <div className={styles.productCell}>
+                          <span className={styles.productName}>{product.name}</span>
+                          <span className={styles.productSku}>Item code: {product.sku}</span>
+                        </div>
+                      </td>
+                      <td className={styles.hideOnMobile}>
+                        {product.category_id ? (
+                          <span className={styles.categoryBadge}>
+                            {categoryMap[product.category_id] ?? '—'}
+                          </span>
+                        ) : (
+                          <span className={styles.noCategory}>Uncategorised</span>
+                        )}
+                      </td>
+                      <td><PriceDisplay value={product.selling_price} currencyCode={currencyCode} /></td>
+                      <td className={styles.hideOnMobile}><PriceDisplay value={product.cost_price} currencyCode={currencyCode} /></td>
+                      <td className={`${styles.unitCell} ${styles.hideOnMobile}`}>{product.unit || '—'}</td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${product.is_active ? styles.active : styles.inactive}`}>
+                          {product.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className={styles.actionsCell}>
+                        <div className={styles.actionsMenu} ref={isMenuOpen ? menuRef : null}>
+                          <button
+                            type="button"
+                            className={styles.menuTrigger}
+                            aria-label={`Open actions for ${product.name}`}
+                            aria-expanded={isMenuOpen}
+                            onClick={() => setOpenMenuId((current) => current === product.id ? null : product.id)}
+                          >
+                            <span aria-hidden="true">⋮</span>
+                          </button>
+
+                          {isMenuOpen ? (
+                            <div className={styles.menuDialog} role="dialog" aria-label={`Actions for ${product.name}`}>
+                              <button
+                                type="button"
+                                className={styles.menuItem}
+                                onClick={() => {
+                                  setOpenMenuId(null);
+                                  openAdjustStock(product.id);
+                                }}
+                              >
+                                Add stock
+                              </button>
+                              <Link
+                                className={styles.menuItem}
+                                href={`/dashboard/products/${product.id}/edit`}
+                                onClick={() => setOpenMenuId(null)}
+                              >
+                                Edit
+                              </Link>
+                              <button
+                                type="button"
+                                className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                                onClick={() => {
+                                  setOpenMenuId(null);
+                                  dispatch(openDeleteModal(product));
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+          </tbody>
+        </table>
+      </div>
       {footer ? <div className={styles.footer}>{footer}</div> : null}
     </div>
   );

@@ -430,9 +430,9 @@ export default function AccountsPage() {
                 <thead>
                   <tr>
                     <th>User</th>
-                    <th>Role</th>
-                    <th>Locations</th>
-                    <th>Last login</th>
+                    <th className={styles.hideOnMobile}>Role</th>
+                    <th className={styles.hideOnMobile}>Locations</th>
+                    <th className={styles.hideOnMobile}>Last login</th>
                     <th>Status</th>
                     <th>Profile</th>
                   </tr>
@@ -468,13 +468,13 @@ export default function AccountsPage() {
                             <span className={styles.accountHint}>{account.email}</span>
                           </div>
                         </td>
-                        <td>
+                        <td className={styles.hideOnMobile}>
                           <div className={styles.roleCell}>
                             <span className={styles.roleName}>{account.role_name}</span>
                             <span className={styles.roleHint}>{account.role_id}</span>
                           </div>
                         </td>
-                        <td>
+                        <td className={styles.hideOnMobile}>
                           <div className={styles.locationPills}>
                               {(account.location_names ?? []).length > 0 ? (
                                 (account.location_names ?? []).map((locationName: string) => (
@@ -485,7 +485,7 @@ export default function AccountsPage() {
                             )}
                           </div>
                         </td>
-                        <td>{formatDate(account.last_login_at)}</td>
+                        <td className={styles.hideOnMobile}>{formatDate(account.last_login_at)}</td>
                         <td>
                           <span className={`${styles.statusBadge} ${account.is_active ? styles.statusActive : styles.statusInactive}`}>
                             {account.is_active ? 'Active' : 'Disabled'}
@@ -771,10 +771,10 @@ export default function AccountsPage() {
                 <thead>
                   <tr>
                     <th>User</th>
-                    <th>Role</th>
-                    <th>Locations</th>
+                    <th className={styles.hideOnMobile}>Role</th>
+                    <th className={styles.hideOnMobile}>Locations</th>
                     <th>Status</th>
-                    <th>Expires</th>
+                    <th className={styles.hideOnMobile}>Expires</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -811,8 +811,8 @@ export default function AccountsPage() {
                               ) : null}
                             </div>
                           </td>
-                          <td>{invitation.role_name}</td>
-                          <td>
+                          <td className={styles.hideOnMobile}>{invitation.role_name}</td>
+                          <td className={styles.hideOnMobile}>
                             <div className={styles.locationPills}>
                               {invitation.location_ids.length > 0 ? (
                                 invitation.location_ids.map((locationId: string) => (
@@ -828,7 +828,7 @@ export default function AccountsPage() {
                               {status}
                             </span>
                           </td>
-                          <td>{formatDateTime(invitation.expires_at)}</td>
+                          <td className={styles.hideOnMobile}>{formatDateTime(invitation.expires_at)}</td>
                           <td className={styles.actionCell}>
                             {canResend ? (
                               <Button

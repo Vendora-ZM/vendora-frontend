@@ -14,7 +14,6 @@ export const ProductsToolbar: React.FC = () => {
   const { searchQuery, selectedCategoryId } = useAppSelector((s) => s.products);
   const { data: categories = [] } = useGetCategoriesQuery();
 
-  // Local state for debouncing search input
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
   useEffect(() => {
@@ -46,6 +45,7 @@ export const ProductsToolbar: React.FC = () => {
           />
           {localSearch && (
             <button
+              type="button"
               className={styles.clearBtn}
               onClick={() => { setLocalSearch(''); dispatch(setSearchQuery('')); }}
               aria-label="Clear search"
@@ -74,6 +74,7 @@ export const ProductsToolbar: React.FC = () => {
           id="add-product-btn"
           variant="primary"
           size="md"
+          className={styles.addProductButton}
         >
           + Add Product
         </Button>

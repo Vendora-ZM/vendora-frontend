@@ -101,18 +101,11 @@ export const Cart: React.FC<CartProps> = ({
     }
     return pages;
   }, [cart]);
+  const maxReviewPage = Math.max(reviewPages.length - 1, 0);
+  const safeReviewPage = Math.min(reviewPage, maxReviewPage);
 
   const locationName = useMemo(() => locations[0]?.name ?? 'Primary location', [locations]);
   const formatAmount = (amount: number) => formatCurrency(amount, { currencyCode });
-  useEffect(() => {
-    setReviewPage((current) => Math.min(current, Math.max(reviewPages.length - 1, 0)));
-  }, [reviewPages.length]);
-
-  useEffect(() => {
-    if (stage !== 2) {
-      setReviewPage(0);
-    }
-  }, [stage]);
 
   useEffect(() => {
     if (stage !== 2 || !reviewPagesRef.current) {
@@ -121,10 +114,10 @@ export const Cart: React.FC<CartProps> = ({
 
     const viewport = reviewPagesRef.current;
     viewport.scrollTo({
-      left: reviewPage * viewport.clientWidth,
+      left: safeReviewPage * viewport.clientWidth,
       behavior: 'auto',
     });
-  }, [reviewPage, reviewPages.length, stage]);
+  }, [safeReviewPage, reviewPages.length, stage]);
 
   const handleReviewPagesScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const { scrollLeft, clientWidth } = event.currentTarget;
@@ -133,7 +126,7 @@ export const Cart: React.FC<CartProps> = ({
     }
 
     const nextPage = Math.round(scrollLeft / clientWidth);
-    setReviewPage(Math.max(0, Math.min(nextPage, reviewPages.length - 1)));
+    setReviewPage(Math.max(0, Math.min(nextPage, maxReviewPage)));
   };
 
   const handleGoToPayment = () => {
@@ -297,7 +290,7 @@ export const Cart: React.FC<CartProps> = ({
               <div className={styles.stageHeaderMeta}>
                 <span>{cart.length} item{cart.length === 1 ? '' : 's'}</span>
                 {reviewPages.length > 1 ? (
-                  <span className={styles.pageIndicator}>Page {reviewPage + 1} of {reviewPages.length}</span>
+                  <span className={styles.pageIndicator}>Page {safeReviewPage + 1} of {reviewPages.length}</span>
                 ) : null}
               </div>
             </div>
@@ -493,7 +486,7 @@ export const Cart: React.FC<CartProps> = ({
           </div>
 
           <div className={styles.inlineActions}>
-            <Button variant="outline" size="lg" onClick={() => setStage(2)} disabled={isProcessing}>
+            <Button variant="outline" size="lg" onClick={() => { setReviewPage(0); setStage(2); }} disabled={isProcessing}>
               Back to Review
             </Button>
             <Button
@@ -510,4 +503,3 @@ export const Cart: React.FC<CartProps> = ({
     </div>
   );
 };
-

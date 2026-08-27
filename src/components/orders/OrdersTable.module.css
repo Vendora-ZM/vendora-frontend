@@ -1,9 +1,11 @@
 .tableWrapper {
   background: var(--color-white);
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid rgba(140, 144, 152, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  overflow: hidden;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+  min-width: 0;
+  scrollbar-width: thin;
 }
 
 .table {
@@ -19,8 +21,9 @@
   color: var(--color-grey);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: #FAFAFA;
+  background: #fafafa;
   border-bottom: 1px solid rgba(140, 144, 152, 0.1);
+  white-space: nowrap;
 }
 
 .table td {
@@ -31,17 +34,28 @@
   vertical-align: middle;
 }
 
-.row:last-child td { border-bottom: none; }
-.row:hover td { background: #FAFBFF; }
-
-.orderNumber {
-  font-weight: 700;
-  color: var(--color-primary-navy);
-  font-size: 0.875rem;
+.row:last-child td {
+  border-bottom: none;
 }
 
-.dateCell { color: var(--color-grey); font-size: 0.8rem; }
-.itemsCell { color: var(--color-grey); }
+.row:hover td {
+  background: #fafbff;
+}
+
+.orderNumber {
+  font-weight: 600;
+  color: var(--color-primary-navy);
+  font-size: 0.8rem;
+}
+
+.dateCell {
+  color: var(--color-grey);
+  font-size: 0.8rem;
+}
+
+.itemsCell {
+  color: var(--color-grey);
+}
 
 .totalAmount {
   font-weight: 700;
@@ -54,12 +68,13 @@
   font-size: 0.75rem;
   font-weight: 600;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .completed { background: rgba(16, 185, 129, 0.1); color: #059669; }
-.draft     { background: rgba(107, 114, 128, 0.1); color: #6B7280; }
-.refunded  { background: rgba(59, 130, 246, 0.1);  color: #2563EB; }
-.cancelled { background: rgba(239, 68, 68, 0.1);   color: #DC2626; }
+.draft { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+.refunded { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
+.cancelled { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
 
 .viewBtn {
   display: inline-flex;
@@ -75,6 +90,7 @@
   color: var(--color-dark-grey);
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .viewBtn:hover {
@@ -83,8 +99,71 @@
   border-color: var(--color-primary-navy);
 }
 
-/* Skeleton */
-.skeletonRow td { padding: 20px; }
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 18px 18px;
+  border-top: 1px solid rgba(140, 144, 152, 0.1);
+}
+
+.paginationSummary {
+  color: var(--color-grey);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.pageNumbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.pageNumber {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(140, 144, 152, 0.18);
+  background: var(--color-white);
+  color: var(--color-primary-navy);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.pageNumber:hover {
+  border-color: rgba(26, 132, 221, 0.35);
+  transform: translateY(-1px);
+}
+
+.pageNumberActive {
+  background: var(--gradient-blue);
+  color: var(--color-white);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(26, 132, 221, 0.2);
+}
+
+.skeletonRow td {
+  padding: 20px;
+}
+
 .skeleton {
   height: 14px;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -92,12 +171,12 @@
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
 }
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-/* Empty State */
 .emptyState {
   display: flex;
   flex-direction: column;
@@ -107,6 +186,147 @@
   text-align: center;
   color: var(--color-grey);
 }
+
 .emptyIcon { margin-bottom: 16px; opacity: 0.4; }
 .emptyTitle { font-size: 1.125rem; font-weight: 600; color: var(--color-primary-navy); margin-bottom: 8px; }
 .emptySubtitle { font-size: 0.9rem; }
+
+.tableWrapper::-webkit-scrollbar,
+.pageNumbers::-webkit-scrollbar {
+  height: 7px;
+}
+
+.tableWrapper::-webkit-scrollbar-track,
+.pageNumbers::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.08);
+  border-radius: 999px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb,
+.pageNumbers::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+}
+
+@media (max-width: 768px) {
+  .hideOnMobile {
+    display: none;
+  }
+
+  .table th {
+    padding: 10px 10px;
+    font-size: 0.68rem;
+  }
+
+  .table td {
+    padding: 10px 10px;
+    font-size: 0.74rem;
+  }
+
+  .orderNumber {
+    font-size: 0.74rem;
+    font-weight: 600;
+  }
+
+  .itemsCell,
+  .dateCell {
+    font-size: 0.7rem;
+  }
+
+  .statusBadge {
+    padding: 4px 8px;
+    font-size: 0.64rem;
+  }
+
+  .viewBtn {
+    gap: 4px;
+    padding: 5px 10px;
+    font-size: 0.72rem;
+  }
+
+  .viewBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .pagination {
+    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px 12px 16px;
+  }
+
+  .paginationSummary {
+    font-size: 0.8rem;
+  }
+
+  .paginationControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .emptyState {
+    padding: 52px 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .table th {
+    padding: 8px 6px;
+    font-size: 0.6rem;
+  }
+
+  .table td {
+    padding: 9px 6px;
+    font-size: 0.68rem;
+  }
+
+  .orderNumber {
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .itemsCell {
+    font-size: 0.64rem;
+  }
+
+  .statusBadge {
+    padding: 3px 7px;
+    font-size: 0.58rem;
+  }
+
+  .viewBtn {
+    gap: 3px;
+    padding: 4px 8px;
+    font-size: 0.66rem;
+    border-radius: 6px;
+  }
+
+  .viewBtn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .paginationSummary {
+    font-size: 0.74rem;
+  }
+
+  .paginationControls {
+    gap: 6px;
+  }
+
+  .pageNumber {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+  }
+
+  .emptyState {
+    padding: 40px 14px;
+  }
+
+  .emptyTitle { font-size: 1rem; }
+  .emptySubtitle { font-size: 0.82rem; }
+}

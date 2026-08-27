@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: 16px;
   margin-bottom: 24px;
+  min-width: 0;
 }
 
 @media (min-width: 640px) {
@@ -18,6 +19,7 @@
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  min-width: 0;
 }
 
 @media (min-width: 640px) {
@@ -30,6 +32,7 @@
 .searchWrapper {
   position: relative;
   flex: 1;
+  min-width: 0;
 }
 
 .searchIcon {
@@ -43,6 +46,7 @@
 
 .searchInput {
   width: 100%;
+  min-width: 0;
   padding: 10px 36px 10px 36px;
   border: 1.5px solid #D1D5DB;
   border-radius: 8px;
@@ -78,6 +82,7 @@
 }
 
 .categorySelect {
+  width: 100%;
   padding: 10px 36px 10px 14px;
   border: 1.5px solid #D1D5DB;
   border-radius: 8px;
@@ -91,10 +96,60 @@
   background-position: right 14px center;
   cursor: pointer;
   min-width: 160px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .categorySelect:focus {
   border-color: var(--color-accent-blue);
   box-shadow: 0 0 0 3px rgba(26, 132, 221, 0.15);
+}
+
+.addProductButton {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .searchInput,
+  .categorySelect {
+    font-size: 0.875rem;
+  }
+
+  .addProductButton {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .filters {
+    gap: 10px;
+  }
+
+  .searchIcon {
+    left: 10px;
+    font-size: 0.8rem;
+  }
+
+  .searchInput {
+    padding: 9px 34px 9px 32px;
+    font-size: 0.8125rem;
+  }
+
+  .categorySelect {
+    padding: 9px 32px 9px 12px;
+    font-size: 0.8125rem;
+    background-position: right 12px center;
+  }
+
+  .addProductButton {
+    min-height: 38px;
+    font-size: 0.8125rem;
+  }
 }
