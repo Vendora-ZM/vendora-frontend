@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { clearCart, removeFromCart, updateQuantity } from '@/lib/features/pos/posSlice';
 import { useCreateSaleMutation, useCompleteSaleMutation } from '@/lib/features/sales/salesApi';
@@ -13,6 +13,9 @@ import { formatCurrency } from '@/lib/utils/currency';
 import styles from './Cart.module.css';
 
 type CheckoutStage = 2 | 3 | 4;
+
+const REVIEW_PAGE_SIZE = 10;
+
 
 type SaleSummary = {
   saleNumber: string;
@@ -64,6 +67,8 @@ export const Cart: React.FC<CartProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [completion, setCompletion] = useState<SaleSummary | null>(null);
+  const [reviewPage, setReviewPage] = useState(0);
+  const reviewPagesRef = useRef<HTMLDivElement | null>(null);
 
   const [createSale] = useCreateSaleMutation();
   const [completeSale] = useCompleteSaleMutation();
@@ -89,8 +94,47 @@ export const Cart: React.FC<CartProps> = ({
   const method: PaymentMethod = activePaymentType?.method ?? 'cash';
   const methodLabel = activePaymentType?.label ?? getPaymentTypeLabel(method, paymentTypes);
 
+  const reviewPages = useMemo(() => {
+    const pages = [];
+    for (let index = 0; index < cart.length; index += REVIEW_PAGE_SIZE) {
+      pages.push(cart.slice(index, index + REVIEW_PAGE_SIZE));
+    }
+    return pages;
+  }, [cart]);
+
   const locationName = useMemo(() => locations[0]?.name ?? 'Primary location', [locations]);
   const formatAmount = (amount: number) => formatCurrency(amount, { currencyCode });
+  useEffect(() => {
+    setReviewPage((current) => Math.min(current, Math.max(reviewPages.length - 1, 0)));
+  }, [reviewPages.length]);
+
+  useEffect(() => {
+    if (stage !== 2) {
+      setReviewPage(0);
+    }
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage !== 2 || !reviewPagesRef.current) {
+      return;
+    }
+
+    const viewport = reviewPagesRef.current;
+    viewport.scrollTo({
+      left: reviewPage * viewport.clientWidth,
+      behavior: 'auto',
+    });
+  }, [reviewPage, reviewPages.length, stage]);
+
+  const handleReviewPagesScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const { scrollLeft, clientWidth } = event.currentTarget;
+    if (clientWidth === 0) {
+      return;
+    }
+
+    const nextPage = Math.round(scrollLeft / clientWidth);
+    setReviewPage(Math.max(0, Math.min(nextPage, reviewPages.length - 1)));
+  };
 
   const handleGoToPayment = () => {
     if (cart.length === 0) return;
@@ -250,7 +294,12 @@ export const Cart: React.FC<CartProps> = ({
           <div className={styles.stageFocus}>
             <div className={styles.stageHeader}>
               <h3>Review sale</h3>
-              <span>{cart.length} item{cart.length === 1 ? '' : 's'}</span>
+              <div className={styles.stageHeaderMeta}>
+                <span>{cart.length} item{cart.length === 1 ? '' : 's'}</span>
+                {reviewPages.length > 1 ? (
+                  <span className={styles.pageIndicator}>Page {reviewPage + 1} of {reviewPages.length}</span>
+                ) : null}
+              </div>
             </div>
 
             {cart.length === 0 ? (
@@ -260,60 +309,71 @@ export const Cart: React.FC<CartProps> = ({
                 <p>Go back to product selection to add items for this sale.</p>
               </div>
             ) : (
-              <div className={styles.itemsList}>
-                {cart.map((item) => (
-                  <div key={item.id} className={styles.cartItem}>
-                    <div className={styles.itemInfo}>
-                      <h4 className={styles.itemName}>{item.name}</h4>
-                      <span className={styles.itemPrice}>{formatAmount(item.selling_price / 100)}</span>
-                    </div>
+              <div
+                ref={reviewPagesRef}
+                className={styles.itemsListViewport}
+                onScroll={handleReviewPagesScroll}
+                aria-label="Review sale item pages"
+              >
+                {reviewPages.map((pageItems, pageIndex) => (
+                  <div key={`page-${pageIndex}`} className={styles.itemsPage}>
+                    <div className={styles.itemsList}>
+                      {pageItems.map((item) => (
+                        <div key={item.id} className={styles.cartItem}>
+                          <div className={styles.itemInfo}>
+                            <h4 className={styles.itemName}>{item.name}</h4>
+                            <span className={styles.itemPrice}>{formatAmount(item.selling_price / 100)}</span>
+                          </div>
 
-                    <div className={styles.itemControls}>
-                      <div className={styles.qtyControl}>
-                        <button
-                          className={styles.qtyBtn}
-                          onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity - 1 }))}
-                          disabled={isProcessing}
-                          aria-label={`Decrease quantity for ${item.name}`}
-                        >
-                          -
-                        </button>
-                        <input
-                          className={styles.qtyInput}
-                          type="number"
-                          min={1}
-                          step={1}
-                          value={item.cartQuantity}
-                          onChange={(event) => {
-                            const nextQuantity = parseQuantityInput(event.target.value);
-                            if (nextQuantity !== null) {
-                              dispatch(updateQuantity({ id: item.id, quantity: nextQuantity }));
-                            }
-                          }}
-                          disabled={isProcessing}
-                          aria-label={`Quantity for ${item.name}`}
-                          inputMode="numeric"
-                        />
-                        <button
-                          className={styles.qtyBtn}
-                          onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity + 1 }))}
-                          disabled={isProcessing}
-                          aria-label={`Increase quantity for ${item.name}`}
-                        >
-                          +
-                        </button>
-                      </div>
-                      <div className={styles.itemTotal}>
-                        {formatAmount((item.selling_price / 100) * item.cartQuantity)}
-                      </div>
-                      <button
-                        className={styles.removeBtn}
-                        onClick={() => dispatch(removeFromCart(item.id))}
-                        disabled={isProcessing}
-                        aria-label={`Remove ${item.name}`}
-                      >
-                        ✕
-                      </button>
+                          <div className={styles.itemControls}>
+                            <div className={styles.qtyControl}>
+                              <button
+                                className={styles.qtyBtn}
+                                onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity - 1 }))}
+                                disabled={isProcessing}
+                                aria-label={`Decrease quantity for ${item.name}`}
+                              >
+                                -
+                              </button>
+                              <input
+                                className={styles.qtyInput}
+                                type="number"
+                                min={1}
+                                step={1}
+                                value={item.cartQuantity}
+                                onChange={(event) => {
+                                  const nextQuantity = parseQuantityInput(event.target.value);
+                                  if (nextQuantity !== null) {
+                                    dispatch(updateQuantity({ id: item.id, quantity: nextQuantity }));
+                                  }
+                                }}
+                                disabled={isProcessing}
+                                aria-label={`Quantity for ${item.name}`}
+                                inputMode="numeric"
+                              />
+                              <button
+                                className={styles.qtyBtn}
+                                onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity + 1 }))}
+                                disabled={isProcessing}
+                                aria-label={`Increase quantity for ${item.name}`}
+                              >
+                                +
+                              </button>
+                            </div>
+                            <div className={styles.itemTotal}>
+                              {formatAmount((item.selling_price / 100) * item.cartQuantity)}
+                            </div>
+                            <button
+                              className={styles.removeBtn}
+                              onClick={() => dispatch(removeFromCart(item.id))}
+                              disabled={isProcessing}
+                              aria-label={`Remove ${item.name}`}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -450,3 +510,4 @@ export const Cart: React.FC<CartProps> = ({
     </div>
   );
 };
+

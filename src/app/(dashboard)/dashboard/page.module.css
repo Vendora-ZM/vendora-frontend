@@ -1295,20 +1295,465 @@
 }
 
 @media (max-width: 480px) {
+  .container {
+    gap: 16px;
+  }
+
+  .headerRow {
+    gap: 14px;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .controls {
+    gap: 10px;
+  }
+
+  .presetGroup {
+    gap: 6px;
+  }
+
+  .presetBtn {
+    padding: 8px 11px;
+    font-size: 0.75rem;
+  }
+
+  .locationField {
+    font-size: 0.75rem;
+  }
+
+  .locationSelect {
+    padding: 9px 12px;
+    font-size: 0.875rem;
+  }
+
   .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 6px;
+  }
+
+  .statIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .statTitle {
+    font-size: 0.72rem;
+  }
+
+  .statValue {
+    font-size: 1.15rem;
+  }
+
+  .statTrend {
+    font-size: 0.75rem;
+  }
+
+  .quickActionsSection {
+    padding: 14px;
+    gap: 14px;
+    border-radius: 18px;
+  }
+
+  .quickActionsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .quickActionsTitle {
+    font-size: 1.05rem;
+  }
+
+  .quickActionsText {
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .quickActionCard {
     grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .quickActionIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .quickActionIcon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .quickActionTopRow {
+    gap: 8px;
+  }
+
+  .quickActionTitle {
+    font-size: 0.88rem;
+  }
+
+  .quickActionBadge {
+    padding: 5px 8px;
+    font-size: 0.62rem;
+  }
+
+  .quickActionDescription {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .sectionTitle {
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+
+  .sectionHint {
+    font-size: 0.72rem;
+  }
+
+  .graphLegend {
+    padding: 0 14px;
+    gap: 8px 12px;
+  }
+
+  .legendItem {
+    font-size: 0.68rem;
+  }
+
+  .legendSwatch {
+    width: 10px;
+    height: 10px;
+  }
+
+  .graphContainer {
+    padding: 14px;
+    height: 210px;
+    gap: 6px;
+    overflow-x: hidden;
+  }
+
+  .barCol {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .barGroup {
+    gap: 4px;
+    padding: 0;
+  }
+
+  .barTrack {
+    min-height: 132px;
+    border-radius: 10px;
+  }
+
+  .barValue {
+    top: 6px;
+    font-size: 0.58rem;
+  }
+
+  .barSeriesLabel,
+  .barLabel {
+    font-size: 0.62rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    font-size: 0.78rem;
+  }
+
+  .badge {
+    padding: 5px 10px;
+    font-size: 0.68rem;
+  }
+
+  .alertsContainer {
+    padding: 10px 12px;
+  }
+
+  .alertItem {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .alertContent h4 {
+    font-size: 0.85rem;
+  }
+
+  .alertContent p,
+  .productSales {
+    font-size: 0.76rem;
+  }
+
+  .productItem {
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .productName,
+  .productRevenue {
+    font-size: 0.82rem;
+  }
+
+  .aiAdvisorFab {
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: 56px;
+    height: 56px;
+  }
+
+  .aiAdvisorFabIcon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .aiAdvisorCard {
+    width: calc(100vw - 16px);
+    right: 8px;
+    bottom: 78px;
+    max-height: calc(100vh - 94px);
+    padding: 14px;
+  }
+
+  .aiAdvisorTitle {
+    font-size: 1.12rem;
+  }
+
+  .aiAdvisorText,
+  .aiConversationHint,
+  .aiAnswerText,
+  .aiAnswerBullet {
+    font-size: 0.84rem;
+  }
+
+  .aiScoreValue {
+    font-size: 1.8rem;
+  }
+}
+
+
+@media (max-width: 420px) {
+  .container,
+  .headerRow,
+  .controls,
+  .presetGroup,
+  .statsGrid,
+  .quickActionsSection,
+  .quickActionsHeader,
+  .quickActionsGrid,
+  .quickActionCard,
+  .quickActionBody,
+  .quickActionTopRow,
+  .mainGrid,
+  .leftColumn,
+  .rightColumn,
+  .card,
+  .graphContainer,
+  .graphLegend,
+  .tableContainer,
+  .productList,
+  .productItem,
+  .alertsContainer,
+  .alertItem {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .container {
+    gap: 14px;
+    overflow-x: clip;
+  }
+
+  .headerRow {
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 1.12rem;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .controls,
+  .presetGroup {
+    gap: 6px;
+  }
+
+  .presetBtn {
+    padding: 7px 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .locationField {
+    font-size: 0.72rem;
+  }
+
+  .locationSelect {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .statsGrid {
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 12px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+
+  .statTitle {
+    font-size: 0.66rem;
+    font-weight: 600;
+  }
+
+  .statValue {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .statTrend {
+    font-size: 0.68rem;
+    font-weight: 400;
+  }
+
+  .quickActionsSection {
+    padding: 10px;
+    gap: 10px;
+    border-radius: 14px;
+    overflow-x: clip;
+  }
+
+  .quickActionsTitle {
+    font-size: 0.92rem;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .quickActionsText {
+    font-size: 0.74rem;
+    line-height: 1.35;
+    font-weight: 400;
   }
 
   .quickActionsGrid {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
-  .barCol {
-    min-width: 108px;
-    flex-basis: 108px;
+  .quickActionCard {
+    padding: 10px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+
+  .quickActionIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .quickActionIcon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .quickActionTopRow {
+    gap: 6px;
+    align-items: center;
+  }
+
+  .quickActionTitle {
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.25;
+    min-width: 0;
+  }
+
+  .quickActionBadge {
+    padding: 4px 6px;
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .quickActionDescription {
+    font-size: 0.74rem;
+    line-height: 1.35;
+    font-weight: 400;
+  }
+
+  .sectionTitle {
+    padding: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .sectionHint,
+  .legendItem,
+  .barSeriesLabel,
+  .barLabel,
+  .table th,
+  .table td,
+  .alertContent p,
+  .productSales,
+  .productName,
+  .productRevenue {
+    font-size: 0.7rem;
+    font-weight: 400;
+  }
+
+  .graphLegend,
+  .graphContainer,
+  .alertsContainer {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .graphContainer {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    height: 190px;
   }
 
   .barTrack {
-    min-height: 160px;
+    min-height: 118px;
+  }
+
+  .barValue {
+    font-size: 0.52rem;
+  }
+
+  .table th,
+  .table td,
+  .productItem {
+    padding: 10px;
+  }
+
+  .alertItem {
+    padding: 9px;
   }
 }

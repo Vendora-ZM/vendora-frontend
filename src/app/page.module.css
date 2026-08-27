@@ -1096,3 +1096,563 @@
     flex-direction: column;
   }
 }
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 32px 16px;
+    gap: 28px;
+  }
+
+  .heroContent {
+    gap: 18px;
+  }
+
+  .title {
+    font-size: 2.2rem;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .ctaGroup {
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .planButton,
+  .planButtonPrimary {
+    width: 100%;
+    padding: 13px 16px;
+  }
+
+  .posSpotlight {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .posSpotlightHeader strong {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .posSpotlightItem,
+  .heroPill,
+  .heroStatLabel,
+  .cardDescription,
+  .productText,
+  .productDetail,
+  .analyticsItem,
+  .faqAnswer,
+  .stepCopy p,
+  .tierDesc,
+  .featureItem {
+    font-size: 0.92rem;
+  }
+
+  .heroPills {
+    gap: 8px;
+  }
+
+  .heroPill {
+    padding: 8px 10px;
+  }
+
+  .heroStats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .heroStat {
+    padding: 12px 14px;
+  }
+
+  .mockup {
+    max-width: 100%;
+    border-radius: 14px;
+    transform: none;
+  }
+
+  .mockupHeader {
+    height: 34px;
+    padding: 0 12px;
+  }
+
+  .mockupSidebar {
+    width: 58px;
+  }
+
+  .mockupContent {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .mockupCard {
+    min-width: 100%;
+    min-height: 78px;
+    padding: 12px;
+  }
+
+  .mockupCard strong,
+  .productTitle,
+  .cardTitle,
+  .analyticsCardTitle,
+  .faqQuestion,
+  .stepCopy h3,
+  .tierName {
+    font-size: 1rem;
+  }
+
+  .section {
+    padding: 72px 16px;
+  }
+
+  .sectionHeader {
+    margin-bottom: 36px;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .sectionSubtitle {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .card,
+  .productCard,
+  .splitPanel,
+  .analyticsCard,
+  .pricingCard,
+  .faqItem,
+  .miniCard {
+    padding: 18px;
+  }
+
+  .grid,
+  .productGrid,
+  .pricingGrid,
+  .cardGrid,
+  .analyticsColumns,
+  .businessTypeHighlights,
+  .splitLayout {
+    gap: 14px;
+  }
+
+  .businessTypeShell,
+  .businessTypePanel,
+  .analyticsBanner,
+  .contactStrip,
+  .ctaSection {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .businessTypeTabs {
+    width: 100%;
+    border-radius: 20px;
+  }
+
+  .businessTypeTab {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 0.88rem;
+  }
+
+  .businessTypeBadge {
+    min-width: 0;
+    width: 100%;
+    padding: 12px 14px;
+  }
+
+  .businessTypeChip {
+    padding: 8px 10px;
+    font-size: 0.86rem;
+  }
+
+  .pricingToggle {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .toggleLabel {
+    font-size: 0.95rem;
+  }
+
+  .discountBadge {
+    display: inline-flex;
+    margin-left: 6px;
+    margin-top: 4px;
+    font-size: 0.72rem;
+  }
+
+  .pricingCard.popular,
+  .pricingCard.popular:hover {
+    transform: none;
+  }
+
+  .tierPrice {
+    font-size: 2.7rem;
+    flex-wrap: wrap;
+  }
+
+  .priceCurrency {
+    font-size: 1.15rem;
+    margin-top: 6px;
+  }
+
+  .pricePeriod {
+    font-size: 0.92rem;
+    margin-bottom: 8px;
+  }
+
+  .contactStrip {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero {
+    padding: 28px 12px;
+  }
+
+  .title {
+    font-size: 1.9rem;
+  }
+
+  .subtitle,
+  .sectionSubtitle {
+    font-size: 0.94rem;
+  }
+
+  .section {
+    padding: 56px 12px;
+  }
+
+  .sectionTitle {
+    font-size: 1.7rem;
+  }
+
+  .kicker,
+  .sectionEyebrow,
+  .posSpotlightKicker {
+    font-size: 0.7rem;
+    padding: 6px 9px;
+  }
+
+  .heroPill,
+  .businessTypeChip {
+    font-size: 0.8rem;
+  }
+
+  .businessTypeTab {
+    flex-basis: 100%;
+  }
+
+  .contactActions,
+  .ctaGroup {
+    width: 100%;
+  }
+
+  .toggleSwitch {
+    width: 56px;
+    height: 32px;
+  }
+
+  .toggleKnob {
+    width: 24px;
+    height: 24px;
+  }
+
+  .toggleSwitch.toggled .toggleKnob {
+    transform: translateX(24px);
+  }
+}
+
+@media (max-width: 640px) {
+  .main,
+  .hero,
+  .heroContent,
+  .heroImage,
+  .section,
+  .sectionHeader,
+  .sectionSubtitle,
+  .grid,
+  .productGrid,
+  .businessTypeShell,
+  .businessTypePanel,
+  .businessTypePanelHeader,
+  .businessTypeTabs,
+  .businessTypeHighlights,
+  .analyticsBanner,
+  .analyticsColumns,
+  .splitLayout,
+  .splitPanel,
+  .cardGrid,
+  .pricingGrid,
+  .pricingCard,
+  .contactStrip,
+  .contactActions,
+  .faqList,
+  .faqItem,
+  .ctaSection,
+  .mockup,
+  .mockupBody,
+  .mockupContent,
+  .mockupCard {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .hero,
+  .section {
+    width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .heroContent {
+    gap: 16px;
+  }
+
+  .title {
+    font-size: 2rem;
+    line-height: 1.08;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  .kicker,
+  .sectionEyebrow,
+  .posSpotlightKicker {
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .planButton,
+  .planButtonPrimary {
+    font-size: 0.92rem;
+    font-weight: 700;
+    padding: 12px 14px;
+  }
+
+  .posSpotlight,
+  .businessTypeShell,
+  .businessTypePanel,
+  .analyticsBanner,
+  .contactStrip,
+  .ctaSection {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .heroPill,
+  .posSpotlightItem,
+  .cardDescription,
+  .productText,
+  .productDetail,
+  .analyticsItem,
+  .faqAnswer,
+  .stepCopy p,
+  .tierDesc,
+  .featureItem,
+  .businessTypePanelText,
+  .heroStatLabel,
+  .sectionSubtitle {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  .heroStatValue,
+  .cardTitle,
+  .productTitle,
+  .analyticsCardTitle,
+  .faqQuestion,
+  .stepCopy h3,
+  .tierName,
+  .businessTypePanelTitle {
+    font-size: 0.96rem;
+    font-weight: 700;
+  }
+
+  .heroPill,
+  .businessTypeChip {
+    padding: 7px 9px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .heroStats,
+  .grid,
+  .productGrid,
+  .businessTypeHighlights,
+  .analyticsColumns,
+  .pricingGrid,
+  .cardGrid,
+  .splitLayout,
+  .faqList {
+    gap: 12px;
+  }
+
+  .card,
+  .productCard,
+  .splitPanel,
+  .analyticsCard,
+  .pricingCard,
+  .faqItem,
+  .miniCard,
+  .heroStat {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .section {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+
+  .sectionHeader {
+    margin-bottom: 28px;
+  }
+
+  .sectionTitle {
+    font-size: 1.7rem;
+    line-height: 1.15;
+    font-weight: 700;
+  }
+
+  .businessTypeTabs {
+    gap: 6px;
+    padding: 4px;
+  }
+
+  .businessTypeTab {
+    flex: 1 1 calc(50% - 6px);
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .businessTypeBadge {
+    padding: 10px 12px;
+  }
+
+  .businessTypeBadge span,
+  .businessTypeHighlightLabel {
+    font-size: 0.68rem;
+  }
+
+  .analyticsList {
+    padding-left: 16px;
+    gap: 8px;
+  }
+
+  .mockup {
+    transform: none;
+    border-radius: 12px;
+  }
+
+  .mockupSidebar {
+    width: 48px;
+  }
+
+  .mockupContent {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .mockupCard {
+    padding: 10px;
+    min-height: 70px;
+  }
+
+  .mockupCard strong,
+  .mockupCard span {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .pricingToggle {
+    gap: 8px;
+  }
+
+  .toggleLabel {
+    font-size: 0.88rem;
+    font-weight: 500;
+  }
+
+  .discountBadge {
+    font-size: 0.68rem;
+    padding: 3px 6px;
+  }
+
+  .tierPrice {
+    font-size: 2.3rem;
+    font-weight: 700;
+  }
+
+  .priceCurrency {
+    font-size: 1rem;
+  }
+
+  .pricePeriod {
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero,
+  .section {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .title {
+    font-size: 1.72rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .card,
+  .productCard,
+  .splitPanel,
+  .analyticsCard,
+  .pricingCard,
+  .faqItem,
+  .miniCard,
+  .heroStat,
+  .posSpotlight,
+  .businessTypeShell,
+  .businessTypePanel,
+  .analyticsBanner,
+  .contactStrip,
+  .ctaSection {
+    padding: 12px;
+  }
+
+  .businessTypeTab {
+    flex-basis: 100%;
+    font-size: 0.78rem;
+  }
+}

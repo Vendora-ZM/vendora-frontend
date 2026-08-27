@@ -105,6 +105,24 @@
   color: var(--color-white);
 }
 
+.itemsListViewport {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+
+.itemsPage {
+  flex: 0 0 100%;
+  min-width: 100%;
+  min-height: 0;
+  display: flex;
+  scroll-snap-align: start;
+}
 .itemsList {
   flex: 1;
   min-height: 0;
@@ -583,8 +601,15 @@
   }
 
   .inlineActions {
-    flex-direction: column;
-    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 16px 16px;
+  }
+
+  .inlineActions > * {
+    width: 100%;
+    min-width: 0;
   }
 
   .paymentSection {
@@ -601,3 +626,34 @@
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .inlineActions {
+    gap: 6px;
+    padding: 10px 12px 12px;
+  }
+
+  .inlineActions :global(button),
+  .inlineActions a {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 480px) {
+  .stageHeader {
+    align-items: flex-start;
+  }
+
+  .stageHeaderMeta {
+    gap: 3px;
+  }
+
+  .pageIndicator {
+    padding: 3px 7px;
+    font-size: 0.66rem;
+  }
+}
+
