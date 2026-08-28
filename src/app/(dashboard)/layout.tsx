@@ -225,31 +225,7 @@ export default function DashboardLayout({
             </nav>
           ) : null}
 
-          {trialState ? (
-            <div className={`${styles.trialBanner} ${trialState.isExpired ? styles.trialBannerExpired : ''}`}>
-              <div className={styles.trialBannerCopy}>
-                <span className={styles.trialBannerKicker}>Trial status</span>
-                <strong>
-                  {trialState.billingIsActive
-                    ? 'Billing is active.'
-                    : trialState.isExpired
-                      ? 'Your trial has ended.'
-                    : `${trialState.daysRemaining} day${trialState.daysRemaining === 1 ? '' : 's'} left on your trial.`}
-                </strong>
-                <p>
-                  {trialState.billingIsActive
-                    ? 'The POS is unlocked and billing preferences are saved on the business profile.'
-                    : trialState.isExpired
-                      ? 'Review billing to restore access to the POS and keep the business active.'
-                    : 'You can finish setup, review plans, and keep everything ready before the trial expires.'}
-                </p>
-              </div>
 
-              <Link href="/dashboard/billing" className={styles.trialBannerLink}>
-                Review billing
-              </Link>
-            </div>
-          ) : null}
 
           {showBillingGate ? (
             <section className={styles.billingGate}>
@@ -279,3 +255,4 @@ export default function DashboardLayout({
     </div>
   );
 }
+
