@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { skipToken } from '@reduxjs/toolkit/query';
 import { useParams } from 'next/navigation';
 import { ProductsTable } from '@/components/products/ProductsTable';
 import { ProductFormModal } from '@/components/products/ProductFormModal';
@@ -25,7 +24,7 @@ export default function LocationProductsPage() {
 
   const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery();
   const { data: balances = [], isLoading: balancesLoading } = useGetBalancesQuery(
-    locationId ? { location_id: locationId } : skipToken
+    locationId ? { location_id: locationId } : undefined,
   );
   const { data: productsRaw = [], isLoading: productsLoading, isError } = useGetProductsQuery({});
   const { data: categories = [] } = useGetCategoriesQuery();
@@ -41,10 +40,15 @@ export default function LocationProductsPage() {
     [balances]
   );
 
-  const locationProducts = useMemo(() => {
-    const filtered = productsRaw.filter((product: Product) => stockedProductIds.has(product.id));
-    return filtered.sort((a: Product, b: Product) => a.name.localeCompare(b.name));
-  }, [productsRaw, stockedProductIds]);
+  const locationProducts = useMemo(
+    () => [...productsRaw].sort((a: Product, b: Product) => a.name.localeCompare(b.name)),
+    [productsRaw]
+  );
+
+  const stockedProductCount = useMemo(
+    () => locationProducts.filter((product: Product) => stockedProductIds.has(product.id)).length,
+    [locationProducts, stockedProductIds]
+  );
 
   const totalPages = Math.max(1, Math.ceil(locationProducts.length / PAGE_SIZE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -93,13 +97,16 @@ export default function LocationProductsPage() {
           </div>
           <h1 className={styles.title}>{selectedLocation?.name ?? 'Location'} Products</h1>
           <p className={styles.subtitle}>
-            Products stocked at this location, presented in the same table style as the main products screen.
+            Products belong to the whole business and appear across every branch. Stock still stays location-specific,
+            so add or adjust quantities for {selectedLocation?.name ?? 'this location'} when inventory arrives.
           </p>
         </div>
 
         <div className={styles.actions}>
           <span className={styles.locationBadge}>
-            {isLoading ? 'Loading location…' : `${locationProducts.length} product${locationProducts.length === 1 ? '' : 's'}`}
+            {isLoading
+              ? 'Loading location…'
+              : `${locationProducts.length} catalog item${locationProducts.length === 1 ? '' : 's'} · ${stockedProductCount} stocked here`}
           </span>
           <Link href={`/dashboard/locations/${locationId}`} className={styles.backLink}>
             Back to overview

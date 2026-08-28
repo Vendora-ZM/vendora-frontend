@@ -128,7 +128,7 @@ export default function NewProductPage() {
           </div>
           <div>
             <h1 className={styles.title}>Add New Product</h1>
-            <p className={styles.subtitle}>Add a new item.</p>
+            <p className={styles.subtitle}>Add a new item once for the whole business, then assign stock to the branch receiving it.</p>
           </div>
         </div>
       </div>
@@ -214,7 +214,7 @@ export default function NewProductPage() {
               <div className={styles.formGrid}>
                 <Input
                   id="product-initial-stock"
-                  label="Opening Stock"
+                  label="Opening Stock for a Specific Location"
                   type="number"
                   step="1"
                   min="0"
@@ -224,7 +224,7 @@ export default function NewProductPage() {
                 />
                 <Select
                   id="product-initial-location"
-                  label="Opening Stock Location"
+                  label="Location Receiving This Stock"
                   value={form.initial_location_id}
                   onChange={set('initial_location_id')}
                   error={errors.initial_location_id}
@@ -244,9 +244,9 @@ export default function NewProductPage() {
                   />
                 )}
                 <div className={styles.categoryHelper}>
-                  <span className={styles.categoryHelperLabel}>Optional</span>
+                  <span className={styles.categoryHelperLabel}>Business-wide product</span>
                   <p className={styles.categoryHelperText}>
-                    Add stock now or later.
+                    New products are available across every business location. Add stock to the specific location that is receiving it.
                   </p>
                 </div>
               </div>

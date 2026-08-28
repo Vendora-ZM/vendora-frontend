@@ -323,7 +323,7 @@ export const ProductFormModal: React.FC = () => {
             <>
               <Input
                 id="product-initial-stock"
-                label="Opening Stock"
+                label="Opening Stock for a Specific Location"
                 type="number"
                 step="1"
                 min="0"
@@ -333,7 +333,7 @@ export const ProductFormModal: React.FC = () => {
               />
               <Select
                 id="product-initial-location"
-                label="Opening Stock Location"
+                label="Location Receiving This Stock"
                 value={form.initial_location_id || ''}
                 onChange={set('initial_location_id')}
                 error={errors.initial_location_id}
@@ -353,9 +353,9 @@ export const ProductFormModal: React.FC = () => {
                 />
               )}
               <div className={styles.categoryHelper}>
-                <span className={styles.categoryHelperLabel}>Stock can be adjusted later</span>
+                <span className={styles.categoryHelperLabel}>Business-wide product</span>
                 <p className={styles.categoryHelperText}>
-                  Opening stock is optional. You can add, remove, or correct stock later from the inventory adjustment flow.
+                  New products are available across all business locations. Only the stock quantity is tied to the location you choose here.
                 </p>
               </div>
             </>
