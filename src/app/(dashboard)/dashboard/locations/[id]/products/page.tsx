@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { ProductsTable } from '@/components/products/ProductsTable';
 import { ProductFormModal } from '@/components/products/ProductFormModal';
 import { DeleteProductModal } from '@/components/products/DeleteProductModal';
@@ -24,7 +25,7 @@ export default function LocationProductsPage() {
 
   const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery();
   const { data: balances = [], isLoading: balancesLoading } = useGetBalancesQuery(
-    locationId ? { location_id: locationId } : undefined,
+    locationId ? { location_id: locationId } : skipToken,
   );
   const { data: productsRaw = [], isLoading: productsLoading, isError } = useGetProductsQuery({});
   const { data: categories = [] } = useGetCategoriesQuery();
