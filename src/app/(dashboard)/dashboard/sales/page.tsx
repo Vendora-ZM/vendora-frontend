@@ -6,8 +6,9 @@ import pageStyles from '../page.module.css';
 import styles from './sales.module.css';
 import { useGetAccountsQuery } from '@/lib/features/accounts/accountsApi';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
+import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
 import { useGetCategoriesQuery, useGetProductsQuery } from '@/lib/features/products/productsApi';
-import { useGetSalesQuery } from '@/lib/features/sales/salesApi';
+import { useGetSalesQuery, useUpdateSaleMutation } from '@/lib/features/sales/salesApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { getPaymentTypeLabel } from '@/lib/business/paymentTypes';
 import { formatCurrencyFromCents } from '@/lib/utils/currency';
@@ -107,6 +108,8 @@ export default function SalesPage() {
   const [datePreset, setDatePreset] = useState('all');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [savingSaleId, setSavingSaleId] = useState<string | null>(null);
+  const [saleUpdateError, setSaleUpdateError] = useState<string | null>(null);
 
   const dateRange = useMemo(() => getDateRange(datePreset), [datePreset]);
   const offset = (page - 1) * pageSize;
@@ -126,6 +129,8 @@ export default function SalesPage() {
   const { data: products = [], isLoading: isProductsLoading } = useGetProductsQuery({});
   const { data: categories = [], isLoading: isCategoriesLoading } = useGetCategoriesQuery();
   const { data: accounts = [], isLoading: isAccountsLoading } = useGetAccountsQuery();
+  const { data: locations = [], isLoading: isLocationsLoading } = useGetLocationsQuery();
+  const [updateSale] = useUpdateSaleMutation();
   const { data: me } = useGetMeQuery();
   const { data: business } = useGetBusinessQuery(me?.business_id ?? '', {
     skip: !me?.business_id,
@@ -149,7 +154,7 @@ export default function SalesPage() {
       ),
     [accounts],
   );
-
+  const locationMap = useMemo(() => new Map(locations.map((location) => [location.id, location.name])), [locations]);
   const summary = useMemo(() => {
     const completedSales = reportSales.filter((sale: Sale) => sale.status === 'completed');
     const refundedSales = reportSales.filter((sale: Sale) => sale.status === 'refunded');
@@ -288,6 +293,28 @@ export default function SalesPage() {
     setPage(1);
   }
 
+  async function handleSaleLocationChange(saleId: string, nextLocationId: string) {
+    if (!nextLocationId) {
+      return;
+    }
+
+    setSavingSaleId(saleId);
+    setSaleUpdateError(null);
+    try {
+      await updateSale({
+        id: saleId,
+        data: { location_id: nextLocationId },
+      }).unwrap();
+    } catch (error) {
+      const errorObject = error as { data?: { message?: string; error?: string }; message?: string };
+      setSaleUpdateError(
+        errorObject?.data?.message || errorObject?.data?.error || errorObject?.message || 'Unable to update the sale branch.',
+      );
+    } finally {
+      setSavingSaleId(null);
+    }
+  }
+
   const pageNumbers = useMemo(() => {
     const delta = 2;
     const range: (number | '...')[] = [];
@@ -304,14 +331,14 @@ export default function SalesPage() {
 
   const startEntry = total === 0 ? 0 : offset + 1;
   const endEntry = Math.min(offset + pageSize, total);
-  const reportLoading = reportQuery.isLoading || isProductsLoading || isCategoriesLoading || isAccountsLoading;
+  const reportLoading = reportQuery.isLoading || isProductsLoading || isCategoriesLoading || isAccountsLoading || isLocationsLoading;
 
   return (
     <div className={pageStyles.container}>
       <div className={styles.headerRow}>
         <div>
           <h1 className={pageStyles.title}>Sales</h1>
-          <p className={pageStyles.subtitle}>Track sales, receipts, and performance by item, category, employee, and payment type.</p>
+          <p className={pageStyles.subtitle}>Track sales, branches, and employee attribution in one operational view.</p>
         </div>
       </div>
 
@@ -319,7 +346,7 @@ export default function SalesPage() {
         <div className={styles.summaryHeader} id="sales-summary">
           <div>
             <span className={styles.summaryEyebrow}>Sales Summary</span>
-            <h2 className={styles.summaryTitle}>A clear view of what is selling, who is selling it, and how it was paid.</h2>
+            <h2 className={styles.summaryTitle}>A clear view of what is selling, which branch owns it, who recorded it, and how it was paid.</h2>
             <p className={styles.summaryText}>
               This sales workspace keeps the main breakdowns in one place so owners can scan the numbers and jump
               straight to the detail they need.
@@ -334,7 +361,6 @@ export default function SalesPage() {
             ))}
           </div>
         </div>
-
         <div className={styles.summaryGrid}>
           <div className={styles.summaryCard}>
             <span className={styles.summaryLabel}>Sales</span>
@@ -397,6 +423,8 @@ export default function SalesPage() {
             Failed to load sales. Please try again later.
           </div>
         )}
+
+        {saleUpdateError ? <div className={styles.errorState}>{saleUpdateError}</div> : null}
 
         <div className={styles.reportGrid}>
           <div className={styles.leftColumn}>
@@ -528,20 +556,16 @@ export default function SalesPage() {
                 ) : receiptRows.length > 0 ? (
                   receiptRows.map((sale: Sale) => {
                     const employee = sale.created_by ? employeeMap.get(sale.created_by) ?? 'Unknown employee' : 'Unknown user';
+                    const locationName = locationMap.get(sale.location_id) ?? 'Unknown branch';
                     return (
                       <div key={sale.id} className={styles.receiptRow}>
                         <div className={styles.cellStack}>
                           <strong>{saleLabel(sale)}</strong>
                           <span>
-                            {formatDate(sale.created_at)} · {employee}
+                            {formatDate(sale.created_at)} · {locationName} · {employee}
                           </span>
                         </div>
-                        <Link
-                          className={styles.receiptButton}
-                          href={`/dashboard/sales/${sale.id}/receipt`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <Link className={styles.receiptButton} href={`/dashboard/sales/${sale.id}/receipt`} target="_blank" rel="noreferrer">
                           Open receipt
                         </Link>
                       </div>
@@ -555,7 +579,6 @@ export default function SalesPage() {
               </div>
             </section>
           </div>
-
           <div className={styles.rightColumn}>
             <section className={pageStyles.card} id="sales-by-employee">
               <div className={styles.sectionHeader}>
@@ -655,7 +678,7 @@ export default function SalesPage() {
           <div className={styles.sectionHeader}>
             <div>
               <h2 className={styles.sectionTitleText}>Sales List</h2>
-              <p className={styles.sectionHint}>Paginated operational view for drilling into individual transactions.</p>
+              <p className={styles.sectionHint}>Paginated operational view for drilling into branch ownership and individual transactions.</p>
             </div>
           </div>
 
@@ -666,6 +689,8 @@ export default function SalesPage() {
                   <th>Sale #</th>
                   <th>Date & Time</th>
                   <th>Status</th>
+                  <th>Branch</th>
+                  <th>Recorded by</th>
                   <th>Items</th>
                   <th>Total</th>
                 </tr>
@@ -677,12 +702,18 @@ export default function SalesPage() {
                         <td><div className={styles.skeleton} style={{ width: '80px' }} /></td>
                         <td><div className={styles.skeleton} style={{ width: '140px' }} /></td>
                         <td><div className={styles.skeleton} style={{ width: '80px', borderRadius: '999px' }} /></td>
+                        <td><div className={styles.skeleton} style={{ width: '140px' }} /></td>
+                        <td><div className={styles.skeleton} style={{ width: '140px' }} /></td>
                         <td><div className={styles.skeleton} style={{ width: '50px' }} /></td>
                         <td><div className={styles.skeleton} style={{ width: '90px' }} /></td>
                       </tr>
                     ))
                   : sales.map((sale: Sale) => {
                       const statusClass = styles[sale.status as keyof typeof styles] ?? styles.draft;
+                      const employeeLabel = sale.created_by ? employeeMap.get(sale.created_by) ?? 'Unknown employee' : 'Unassigned';
+                      const branchName = locationMap.get(sale.location_id) ?? 'Unknown branch';
+                      const isDraft = sale.status === 'draft';
+                      const isSavingThisSale = savingSaleId === sale.id;
                       return (
                         <tr key={sale.id} style={{ opacity: pageQuery.isFetching ? 0.6 : 1, transition: 'opacity 0.2s' }}>
                           <td style={{ fontWeight: 600, color: 'var(--color-primary-navy)' }}>
@@ -694,6 +725,33 @@ export default function SalesPage() {
                               {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
                             </span>
                           </td>
+                          <td>
+                            {isDraft ? (
+                              <select
+                                className={styles.pageSizeSelect}
+                                value={sale.location_id}
+                                onChange={(event) => handleSaleLocationChange(sale.id, event.target.value)}
+                                disabled={isSavingThisSale || locations.length === 0}
+                              >
+                                {locations.map((location) => (
+                                  <option key={location.id} value={location.id}>
+                                    {location.name}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <div className={styles.cellStack}>
+                                <strong>{branchName}</strong>
+                                <span>Locked after completion</span>
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div className={styles.cellStack}>
+                              <strong>{employeeLabel}</strong>
+                              <span>{sale.created_by ? 'Recorded by account' : 'No account linked'}</span>
+                            </div>
+                          </td>
                           <td>{sale.items?.length ?? 0}</td>
                           <td className={styles.amount}>{formatCurrencyFromCents(sale.total_amount ?? 0, { currencyCode })}</td>
                         </tr>
@@ -702,7 +760,7 @@ export default function SalesPage() {
 
                 {!pageQuery.isLoading && !Boolean(pageQuery.error) && sales.length === 0 && (
                   <tr>
-                    <td colSpan={5}>
+                    <td colSpan={7}>
                       <div className={styles.emptyState}>
                         <p>No sales found</p>
                         <small>Try adjusting your filters or date range.</small>

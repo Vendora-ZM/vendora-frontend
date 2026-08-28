@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { Sale, ListSalesParams, CreateSaleRequest, CompleteSaleRequest } from '@/types/sale';
+import { Sale, ListSalesParams, CreateSaleRequest, CompleteSaleRequest, UpdateSaleRequest } from '@/types/sale';
 import { createReauthBaseQuery } from '@/lib/api/baseQuery';
 
 export interface SalesMeta {
@@ -59,6 +59,19 @@ export const salesApi = createApi({
       invalidatesTags: [{ type: 'Sale', id: 'LIST' }],
     }),
 
+    updateSale: builder.mutation<Sale, { id: string; data: UpdateSaleRequest }>({
+      query: ({ id, data }) => ({
+        url: `/sales/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      transformResponse: (response: Sale | { data: Sale }) => unwrapApiData(response),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Sale', id },
+        { type: 'Sale', id: 'LIST' },
+      ],
+    }),
+
     completeSale: builder.mutation<Sale, { id: string; data: CompleteSaleRequest }>({
       query: ({ id, data }) => ({
         url: `/sales/${id}/complete`,
@@ -74,5 +87,4 @@ export const salesApi = createApi({
   }),
 });
 
-export const { useGetSalesQuery, useGetSaleByIdQuery, useCreateSaleMutation, useCompleteSaleMutation } = salesApi;
-
+export const { useGetSalesQuery, useGetSaleByIdQuery, useCreateSaleMutation, useUpdateSaleMutation, useCompleteSaleMutation } = salesApi;

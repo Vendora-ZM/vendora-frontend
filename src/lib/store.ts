@@ -17,6 +17,7 @@ import inventoryReducer from './features/inventory/inventorySlice';
 import { profileApi } from './features/profile/profileApi';
 import { accountsApi } from './features/accounts/accountsApi';
 import { businessApi } from './features/business/businessApi';
+import { suppliersApi } from './features/suppliers/suppliersApi';
 import notificationsReducer from './features/notifications/notificationsSlice';
 import { clearPersistedAuthState, persistAuthState } from './features/auth/authSlice';
 
@@ -37,6 +38,7 @@ export const store = configureStore({
     [accountsApi.reducerPath]: accountsApi.reducer,
     [businessApi.reducerPath]: businessApi.reducer,
     [locationsApi.reducerPath]: locationsApi.reducer,
+    [suppliersApi.reducerPath]: suppliersApi.reducer,
     inventory: inventoryReducer,
     notifications: notificationsReducer,
     [inventoryApi.reducerPath]: inventoryApi.reducer,
@@ -52,6 +54,7 @@ export const store = configureStore({
       .concat(accountsApi.middleware)
       .concat(businessApi.middleware)
       .concat(locationsApi.middleware)
+      .concat(suppliersApi.middleware)
       .concat(inventoryApi.middleware),
 });
 

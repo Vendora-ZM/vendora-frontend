@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
-import { hydrateSuppliers, INITIAL_SUPPLIERS, type SupplierRecord } from './supplierData';
+import { useGetSuppliersQuery } from '@/lib/features/suppliers/suppliersApi';
 
 function EmptyState() {
   return (
@@ -16,21 +16,20 @@ function EmptyState() {
 }
 
 export default function SuppliersPage() {
-  const [suppliers] = useState<SupplierRecord[]>(() =>
-    typeof window === 'undefined' ? INITIAL_SUPPLIERS : hydrateSuppliers()
-  );
+  const { data: suppliers = [], isLoading, isError } = useGetSuppliersQuery();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
   const totalPages = Math.max(1, Math.ceil(suppliers.length / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
   const paginatedSuppliers = useMemo(
-    () => suppliers.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-    [currentPage, suppliers]
+    () => suppliers.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize),
+    [pageSize, safeCurrentPage, suppliers]
   );
 
   const summary = useMemo(() => {
-    const totalProducts = suppliers.reduce((count, supplier) => count + supplier.suppliedProducts.length, 0);
-    const totalAreas = new Set(suppliers.flatMap((supplier) => supplier.serviceAreas));
+    const totalProducts = suppliers.reduce((count, supplier) => count + supplier.supplied_products.length, 0);
+    const totalAreas = new Set(suppliers.flatMap((supplier) => supplier.service_areas));
 
     return {
       suppliers: suppliers.length,
@@ -54,17 +53,17 @@ export default function SuppliersPage() {
       <section className={styles.summaryGrid} aria-label="Supplier summary">
         <article className={styles.summaryCard}>
           <span className={styles.summaryLabel}>Suppliers</span>
-          <strong className={styles.summaryValue}>{summary.suppliers}</strong>
+          <strong className={styles.summaryValue}>{isLoading ? 'Loading…' : summary.suppliers}</strong>
           <p className={styles.summaryNote}>Active supplier records.</p>
         </article>
         <article className={styles.summaryCard}>
           <span className={styles.summaryLabel}>Supplied products</span>
-          <strong className={styles.summaryValue}>{summary.suppliedProducts}</strong>
+          <strong className={styles.summaryValue}>{isLoading ? 'Loading…' : summary.suppliedProducts}</strong>
           <p className={styles.summaryNote}>Products mapped to suppliers.</p>
         </article>
         <article className={styles.summaryCard}>
           <span className={styles.summaryLabel}>Service areas</span>
-          <strong className={styles.summaryValue}>{summary.serviceAreas}</strong>
+          <strong className={styles.summaryValue}>{isLoading ? 'Loading…' : summary.serviceAreas}</strong>
           <p className={styles.summaryNote}>Coverage points across suppliers.</p>
         </article>
       </section>
@@ -77,7 +76,17 @@ export default function SuppliersPage() {
           </div>
         </div>
 
-        {suppliers.length === 0 ? (
+        {isError ? (
+          <div className={styles.emptyState}>
+            <h3 className={styles.emptyTitle}>Unable to load suppliers</h3>
+            <p className={styles.emptySubtitle}>Please check your connection and try again.</p>
+          </div>
+        ) : isLoading ? (
+          <div className={styles.emptyState}>
+            <h3 className={styles.emptyTitle}>Loading suppliers…</h3>
+            <p className={styles.emptySubtitle}>Fetching the latest supplier records from the backend.</p>
+          </div>
+        ) : suppliers.length === 0 ? (
           <EmptyState />
         ) : (
           <>
@@ -100,24 +109,24 @@ export default function SuppliersPage() {
                         <div className={styles.supplierCell}>
                           <span className={styles.supplierName}>{supplier.name}</span>
                           <span className={styles.supplierMeta}>
-                            {supplier.serviceAreas.length > 0 ? supplier.serviceAreas.join(', ') : 'Areas not set'}
+                            {supplier.service_areas.length > 0 ? supplier.service_areas.join(', ') : 'Areas not set'}
                           </span>
                         </div>
                       </td>
                       <td>
                         <div className={styles.contactCell}>
-                          <span className={styles.contactName}>{supplier.contactName}</span>
+                          <span className={styles.contactName}>{supplier.contact_name || 'No contact added'}</span>
                           <span className={styles.contactMeta}>{supplier.email || 'No email added'}</span>
                         </div>
                       </td>
                       <td className={styles.hideOnMobile}>{supplier.phone || 'No phone added'}</td>
                       <td>
-                        <span className={styles.countBadge}>{supplier.suppliedProducts.length} items</span>
+                        <span className={styles.countBadge}>{supplier.supplied_products.length} items</span>
                       </td>
                       <td className={styles.hideOnMobile}>
                         <div className={styles.operationsCell}>
-                          <span>{supplier.operatingDays || 'Days not set'}</span>
-                          <span>{supplier.operatingHours || 'Hours not set'}</span>
+                          <span>{supplier.operating_days || 'Days not set'}</span>
+                          <span>{supplier.operating_hours || 'Hours not set'}</span>
                         </div>
                       </td>
                       <td className={styles.actionsCell}>
@@ -133,7 +142,7 @@ export default function SuppliersPage() {
 
             <div className={styles.pagination}>
               <div className={styles.paginationSummary}>
-                Showing {Math.min((currentPage - 1) * pageSize + 1, suppliers.length)}-{Math.min(currentPage * pageSize, suppliers.length)} of {suppliers.length}
+                Showing {Math.min((safeCurrentPage - 1) * pageSize + 1, suppliers.length)}-{Math.min(safeCurrentPage * pageSize, suppliers.length)} of {suppliers.length}
               </div>
 
               <div className={styles.paginationControls}>
@@ -141,7 +150,7 @@ export default function SuppliersPage() {
                   type="button"
                   className={styles.paginationBtn}
                   onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                  disabled={currentPage <= 1}
+                  disabled={safeCurrentPage <= 1}
                 >
                   Previous
                 </button>
@@ -151,9 +160,9 @@ export default function SuppliersPage() {
                     <button
                       key={page}
                       type="button"
-                      className={`${styles.paginationPage} ${page === currentPage ? styles.paginationPageActive : ''}`}
+                      className={`${styles.paginationPage} ${page === safeCurrentPage ? styles.paginationPageActive : ''}`}
                       onClick={() => setCurrentPage(page)}
-                      aria-current={page === currentPage ? 'page' : undefined}
+                      aria-current={page === safeCurrentPage ? 'page' : undefined}
                     >
                       {page}
                     </button>
@@ -164,7 +173,7 @@ export default function SuppliersPage() {
                   type="button"
                   className={styles.paginationBtn}
                   onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                  disabled={currentPage >= totalPages}
+                  disabled={safeCurrentPage >= totalPages}
                 >
                   Next
                 </button>

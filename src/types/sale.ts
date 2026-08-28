@@ -69,6 +69,10 @@ export interface CreateSaleRequest {
   items: CreateSaleItemInput[];
 }
 
+export interface UpdateSaleRequest {
+  location_id?: string;
+}
+
 export interface CompleteSalePaymentInput {
   method: PaymentMethod;
   amount: number;

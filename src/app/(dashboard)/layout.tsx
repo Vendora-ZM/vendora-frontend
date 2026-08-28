@@ -27,6 +27,7 @@ const QUICK_NAV_LINKS = [
   { href: '/dashboard/sales', label: 'Sales', exact: false },
   { href: '/dashboard/products', label: 'Products', exact: false },
   { href: '/dashboard/orders', label: 'Orders', exact: false },
+  { href: '/dashboard/suppliers', label: 'Suppliers', exact: false },
   { href: '/dashboard/analytics', label: 'Analytics', exact: false },
 ];
 

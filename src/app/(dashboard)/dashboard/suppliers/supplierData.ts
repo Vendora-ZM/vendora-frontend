@@ -1,18 +1,4 @@
-export type SupplierRecord = {
-  id: string;
-  name: string;
-  contactName: string;
-  phone: string;
-  email: string;
-  address: string;
-  serviceAreas: string[];
-  suppliedProducts: string[];
-  operatingDays: string;
-  operatingHours: string;
-  leadTime: string;
-  paymentTerms: string;
-  notes: string;
-};
+import { CreateSupplierPayload, Supplier, UpdateSupplierPayload } from '@/types/supplier';
 
 export type SupplierFormState = {
   name: string;
@@ -29,8 +15,6 @@ export type SupplierFormState = {
   notes: string;
 };
 
-export const SUPPLIERS_STORAGE_KEY = 'vendora.suppliers';
-
 export const INITIAL_FORM: SupplierFormState = {
   name: '',
   contactName: '',
@@ -46,39 +30,6 @@ export const INITIAL_FORM: SupplierFormState = {
   notes: '',
 };
 
-export const INITIAL_SUPPLIERS: SupplierRecord[] = [
-  {
-    id: 'supplier-1',
-    name: 'FreshRoute Distributors',
-    contactName: 'Loveness Phiri',
-    phone: '+260 977 120 455',
-    email: 'orders@freshroute.co.zm',
-    address: 'Plot 28, Makeni, Lusaka',
-    serviceAreas: ['Lusaka', 'Kafue'],
-    suppliedProducts: ['Cooking Oil', 'Rice 25kg', 'Sugar 10kg'],
-    operatingDays: 'Mon - Sat',
-    operatingHours: '08:00 - 17:30',
-    leadTime: '24 hours',
-    paymentTerms: 'Net 7 days',
-    notes: 'Strong for fast-moving essentials. Usually confirms restocks by phone before noon.',
-  },
-  {
-    id: 'supplier-2',
-    name: 'Copperbelt Packaging House',
-    contactName: 'Brian Chansa',
-    phone: '+260 966 884 230',
-    email: 'supply@cbpackaging.com',
-    address: 'Industrial Yard 4, Ndola',
-    serviceAreas: ['Ndola', 'Kitwe', 'Lusaka'],
-    suppliedProducts: ['Carry Bags', 'Receipt Rolls', 'Branded Boxes'],
-    operatingDays: 'Mon - Fri',
-    operatingHours: '07:30 - 16:30',
-    leadTime: '2-3 days',
-    paymentTerms: '50% upfront',
-    notes: 'Best for custom packaging orders. Use them when branded materials need a larger run.',
-  },
-];
-
 export function toTags(value: string) {
   return value
     .split(',')
@@ -86,96 +37,86 @@ export function toTags(value: string) {
     .filter(Boolean);
 }
 
-export function readSuppliers(): SupplierRecord[] {
-  if (typeof window === 'undefined') {
-    return INITIAL_SUPPLIERS;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(SUPPLIERS_STORAGE_KEY);
-    if (!raw) {
-      return INITIAL_SUPPLIERS;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return INITIAL_SUPPLIERS;
-    }
-
-    return parsed as SupplierRecord[];
-  } catch {
-    return INITIAL_SUPPLIERS;
-  }
+function toOptionalString(value: string) {
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
 }
 
-export function writeSuppliers(suppliers: SupplierRecord[]) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.setItem(SUPPLIERS_STORAGE_KEY, JSON.stringify(suppliers));
-}
-
-export function hydrateSuppliers() {
-  const suppliers = readSuppliers();
-  writeSuppliers(suppliers);
-  return suppliers;
-}
-
-export function createSupplierRecord(form: SupplierFormState): SupplierRecord {
-  const cleanName = form.name.trim();
-  const baseSlug = cleanName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '') || 'supplier';
-
-  return {
-    id: `${baseSlug}-${Date.now()}`,
-    name: cleanName,
-    contactName: form.contactName.trim(),
-    phone: form.phone.trim(),
-    email: form.email.trim(),
-    address: form.address.trim(),
-    serviceAreas: toTags(form.serviceAreas),
-    suppliedProducts: toTags(form.suppliedProducts),
-    operatingDays: form.operatingDays.trim(),
-    operatingHours: form.operatingHours.trim(),
-    leadTime: form.leadTime.trim(),
-    paymentTerms: form.paymentTerms.trim(),
-    notes: form.notes.trim(),
-  };
-}
-export function createSupplierFormState(supplier: SupplierRecord): SupplierFormState {
+export function createSupplierFormState(supplier: Supplier): SupplierFormState {
   return {
     name: supplier.name,
-    contactName: supplier.contactName,
-    phone: supplier.phone,
-    email: supplier.email,
-    address: supplier.address,
-    serviceAreas: supplier.serviceAreas.join(', '),
-    suppliedProducts: supplier.suppliedProducts.join(', '),
-    operatingDays: supplier.operatingDays,
-    operatingHours: supplier.operatingHours,
-    leadTime: supplier.leadTime,
-    paymentTerms: supplier.paymentTerms,
-    notes: supplier.notes,
+    contactName: supplier.contact_name ?? '',
+    phone: supplier.phone ?? '',
+    email: supplier.email ?? '',
+    address: supplier.address_line1 ?? '',
+    serviceAreas: supplier.service_areas.join(', '),
+    suppliedProducts: supplier.supplied_products.join(', '),
+    operatingDays: supplier.operating_days ?? '',
+    operatingHours: supplier.operating_hours ?? '',
+    leadTime: supplier.lead_time ?? '',
+    paymentTerms: supplier.payment_terms ?? '',
+    notes: supplier.notes ?? '',
   };
 }
 
-export function updateSupplierRecord(supplier: SupplierRecord, form: SupplierFormState): SupplierRecord {
+export function toCreateSupplierPayload(form: SupplierFormState): CreateSupplierPayload {
   return {
-    ...supplier,
     name: form.name.trim(),
-    contactName: form.contactName.trim(),
-    phone: form.phone.trim(),
-    email: form.email.trim(),
-    address: form.address.trim(),
-    serviceAreas: toTags(form.serviceAreas),
-    suppliedProducts: toTags(form.suppliedProducts),
-    operatingDays: form.operatingDays.trim(),
-    operatingHours: form.operatingHours.trim(),
-    leadTime: form.leadTime.trim(),
-    paymentTerms: form.paymentTerms.trim(),
-    notes: form.notes.trim(),
+    contact_name: toOptionalString(form.contactName),
+    phone: toOptionalString(form.phone),
+    email: toOptionalString(form.email),
+    address_line1: toOptionalString(form.address),
+    country_code: 'ZM',
+    service_areas: toTags(form.serviceAreas),
+    supplied_products: toTags(form.suppliedProducts),
+    operating_days: toOptionalString(form.operatingDays),
+    operating_hours: toOptionalString(form.operatingHours),
+    lead_time: toOptionalString(form.leadTime),
+    payment_terms: toOptionalString(form.paymentTerms),
+    notes: toOptionalString(form.notes),
   };
+}
+
+export function toUpdateSupplierPayload(form: SupplierFormState, supplier: Supplier): UpdateSupplierPayload {
+  return {
+    name: form.name.trim(),
+    contact_name: toOptionalString(form.contactName),
+    phone: toOptionalString(form.phone),
+    email: toOptionalString(form.email),
+    address_line1: toOptionalString(form.address),
+    country_code: supplier.country_code || 'ZM',
+    service_areas: toTags(form.serviceAreas),
+    supplied_products: toTags(form.suppliedProducts),
+    operating_days: toOptionalString(form.operatingDays),
+    operating_hours: toOptionalString(form.operatingHours),
+    lead_time: toOptionalString(form.leadTime),
+    payment_terms: toOptionalString(form.paymentTerms),
+    notes: toOptionalString(form.notes),
+    is_active: supplier.is_active,
+  };
+}
+
+export function formatSupplierAddress(supplier: Supplier) {
+  return [
+    supplier.address_line1,
+    supplier.address_line2,
+    supplier.city,
+    supplier.state,
+    supplier.postal_code,
+  ].filter(Boolean).join(', ');
+}
+
+export function getApiErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === 'object' && error !== null) {
+    if ('data' in error && error.data && typeof error.data === 'object') {
+      const payload = error.data as { message?: string; error?: string };
+      return payload.message || payload.error || fallback;
+    }
+
+    if ('message' in error && typeof error.message === 'string') {
+      return error.message;
+    }
+  }
+
+  return fallback;
 }

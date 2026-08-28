@@ -16,7 +16,6 @@ type CheckoutStage = 2 | 3 | 4;
 
 const REVIEW_PAGE_SIZE = 10;
 
-
 type SaleSummary = {
   saleNumber: string;
   total: number;
@@ -24,6 +23,7 @@ type SaleSummary = {
   paymentMethod: PaymentMethod;
   paymentTypeLabel: string;
   completedAt: string;
+  locationName: string;
 };
 
 interface CartProps {
@@ -64,6 +64,7 @@ export const Cart: React.FC<CartProps> = ({
   const [paymentTypeLabel, setPaymentTypeLabel] = useState(paymentTypeOptions[0]?.label ?? '');
   const [amountTendered, setAmountTendered] = useState<string>('');
   const [reference, setReference] = useState('');
+  const [selectedLocationId, setSelectedLocationId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [completion, setCompletion] = useState<SaleSummary | null>(null);
@@ -104,7 +105,22 @@ export const Cart: React.FC<CartProps> = ({
   const maxReviewPage = Math.max(reviewPages.length - 1, 0);
   const safeReviewPage = Math.min(reviewPage, maxReviewPage);
 
-  const locationName = useMemo(() => locations[0]?.name ?? 'Primary location', [locations]);
+  useEffect(() => {
+    if (!locations.length || selectedLocationId) {
+      return;
+    }
+
+    const defaultLocation = locations.find((location) => location.is_default) ?? locations[0];
+    if (defaultLocation) {
+      setSelectedLocationId(defaultLocation.id);
+    }
+  }, [locations, selectedLocationId]);
+
+  const selectedLocation = useMemo(
+    () => locations.find((location) => location.id === selectedLocationId) ?? locations.find((location) => location.is_default) ?? locations[0],
+    [locations, selectedLocationId],
+  );
+  const locationName = selectedLocation?.name ?? 'Select branch';
   const formatAmount = (amount: number) => formatCurrency(amount, { currencyCode });
 
   useEffect(() => {
@@ -152,8 +168,8 @@ export const Cart: React.FC<CartProps> = ({
   const handleConfirmPayment = async () => {
     if (cart.length === 0) return;
 
-    if (!locations.length) {
-      setError('No locations found for this business. Please create a location first.');
+    if (!selectedLocation?.id) {
+      setError('Select the branch that should own this sale before completing payment.');
       return;
     }
 
@@ -166,9 +182,8 @@ export const Cart: React.FC<CartProps> = ({
     setError(null);
 
     try {
-      const locationId = locations[0].id;
       const sale = await createSale({
-        location_id: locationId,
+        location_id: selectedLocation.id,
         discount_amount: Math.round(discount * 100),
         notes: salesChannelLabel ? `Sales channel: ${salesChannelLabel}` : undefined,
         items: cart.map((item) => {
@@ -214,6 +229,7 @@ export const Cart: React.FC<CartProps> = ({
         paymentMethod: method,
         paymentTypeLabel: methodLabel,
         completedAt: completedSale.completed_at || new Date().toISOString(),
+        locationName: selectedLocation.name,
       });
 
       dispatch(clearCart());
@@ -255,7 +271,7 @@ export const Cart: React.FC<CartProps> = ({
             </svg>
           </div>
           <h3>Sale completed successfully</h3>
-          <p>{completion.saleNumber} is now recorded and ready for printing or sharing.</p>
+          <p>{completion.saleNumber} is now recorded under {completion.locationName} and ready for printing or sharing.</p>
 
           <div className={styles.successSummary}>
             <div>
@@ -267,8 +283,8 @@ export const Cart: React.FC<CartProps> = ({
               <strong>{completion.paymentTypeLabel}</strong>
             </div>
             <div>
-              <span className={styles.summaryLabel}>Change</span>
-              <strong>{formatAmount(completion.change)}</strong>
+              <span className={styles.summaryLabel}>Branch</span>
+              <strong>{completion.locationName}</strong>
             </div>
           </div>
 
@@ -294,6 +310,23 @@ export const Cart: React.FC<CartProps> = ({
                 ) : null}
               </div>
             </div>
+
+            <Select
+              label="Branch for this sale"
+              value={selectedLocation?.id ?? ''}
+              onChange={(event) => setSelectedLocationId(event.target.value)}
+              disabled={isProcessing || isLocationsLoading || locations.length === 0}
+            >
+              {locations.length === 0 ? (
+                <option value="">No branches available</option>
+              ) : (
+                locations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.name}
+                  </option>
+                ))
+              )}
+            </Select>
 
             {cart.length === 0 ? (
               <div className={styles.emptyFlow}>
@@ -399,7 +432,7 @@ export const Cart: React.FC<CartProps> = ({
             <Button variant="outline" size="lg" onClick={onBackToSelection}>
               Back to Products
             </Button>
-            <Button variant="primary" size="lg" onClick={handleGoToPayment} disabled={cart.length === 0}>
+            <Button variant="primary" size="lg" onClick={handleGoToPayment} disabled={cart.length === 0 || !selectedLocation?.id}>
               Continue to Payment
             </Button>
           </div>
@@ -410,6 +443,23 @@ export const Cart: React.FC<CartProps> = ({
             <h3>Complete payment</h3>
             <span>{locationName}</span>
           </div>
+
+          <Select
+            label="Branch for this sale"
+            value={selectedLocation?.id ?? ''}
+            onChange={(event) => setSelectedLocationId(event.target.value)}
+            disabled={isProcessing || isLocationsLoading || locations.length === 0}
+          >
+            {locations.length === 0 ? (
+              <option value="">No branches available</option>
+            ) : (
+              locations.map((location) => (
+                <option key={location.id} value={location.id}>
+                  {location.name}
+                </option>
+              ))
+            )}
+          </Select>
 
           {salesChannelLabel ? (
             <div className={styles.channelSummary}>
@@ -515,7 +565,7 @@ export const Cart: React.FC<CartProps> = ({
               variant="primary"
               size="lg"
               onClick={handleConfirmPayment}
-              disabled={isProcessing || isLocationsLoading || cart.length === 0}
+              disabled={isProcessing || isLocationsLoading || cart.length === 0 || !selectedLocation?.id}
             >
               {isProcessing ? 'Processing...' : isLocationsLoading ? 'Loading locations...' : 'Complete Sale'}
             </Button>
@@ -525,4 +575,3 @@ export const Cart: React.FC<CartProps> = ({
     </div>
   );
 };
-

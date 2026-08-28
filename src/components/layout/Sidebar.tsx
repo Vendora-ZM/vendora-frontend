@@ -26,6 +26,7 @@ const navLinks = [
   { href: '/dashboard/locations', label: 'Locations', exact: false },
   { href: '/dashboard/accounts', label: 'Employees', exact: false },
   { href: '/dashboard/orders', label: 'Orders', exact: false },
+  { href: '/dashboard/suppliers', label: 'Suppliers', exact: false },
   { href: '/dashboard/sales', label: 'Sales', exact: false },
   { href: '/dashboard/billing', label: 'Billing', exact: false },
   { href: '/dashboard/customers', label: 'Customers', exact: false },
