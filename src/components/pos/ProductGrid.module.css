@@ -104,6 +104,7 @@
 }
 
 .productCard {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -112,7 +113,7 @@
   border: 1px solid rgba(140, 144, 152, 0.15);
   border-radius: 8px;
   padding: 12px;
-  height: 100px;
+  min-height: 112px;
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
@@ -133,10 +134,32 @@
   cursor: not-allowed;
 }
 
+.productCardSelected {
+  border-color: rgba(16, 185, 129, 0.65);
+  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.14);
+  background: linear-gradient(180deg, #ffffff 0%, #f3fcf8 100%);
+}
+
+.selectionBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 6px 12px rgba(16, 185, 129, 0.24);
+}
+
 .productInfo {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-right: 20px;
 }
 
 .productName {
@@ -155,14 +178,28 @@
   color: var(--color-grey);
 }
 
+.productFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .productPrice {
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--color-accent-orange);
-  align-self: flex-end;
 }
 
-.loadingState, .emptyState {
+.selectionCount {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #047857;
+  text-align: right;
+}
+
+.loadingState,
+.emptyState {
   display: flex;
   align-items: center;
   justify-content: center;

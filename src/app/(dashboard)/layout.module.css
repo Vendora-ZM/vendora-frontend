@@ -51,7 +51,8 @@
 
 .headerRight {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-end;
   gap: 10px;
   margin-left: auto;
   min-width: 0;
@@ -76,31 +77,32 @@
 
 .profile {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
   cursor: pointer;
   flex-shrink: 0;
   min-width: 0;
-  max-width: min(100%, 420px);
+  max-width: min(100%, 180px);
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--gradient-orange);
   color: var(--color-white);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 1.125rem;
+  font-weight: 700;
+  font-size: 0.82rem;
 }
 
 .profileCopy {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
   align-items: flex-end;
   text-align: right;
@@ -109,12 +111,13 @@
 .accountName {
   font-weight: 700;
   color: var(--color-primary-navy);
-  line-height: 1.1;
+  font-size: 0.72rem;
+  line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
 .emailLine {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #8b95a5;
   line-height: 1.2;
   white-space: normal;
@@ -224,10 +227,11 @@
   .headerRight {
     flex-shrink: 1;
     max-width: 100%;
+    align-items: flex-start;
   }
 
   .profile {
-    max-width: min(100%, 320px);
+    max-width: min(100%, 160px);
   }
 
   .profileCopy {
@@ -235,7 +239,7 @@
   }
 
   .accountName {
-    font-size: 0.95rem;
+    font-size: 0.7rem;
   }
 
   .content {
@@ -259,17 +263,27 @@
     display: none;
   }
 
+  .headerRight {
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .profile {
+    gap: 4px;
+    max-width: min(100%, 150px);
+  }
+
   .profileCopy {
     display: flex;
     gap: 1px;
   }
 
   .accountName {
-    font-size: 0.9rem;
+    font-size: 0.68rem;
   }
 
   .emailLine {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
   }
 
   .content {
@@ -474,17 +488,28 @@
     gap: 10px;
   }
 
-  .profile {
+  .headerRight {
     gap: 8px;
+    align-items: flex-start;
+  }
+
+  .profile {
+    gap: 4px;
+    max-width: 128px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.74rem;
   }
 
   .accountName {
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: 0.64rem;
   }
 
   .emailLine {
-    font-size: 0.64rem;
+    font-size: 0.56rem;
   }
 }
 

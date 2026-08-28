@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useGetBusinessQuery } from '@/lib/features/business/businessApi';
 import { useGetMeQuery } from '@/lib/features/profile/profileApi';
 import { useGetProductsQuery, useGetCategoriesQuery } from '@/lib/features/products/productsApi';
-import { useAppDispatch } from '@/lib/store';
-import { addToCart } from '@/lib/features/pos/posSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/store';
+import { addToCart, removeFromCart } from '@/lib/features/pos/posSlice';
 import { formatCurrencyFromCents } from '@/lib/utils/currency';
 import { Product, type Category } from '@/types/product';
 import styles from './ProductGrid.module.css';
 
 export const ProductGrid: React.FC = () => {
   const dispatch = useAppDispatch();
+  const cart = useAppSelector((state) => state.pos.cart);
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const { data: me } = useGetMeQuery();
@@ -26,8 +27,17 @@ export const ProductGrid: React.FC = () => {
   });
 
   const { data: categories = [] } = useGetCategoriesQuery();
+  const selectedProductIds = useMemo(
+    () => new Set(cart.map((item) => item.id)),
+    [cart],
+  );
 
   const handleProductClick = (product: Product) => {
+    if (selectedProductIds.has(product.id)) {
+      dispatch(removeFromCart(product.id));
+      return;
+    }
+
     dispatch(addToCart(product));
   };
 
@@ -74,22 +84,36 @@ export const ProductGrid: React.FC = () => {
           <div className={styles.emptyState}>No products found.</div>
         ) : (
           <div className={styles.grid}>
-            {products.map((product: Product) => (
-              <button
-                key={product.id}
-                className={styles.productCard}
-                onClick={() => handleProductClick(product)}
-                disabled={!product.is_active}
-              >
-                <div className={styles.productInfo}>
-                  <h4 className={styles.productName}>{product.name}</h4>
-                  <span className={styles.productSku}>Item code (SKU): {product.sku}</span>
-                </div>
-                <div className={styles.productPrice}>
-                  {formatCurrencyFromCents(product.selling_price, { currencyCode })}
-                </div>
-              </button>
-            ))}
+            {products.map((product: Product) => {
+              const isSelected = selectedProductIds.has(product.id);
+
+              return (
+                <button
+                  key={product.id}
+                  className={`${styles.productCard} ${isSelected ? styles.productCardSelected : ''}`}
+                  onClick={() => handleProductClick(product)}
+                  disabled={!product.is_active}
+                >
+                  {isSelected ? (
+                    <span className={styles.selectionBadge} aria-label={`${product.name} selected`}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                  ) : null}
+
+                  <div className={styles.productInfo}>
+                    <h4 className={styles.productName}>{product.name}</h4>
+                    <span className={styles.productSku}>Item code (SKU): {product.sku}</span>
+                  </div>
+                  <div className={styles.productFooter}>
+                    <div className={styles.productPrice}>
+                      {formatCurrencyFromCents(product.selling_price, { currencyCode })}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

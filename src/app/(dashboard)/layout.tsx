@@ -195,6 +195,8 @@ export default function DashboardLayout({
           </div>
 
           <div className={styles.headerRight}>
+            <DashboardNotificationsMenu />
+
             <div className={styles.profile}>
               <div className={styles.avatar}>{avatarInitials}</div>
               <div className={styles.profileCopy}>
@@ -202,8 +204,6 @@ export default function DashboardLayout({
                 {email ? <span className={styles.emailLine}>{email}</span> : null}
               </div>
             </div>
-
-            <DashboardNotificationsMenu />
           </div>
         </header>
 

@@ -29,6 +29,20 @@ function readNestedErrorPayload(value: unknown): NestedErrorPayload | null {
   return value as NestedErrorPayload;
 }
 
+function readMessage(value: unknown): string | undefined {
+  const direct = readString(value);
+  if (direct) {
+    return direct;
+  }
+
+  const payload = readNestedErrorPayload(value);
+  if (!payload) {
+    return undefined;
+  }
+
+  return readString(payload.message) ?? readMessage(payload.message) ?? readString(payload.error) ?? readMessage(payload.error);
+}
+
 export function getApiErrorDetails(error: unknown): ApiErrorDetails | null {
   if (!error || typeof error !== 'object') {
     return null;
@@ -49,10 +63,10 @@ export function getApiErrorDetails(error: unknown): ApiErrorDetails | null {
     undefined;
 
   details.message =
-    readString(payload?.message) ??
-    readString(nestedPayload?.message) ??
-    readString(typedError.message) ??
-    readString(typedError.error);
+    readMessage(payload?.message) ??
+    readMessage(nestedError) ??
+    readMessage(typedError.message) ??
+    readMessage(typedError.error);
 
   if (!details.code && !details.message && details.status === undefined) {
     return null;

@@ -5,11 +5,13 @@ import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { clearCart, removeFromCart, updateQuantity } from '@/lib/features/pos/posSlice';
 import { useCreateSaleMutation, useCompleteSaleMutation } from '@/lib/features/sales/salesApi';
 import { useGetLocationsQuery } from '@/lib/features/locations/locationsApi';
+import { useGetBalancesQuery } from '@/lib/features/inventory/inventoryApi';
 import { PaymentMethod, Sale } from '@/types/sale';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import { buildPaymentTypeOptions, getPaymentTypeLabel } from '@/lib/business/paymentTypes';
 import { formatCurrency } from '@/lib/utils/currency';
+import { getFriendlyErrorMessage } from '@/lib/errors/apiError';
 import styles from './Cart.module.css';
 
 type CheckoutStage = 2 | 3 | 4;
@@ -24,6 +26,14 @@ type SaleSummary = {
   paymentTypeLabel: string;
   completedAt: string;
   locationName: string;
+};
+
+type StockIssue = {
+  productId: string;
+  name: string;
+  requestedQuantity: number;
+  availableQuantity: number;
+  shortage: number;
 };
 
 interface CartProps {
@@ -46,6 +56,19 @@ function parseQuantityInput(value: string) {
   }
 
   return Math.max(0, Math.floor(parsed));
+}
+
+function parseQuantityValue(value: string | number | undefined) {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value !== 'string') {
+    return 0;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 export const Cart: React.FC<CartProps> = ({
@@ -105,23 +128,72 @@ export const Cart: React.FC<CartProps> = ({
   const maxReviewPage = Math.max(reviewPages.length - 1, 0);
   const safeReviewPage = Math.min(reviewPage, maxReviewPage);
 
-  useEffect(() => {
-    if (!locations.length || selectedLocationId) {
-      return;
-    }
-
-    const defaultLocation = locations.find((location) => location.is_default) ?? locations[0];
-    if (defaultLocation) {
-      setSelectedLocationId(defaultLocation.id);
-    }
-  }, [locations, selectedLocationId]);
-
+  const defaultLocation = useMemo(
+    () => locations.find((location) => location.is_default) ?? locations[0],
+    [locations],
+  );
+  const effectiveSelectedLocationId = selectedLocationId || defaultLocation?.id || '';
   const selectedLocation = useMemo(
-    () => locations.find((location) => location.id === selectedLocationId) ?? locations.find((location) => location.is_default) ?? locations[0],
-    [locations, selectedLocationId],
+    () => locations.find((location) => location.id === effectiveSelectedLocationId) ?? defaultLocation,
+    [defaultLocation, effectiveSelectedLocationId, locations],
   );
   const locationName = selectedLocation?.name ?? 'Select branch';
   const formatAmount = (amount: number) => formatCurrency(amount, { currencyCode });
+
+  const {
+    data: inventoryBalances = [],
+    isLoading: isInventoryLoading,
+    isFetching: isInventoryFetching,
+  } = useGetBalancesQuery(
+    { location_id: effectiveSelectedLocationId },
+    { skip: !effectiveSelectedLocationId },
+  );
+
+  const stockByProductId = useMemo(
+    () =>
+      inventoryBalances.reduce<Record<string, number>>((acc, balance) => {
+        acc[balance.product_id] = parseQuantityValue(balance.quantity_available);
+        return acc;
+      }, {}),
+    [inventoryBalances],
+  );
+
+  const stockIssues = useMemo<StockIssue[]>(() => {
+    if (!effectiveSelectedLocationId) {
+      return [];
+    }
+
+    return cart
+      .map((item) => {
+        const availableQuantity = stockByProductId[item.id] ?? 0;
+        const requestedQuantity = item.cartQuantity;
+        const shortage = requestedQuantity - availableQuantity;
+
+        if (shortage <= 0) {
+          return null;
+        }
+
+        return {
+          productId: item.id,
+          name: item.name,
+          requestedQuantity,
+          availableQuantity,
+          shortage,
+        };
+      })
+      .filter((issue): issue is StockIssue => Boolean(issue));
+  }, [cart, effectiveSelectedLocationId, stockByProductId]);
+
+  const stockIssueByProductId = useMemo(
+    () =>
+      stockIssues.reduce<Record<string, StockIssue>>((acc, issue) => {
+        acc[issue.productId] = issue;
+        return acc;
+      }, {}),
+    [stockIssues],
+  );
+  const hasStockIssues = stockIssues.length > 0;
+  const isStockStatePending = Boolean(effectiveSelectedLocationId) && (isInventoryLoading || isInventoryFetching);
 
   useEffect(() => {
     if (stage !== 2 || !reviewPagesRef.current) {
@@ -146,7 +218,7 @@ export const Cart: React.FC<CartProps> = ({
   };
 
   const handleGoToPayment = () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || hasStockIssues || isStockStatePending) return;
     setStage(3);
     setError(null);
     if (method === 'cash') {
@@ -170,6 +242,11 @@ export const Cart: React.FC<CartProps> = ({
 
     if (!selectedLocation?.id) {
       setError('Select the branch that should own this sale before completing payment.');
+      return;
+    }
+
+    if (hasStockIssues || isStockStatePending) {
+      setError('One or more items are out of stock for this branch. Update the cart or switch branches before completing the sale.');
       return;
     }
 
@@ -238,8 +315,7 @@ export const Cart: React.FC<CartProps> = ({
       setAmountTendered('');
       setReference('');
     } catch (err: unknown) {
-      const errorObject = err as { data?: { message?: string; error?: string }; message?: string };
-      setError(errorObject?.data?.message || errorObject?.data?.error || errorObject?.message || 'Failed to process payment.');
+      setError(getFriendlyErrorMessage(err, 'Failed to process payment.'));
     } finally {
       setIsProcessing(false);
     }
@@ -313,7 +389,7 @@ export const Cart: React.FC<CartProps> = ({
 
             <Select
               label="Branch for this sale"
-              value={selectedLocation?.id ?? ''}
+              value={effectiveSelectedLocationId}
               onChange={(event) => setSelectedLocationId(event.target.value)}
               disabled={isProcessing || isLocationsLoading || locations.length === 0}
             >
@@ -335,75 +411,117 @@ export const Cart: React.FC<CartProps> = ({
                 <p>Go back to product selection to add items for this sale.</p>
               </div>
             ) : (
-              <div
-                ref={reviewPagesRef}
-                className={styles.itemsListViewport}
-                onScroll={handleReviewPagesScroll}
-                aria-label="Review sale item pages"
-              >
-                {reviewPages.map((pageItems, pageIndex) => (
-                  <div key={`page-${pageIndex}`} className={styles.itemsPage}>
-                    <div className={styles.itemsList}>
-                      {pageItems.map((item) => (
-                        <div key={item.id} className={styles.cartItem}>
-                          <div className={styles.itemInfo}>
-                            <h4 className={styles.itemName}>{item.name}</h4>
-                            <span className={styles.itemPrice}>{formatAmount(item.selling_price / 100)}</span>
-                          </div>
-
-                          <div className={styles.itemControls}>
-                            <div className={styles.qtyControl}>
-                              <button
-                                className={styles.qtyBtn}
-                                onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity - 1 }))}
-                                disabled={isProcessing}
-                                aria-label={`Decrease quantity for ${item.name}`}
-                              >
-                                -
-                              </button>
-                              <input
-                                className={styles.qtyInput}
-                                type="number"
-                                min={1}
-                                step={1}
-                                value={item.cartQuantity}
-                                onChange={(event) => {
-                                  const nextQuantity = parseQuantityInput(event.target.value);
-                                  if (nextQuantity !== null) {
-                                    dispatch(updateQuantity({ id: item.id, quantity: nextQuantity }));
-                                  }
-                                }}
-                                disabled={isProcessing}
-                                aria-label={`Quantity for ${item.name}`}
-                                inputMode="numeric"
-                              />
-                              <button
-                                className={styles.qtyBtn}
-                                onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity + 1 }))}
-                                disabled={isProcessing}
-                                aria-label={`Increase quantity for ${item.name}`}
-                              >
-                                +
-                              </button>
-                            </div>
-                            <div className={styles.itemTotal}>
-                              {formatAmount((item.selling_price / 100) * item.cartQuantity)}
-                            </div>
-                            <button
-                              className={styles.removeBtn}
-                              onClick={() => dispatch(removeFromCart(item.id))}
-                              disabled={isProcessing}
-                              aria-label={`Remove ${item.name}`}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+              <>
+                {isStockStatePending ? (
+                  <div className={`${styles.errorBanner} ${styles.stockBanner}`}>
+                    <div className={styles.errorCopy}>
+                      <strong>Checking branch stock</strong>
+                      <span>Vendora is confirming inventory for {locationName.toLowerCase()} before you proceed.</span>
                     </div>
                   </div>
-                ))}
-              </div>
+                ) : null}
+
+                {hasStockIssues ? (
+                  <div className={`${styles.errorBanner} ${styles.errorBannerLocked}`}>
+                    <div className={styles.errorCopy}>
+                      <strong>Some items are out of stock</strong>
+                      <span>
+                        {stockIssues.length === 1
+                          ? `${stockIssues[0].name} is short by ${stockIssues[0].shortage} unit${stockIssues[0].shortage === 1 ? '' : 's'} at ${locationName}.`
+                          : `${stockIssues.length} items are short for ${locationName}. Adjust the cart or switch branches before continuing.`}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
+
+                <div
+                  ref={reviewPagesRef}
+                  className={styles.itemsListViewport}
+                  onScroll={handleReviewPagesScroll}
+                  aria-label="Review sale item pages"
+                >
+                  {reviewPages.map((pageItems, pageIndex) => (
+                    <div key={`page-${pageIndex}`} className={styles.itemsPage}>
+                      <div className={styles.itemsList}>
+                        {pageItems.map((item) => {
+                          const stockIssue = stockIssueByProductId[item.id];
+                          const availableQuantity = stockByProductId[item.id] ?? 0;
+
+                          return (
+                            <div key={item.id} className={`${styles.cartItem} ${stockIssue ? styles.cartItemOutOfStock : ''}`}>
+                              <div className={styles.itemInfo}>
+                                <div className={styles.itemCopy}>
+                                  <h4 className={styles.itemName}>{item.name}</h4>
+                                  <span className={styles.itemPrice}>{formatAmount(item.selling_price / 100)}</span>
+                                </div>
+                                <div className={styles.stockMeta}>
+                                  {stockIssue ? (
+                                    <span className={styles.outOfStockText}>
+                                      Out of stock for this sale: {availableQuantity} available, {item.cartQuantity} requested
+                                    </span>
+                                  ) : (
+                                    <span className={styles.inStockText}>
+                                      {availableQuantity} available at {locationName}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className={styles.itemControls}>
+                                <div className={styles.qtyControl}>
+                                  <button
+                                    className={styles.qtyBtn}
+                                    onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity - 1 }))}
+                                    disabled={isProcessing}
+                                    aria-label={`Decrease quantity for ${item.name}`}
+                                  >
+                                    -
+                                  </button>
+                                  <input
+                                    className={styles.qtyInput}
+                                    type="number"
+                                    min={1}
+                                    step={1}
+                                    value={item.cartQuantity}
+                                    onChange={(event) => {
+                                      const nextQuantity = parseQuantityInput(event.target.value);
+                                      if (nextQuantity !== null) {
+                                        dispatch(updateQuantity({ id: item.id, quantity: nextQuantity }));
+                                      }
+                                    }}
+                                    disabled={isProcessing}
+                                    aria-label={`Quantity for ${item.name}`}
+                                    inputMode="numeric"
+                                  />
+                                  <button
+                                    className={styles.qtyBtn}
+                                    onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.cartQuantity + 1 }))}
+                                    disabled={isProcessing}
+                                    aria-label={`Increase quantity for ${item.name}`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <div className={styles.itemTotal}>
+                                  {formatAmount((item.selling_price / 100) * item.cartQuantity)}
+                                </div>
+                                <button
+                                  className={styles.removeBtn}
+                                  onClick={() => dispatch(removeFromCart(item.id))}
+                                  disabled={isProcessing}
+                                  aria-label={`Remove ${item.name}`}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -432,8 +550,17 @@ export const Cart: React.FC<CartProps> = ({
             <Button variant="outline" size="lg" onClick={onBackToSelection}>
               Back to Products
             </Button>
-            <Button variant="primary" size="lg" onClick={handleGoToPayment} disabled={cart.length === 0 || !selectedLocation?.id}>
-              Continue to Payment
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleGoToPayment}
+              disabled={cart.length === 0 || !selectedLocation?.id || isStockStatePending || hasStockIssues}
+            >
+              {isStockStatePending
+                ? 'Checking stock...'
+                : hasStockIssues
+                  ? 'Resolve stock issues'
+                  : 'Continue to Payment'}
             </Button>
           </div>
         </>
@@ -446,7 +573,7 @@ export const Cart: React.FC<CartProps> = ({
 
           <Select
             label="Branch for this sale"
-            value={selectedLocation?.id ?? ''}
+            value={effectiveSelectedLocationId}
             onChange={(event) => setSelectedLocationId(event.target.value)}
             disabled={isProcessing || isLocationsLoading || locations.length === 0}
           >
@@ -479,25 +606,50 @@ export const Cart: React.FC<CartProps> = ({
             </div>
           </div>
 
+          {(isStockStatePending || hasStockIssues) ? (
+            <div className={`${styles.errorBanner} ${hasStockIssues ? styles.errorBannerLocked : styles.stockBanner}`}>
+              <div className={styles.errorCopy}>
+                <strong>{hasStockIssues ? 'Stock attention needed' : 'Checking branch stock'}</strong>
+                <span>
+                  {hasStockIssues
+                    ? 'One or more items are still out of stock for this branch. Go back to review and adjust the cart before completing the sale.'
+                    : `Vendora is refreshing inventory for ${locationName.toLowerCase()} before payment can be completed.`}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           <div className={styles.paymentItemsCard}>
             <div className={styles.paymentItemsHeader}>
               <span className={styles.summaryLabel}>Items in this sale</span>
               <strong>{cart.reduce((sum, item) => sum + item.cartQuantity, 0)} unit{cart.reduce((sum, item) => sum + item.cartQuantity, 0) === 1 ? '' : 's'}</strong>
             </div>
             <div className={styles.paymentItemsList}>
-              {cart.map((item) => (
-                <div key={`payment-${item.id}`} className={styles.paymentItemRow}>
-                  <div className={styles.paymentItemInfo}>
-                    <strong className={styles.paymentItemName}>{item.name}</strong>
-                    <span className={styles.paymentItemMeta}>
-                      {item.cartQuantity} x {formatAmount(item.selling_price / 100)}
+              {cart.map((item) => {
+                const stockIssue = stockIssueByProductId[item.id];
+                const availableQuantity = stockByProductId[item.id] ?? 0;
+
+                return (
+                  <div key={`payment-${item.id}`} className={`${styles.paymentItemRow} ${stockIssue ? styles.paymentItemRowAlert : ''}`}>
+                    <div className={styles.paymentItemInfo}>
+                      <strong className={styles.paymentItemName}>{item.name}</strong>
+                      <span className={styles.paymentItemMeta}>
+                        {item.cartQuantity} x {formatAmount(item.selling_price / 100)}
+                      </span>
+                      {stockIssue ? (
+                        <span className={styles.outOfStockText}>
+                          Out of stock: {availableQuantity} available, {item.cartQuantity} requested
+                        </span>
+                      ) : (
+                        <span className={styles.inStockText}>{availableQuantity} available</span>
+                      )}
+                    </div>
+                    <span className={styles.paymentItemTotal}>
+                      {formatAmount((item.selling_price / 100) * item.cartQuantity)}
                     </span>
                   </div>
-                  <span className={styles.paymentItemTotal}>
-                    {formatAmount((item.selling_price / 100) * item.cartQuantity)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -565,9 +717,17 @@ export const Cart: React.FC<CartProps> = ({
               variant="primary"
               size="lg"
               onClick={handleConfirmPayment}
-              disabled={isProcessing || isLocationsLoading || cart.length === 0 || !selectedLocation?.id}
+              disabled={isProcessing || isLocationsLoading || cart.length === 0 || !selectedLocation?.id || isStockStatePending || hasStockIssues}
             >
-              {isProcessing ? 'Processing...' : isLocationsLoading ? 'Loading locations...' : 'Complete Sale'}
+              {isProcessing
+                ? 'Processing...'
+                : isStockStatePending
+                  ? 'Checking stock...'
+                  : hasStockIssues
+                    ? 'Resolve stock issues'
+                    : isLocationsLoading
+                      ? 'Loading locations...'
+                      : 'Complete Sale'}
             </Button>
           </div>
         </div>
